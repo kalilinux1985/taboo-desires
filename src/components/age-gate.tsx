@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { ShieldAlert } from "lucide-react";
 import {
   AlertDialog,
@@ -22,7 +22,9 @@ function readVerified(): boolean {
 
 /** Adult-content confirmation shown once per browser. Children render only after confirming. */
 export default function AgeGate({ children }: { children?: ReactNode }) {
-  const [verified, setVerified] = useState(readVerified);
+  // Unknown until the browser has been checked, so the server render shows neither
+  const [verified, setVerified] = useState<boolean | null>(null);
+  useEffect(() => setVerified(readVerified()), []);
 
   const confirm = () => {
     try {
@@ -36,7 +38,7 @@ export default function AgeGate({ children }: { children?: ReactNode }) {
   return (
     <>
     {verified && children}
-    <AlertDialog open={!verified}>
+    <AlertDialog open={verified === false}>
       <AlertDialogContent className="backdrop-blur">
         <AlertDialogHeader className="items-center text-center sm:items-center sm:text-center">
           <div className="flex size-12 items-center justify-center rounded-full text-violet-500">

@@ -1,3 +1,5 @@
+"use client";
+
 import { AuthProvider } from "./auth.tsx";
 import { QueryClientProvider } from "./query-client.tsx";
 import { BackendProvider } from "@/lib/backend/react.tsx";

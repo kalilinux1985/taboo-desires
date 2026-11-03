@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { useQuery } from "@/lib/backend/react.tsx";
 import { List, LogOut, Package, Settings, ShieldCheck, Sparkles, User } from "lucide-react";
 import { api } from "@/lib/backend/api.ts";
@@ -52,7 +52,7 @@ export default function UserMenu() {
         <DropdownMenuSeparator />
         {links.map((l) => (
           <DropdownMenuItem key={l.to} asChild className="cursor-pointer">
-            <Link to={l.to}>
+            <Link href={l.to}>
               <l.icon /> {l.label}
             </Link>
           </DropdownMenuItem>

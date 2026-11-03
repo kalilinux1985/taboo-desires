@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Link, useNavigate } from "react-router-dom";
+import Link from "next/link";
+import { useNavigate } from "@/lib/navigation.ts";
 import { Authenticated, Unauthenticated, useMutation } from "@/lib/backend/react.tsx";
 import { Sparkles } from "lucide-react";
 import { toast } from "sonner";
@@ -185,7 +186,7 @@ export default function CustomRequestButton({
               <DialogTitle>Custom request for {sellerName}</DialogTitle>
               <DialogDescription>
                 Describe exactly what you want. You can track replies in{" "}
-                <Link to="/customs" className="text-violet-400 underline-offset-2 hover:underline">
+                <Link href="/customs" className="text-violet-400 underline-offset-2 hover:underline">
                   Custom requests
                 </Link>
                 .

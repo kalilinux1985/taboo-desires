@@ -1,16 +1,19 @@
 import { createClient } from "@supabase/supabase-js";
 import type { ErrorData } from "@/backend/core/errors.ts";
 
-const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
+// NEXT_PUBLIC_ variables are inlined into the browser bundle at build time
+const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 /** Name (slug) of the deployed backend Edge Function. */
-const functionName =
-  (import.meta.env.VITE_SUPABASE_FUNCTION as string | undefined) ?? "api";
+const functionName = process.env.NEXT_PUBLIC_SUPABASE_FUNCTION || "api";
 if (!url || !key) {
   console.error(
-    "Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY (see .env.example)",
+    "Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (see .env.example)",
   );
 }
+
+// Pages are also rendered on the server, where there is no browser session
+const isBrowser = typeof window !== "undefined";
 
 /** Supabase client: sign-in (Supabase Auth), file uploads and live-update notifications. */
 export const supabase = createClient(
@@ -18,10 +21,11 @@ export const supabase = createClient(
   key ?? "missing-key",
   {
     auth: {
-      persistSession: true,
-      autoRefreshToken: true,
+      persistSession: isBrowser,
+      autoRefreshToken: isBrowser,
       // Finishes sign-in when the user lands on /auth/callback from an email link
-      detectSessionInUrl: true,
+      detectSessionInUrl: isBrowser,
+      storage: isBrowser ? window.localStorage : undefined,
       flowType: "pkce",
     },
   },
