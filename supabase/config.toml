@@ -1,0 +1,11 @@
+# Supabase CLI settings (only the parts this app relies on; everything else uses CLI defaults).
+project_id = "taboo-desires"
+
+[db]
+major_version = 17
+
+[functions.api]
+# Requests carry the Supabase Auth access token in x-user-token (signed-out
+# visitors send none), and the function verifies it itself, so the gateway's
+# JWT check is turned off.
+verify_jwt = false
