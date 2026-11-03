@@ -35,6 +35,7 @@ import { getStats, summarize, bumpStats } from "../lib/sellerStats.ts";
 import { deleteListingCascade } from "../lib/listingDelete.ts";
 import { insertListingPost } from "../lib/posts.ts";
 import { assertOwnFiles } from "../lib/files.ts";
+import { SELLER_DETAIL_FIELDS } from "../domain/sellerDetails.ts";
 
 const MAX_PRICE_CENTS = 100_000_00;
 
@@ -183,12 +184,52 @@ export const browse = query({
       v.literal("price_asc"),
       v.literal("price_desc"),
     ),
+    saleType: v.optional(saleTypeValidator),
+    minPriceCents: v.optional(v.number()),
+    maxPriceCents: v.optional(v.number()),
+    listedWithinDays: v.optional(v.number()),
+    verifiedOnly: v.optional(v.boolean()),
+    /** Seller profile filters: each listed field must match one of its values. */
+    seller: v.optional(
+      v.array(
+        v.object({ key: v.string(), values: v.array(v.string(), 50) }),
+        SELLER_DETAIL_FIELDS.length,
+      ),
+    ),
   },
   handler: async (ctx, args) => {
-    const { category, condition } = args;
+    const { category, condition, saleType } = args;
     const filters: Sql[] = [sql`status = 'active'`];
     if (category) filters.push(sql`category = ${category}`);
     if (condition) filters.push(sql`condition = ${condition}`);
+    if (saleType) filters.push(sql`sale_type = ${saleType}`);
+    if (args.minPriceCents !== undefined)
+      filters.push(sql`price_cents >= ${Math.floor(args.minPriceCents)}::int`);
+    if (args.maxPriceCents !== undefined)
+      filters.push(sql`price_cents < ${Math.ceil(args.maxPriceCents)}::int`);
+    if (args.listedWithinDays !== undefined) {
+      const days = Math.min(3650, Math.max(1, Math.floor(args.listedWithinDays)));
+      filters.push(sql`created_at >= now() - make_interval(days => ${days}::int)`);
+    }
+    const sellerConditions: Sql[] = [];
+    if (args.verifiedOnly) sellerConditions.push(sql`u.verified`);
+    for (const { key, values } of args.seller ?? []) {
+      const field = SELLER_DETAIL_FIELDS.find((f) => f.key === key);
+      if (!field) throw new AppError({ code: "BAD_REQUEST", message: `Unknown filter: ${key}` });
+      const allowed = values.filter((x) =>
+        (field.options as readonly string[]).includes(x),
+      );
+      if (allowed.length === 0) continue;
+      sellerConditions.push(
+        sql`u.seller_details ->> ${key} = any(${allowed}::text[])`,
+      );
+    }
+    if (sellerConditions.length) {
+      const match = sellerConditions.reduce((acc, f) => sql`${acc} and ${f}`);
+      filters.push(
+        sql`exists (select 1 from public.users u where u.id = listings.seller_id and ${match})`,
+      );
+    }
     const where = filters.reduce(
       (acc, f, i) => (i === 0 ? f : sql`${acc} and ${f}`),
       empty,

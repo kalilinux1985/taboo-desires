@@ -275,5 +275,44 @@ describe("browse", () => {
         }),
       ),
     ).toEqual(["Hiking socks"]);
+
+    // Price band, sale type, verified seller and seller profile filters
+    const browse = (extra: Record<string, unknown>) =>
+      t
+        .query(api.listings.browse, {
+          sort: "price_asc",
+          paginationOpts: all(null),
+          ...extra,
+        })
+        .then(titles);
+    expect(await browse({ minPriceCents: 20_00, maxPriceCents: 40_00 })).toEqual([
+      "Hiking socks",
+    ]);
+    expect(await browse({ saleType: "auction" })).toEqual([]);
+    expect(await browse({ listedWithinDays: 1 })).toHaveLength(3);
+    expect(await browse({ verifiedOnly: true })).toEqual([]);
+    await seller.mutation(api.users.updateSellerDetails, {
+      details: { ageRange: "26-30", bodySize: "Athletic" },
+    });
+    expect(
+      await browse({
+        seller: [
+          { key: "ageRange", values: ["21-25", "26-30"] },
+          { key: "bodySize", values: ["Athletic"] },
+        ],
+      }),
+    ).toHaveLength(3);
+    expect(
+      await browse({ seller: [{ key: "ageRange", values: ["50+"] }] }),
+    ).toEqual([]);
+    const card = (await t.query(api.listings.browse, {
+      sort: "newest",
+      paginationOpts: all(null, 1),
+    })).page[0];
+    expect(card.sellerAvatarUrl).toBeNull();
+    expect(card.description).toBe("");
+    await expect(
+      browse({ seller: [{ key: "password", values: ["x"] }] }),
+    ).rejects.toThrow(/Unknown filter/);
   });
 });

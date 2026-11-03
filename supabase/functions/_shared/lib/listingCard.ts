@@ -13,10 +13,14 @@ export async function toCard(ctx: QueryCtx, listing: Doc<"listings">) {
     saleType === "auction" ? getAuctionByListing(ctx, listing._id) : null,
     getPlan(ctx, listing.sellerId),
   ]);
+  const sellerAvatarUrl = seller?.avatarStorageId
+    ? await ctx.storage.getUrl(seller.avatarStorageId)
+    : null;
   return {
     _id: listing._id,
     _creationTime: listing._creationTime,
     title: listing.title,
+    description: listing.description.slice(0, 200),
     brand: listing.brand,
     size: listing.size,
     condition: listing.condition,
@@ -37,5 +41,7 @@ export async function toCard(ctx: QueryCtx, listing: Doc<"listings">) {
     sellerName: seller ? publicSellerName(seller) : "Unknown seller",
     sellerIsPro: sellerPlan === "pro",
     sellerVerified: !!seller?.verified,
+    sellerAvatarUrl,
+    sellerCountry: seller?.sellerDetails?.country ?? null,
   };
 }
