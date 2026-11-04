@@ -1,4 +1,8 @@
-import { Link, NavLink, Outlet } from "react-router-dom";
+"use client";
+
+import type { ReactNode } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Authenticated, AuthLoading, Unauthenticated, useQuery } from "@/lib/backend/react.tsx";
 import { Heart, MessageCircle, Plus } from "lucide-react";
 import { api } from "@/lib/backend/api.ts";
@@ -14,7 +18,7 @@ import { usePresenceHeartbeat } from "@/hooks/use-activity.ts";
 export function Logo({ className }: { className?: string }) {
   return (
     <Link
-      to="/"
+      href="/"
       className={cn("font-display text-2xl italic leading-none", className)}
     >
       Taboo <span className="text-violet-400">Desires</span>
@@ -26,7 +30,7 @@ function InboxLink() {
   const unread = useQuery(api.messages.unreadCount, {});
   return (
     <Button asChild size="sm" variant="ghost" className="relative cursor-pointer">
-      <Link to="/messages" aria-label="Messages">
+      <Link href="/messages" aria-label="Messages">
         <MessageCircle /> <span className="hidden sm:inline">Messages</span>
         {!!unread && (
           <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-white">
@@ -46,14 +50,14 @@ function SignedInActions() {
     <div className="flex items-center gap-1 sm:gap-2">
       {!isBuyer && (
         <Button asChild size="sm" className="cursor-pointer">
-          <Link to="/sell">
+          <Link href="/sell">
             <Plus /> <span className="hidden sm:inline">Sell an item</span>
           </Link>
         </Button>
       )}
       <InboxLink />
       <Button asChild size="sm" variant="ghost" className="cursor-pointer">
-        <Link to="/favorites" aria-label="Favorites">
+        <Link href="/favorites" aria-label="Favorites">
           <Heart /> <span className="hidden lg:inline">Favorites</span>
         </Link>
       </Button>
@@ -72,6 +76,22 @@ const NAV = [
   { to: "/pricing", label: "Go Pro" },
 ];
 
+function NavLink({ href, label }: { href: string; label: string }) {
+  const pathname = usePathname();
+  const isActive = pathname === href || pathname.startsWith(`${href}/`);
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "hidden text-sm font-medium uppercase tracking-wider md:inline",
+        isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+      )}
+    >
+      {label}
+    </Link>
+  );
+}
+
 function Header() {
   return (
     <header className="sticky top-0 z-40 border-b bg-background/85 backdrop-blur">
@@ -79,18 +99,7 @@ function Header() {
         <div className="flex items-center gap-6">
           <Logo />
           {NAV.map((n) => (
-            <NavLink
-              key={n.to}
-              to={n.to}
-              className={({ isActive }) =>
-                cn(
-                  "hidden text-sm font-medium uppercase tracking-wider md:inline",
-                  isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground",
-                )
-              }
-            >
-              {n.label}
-            </NavLink>
+            <NavLink key={n.to} href={n.to} label={n.label} />
           ))}
         </div>
         <AuthLoading>
@@ -120,7 +129,7 @@ function Footer() {
   );
 }
 
-export default function AppLayout() {
+export default function AppLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col">
       <AgeGate>
@@ -128,7 +137,7 @@ export default function AppLayout() {
       </AgeGate>
       <Header />
       <main className="flex-1">
-        <Outlet />
+        {children}
       </main>
       <Footer />
     </div>

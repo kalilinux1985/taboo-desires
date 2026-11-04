@@ -16,5 +16,5 @@
     "noEmit": true,
     "strict": true
   },
-  "include": ["./supabase/functions/_shared", "./scripts"]
+  "include": ["./supabase/functions/_shared"]
 }

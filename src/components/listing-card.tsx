@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import type { PaginationStatus } from "@/lib/backend/react.tsx";
 import { Gavel, Lock, PackageOpen } from "lucide-react";
 import type { FunctionReturnType } from "@/lib/backend/types.ts";
@@ -29,7 +29,7 @@ export function ListingCard({ listing }: { listing: ListingCardData }) {
   const liveAuction = listing.auction?.status === "live" ? listing.auction : null;
   return (
     <Link
-      to={`/listing/${listing._id}`}
+      href={`/listing/${listing._id}`}
       className="group flex cursor-pointer flex-col gap-2"
     >
       <div className="relative aspect-square overflow-hidden rounded-md bg-muted">

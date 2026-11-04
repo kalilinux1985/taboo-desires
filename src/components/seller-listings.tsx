@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { usePaginatedQuery } from "@/lib/backend/react.tsx";
 import { Plus } from "lucide-react";
 import { api } from "@/lib/backend/api.ts";
@@ -53,7 +53,7 @@ export default function SellerListings({
         emptyAction={
           isMe && status === "active" ? (
             <Button asChild size="sm" className="cursor-pointer">
-              <Link to="/sell">
+              <Link href="/sell">
                 <Plus /> List an item
               </Link>
             </Button>

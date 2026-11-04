@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { Crown, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button.tsx";
 import { cn } from "@/lib/utils.ts";
@@ -28,7 +28,7 @@ export default function UpgradeNotice({
       </p>
       {showUpgrade && (
         <Button asChild size="sm" className="shrink-0 cursor-pointer">
-          <Link to="/pricing">
+          <Link href="/pricing">
             <Crown /> Go Pro
           </Link>
         </Button>
