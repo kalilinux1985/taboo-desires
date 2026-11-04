@@ -1,0 +1,10 @@
+# Netlify build settings (Next.js is detected and served by Netlify's Next.js runtime)
+[build]
+  command = "pnpm run build"
+  publish = ".next"
+
+[build.environment]
+  # --shamefully-hoist: required by Netlify for Next.js apps installed with pnpm
+  # --no-frozen-lockfile: lets the install update pnpm-lock.yaml after the switch
+  #   to Next.js; drop it once a refreshed pnpm-lock.yaml is committed
+  PNPM_FLAGS = "--shamefully-hoist --no-frozen-lockfile"
