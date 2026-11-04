@@ -55,6 +55,16 @@ export async function callBackend<T>(
   args: unknown,
   token: string | null,
 ): Promise<CallResult<T>> {
+  if (!url || !key) {
+    throw new BackendError(
+      {
+        code: "INTERNAL",
+        message:
+          "This site isn't connected to its backend yet: set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, then rebuild.",
+      },
+      0,
+    );
+  }
   let res: Response;
   try {
     res = await fetch(`${url}/functions/v1/${functionName}`, {
