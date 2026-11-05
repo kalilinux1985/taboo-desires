@@ -1,22 +1,11 @@
 "use client";
 
-import { Component, type ReactNode } from "react";
 import Link from "next/link";
 import { useQuery } from "@/lib/backend/react.tsx";
 import { api } from "@/lib/backend/api.ts";
 import ProfileAvatar from "@/components/profile-avatar.tsx";
 import VerifiedBadge from "@/components/verified-badge.tsx";
-
-/** Hides member results instead of breaking the page if the search can't run. */
-class HideOnError extends Component<{ children: ReactNode }, { failed: boolean }> {
-  state = { failed: false };
-  static getDerivedStateFromError() {
-    return { failed: true };
-  }
-  render() {
-    return this.state.failed ? null : this.props.children;
-  }
-}
+import HideOnError from "@/components/hide-on-error.tsx";
 
 function Members({ search }: { search: string }) {
   const members = useQuery(api.users.search, { search });

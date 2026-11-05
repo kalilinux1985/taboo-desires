@@ -10,6 +10,7 @@ import * as follows from "./modules/follows.ts";
 import * as forum from "./modules/forum.ts";
 import * as listings from "./modules/listings.ts";
 import * as messages from "./modules/messages.ts";
+import * as notifications from "./modules/notifications.ts";
 import * as posts from "./modules/posts.ts";
 import * as reviews from "./modules/reviews.ts";
 import * as subscriptions from "./modules/subscriptions.ts";
@@ -49,6 +50,7 @@ export const registry = {
   forum: functionsOf(forum),
   listings: functionsOf(listings),
   messages: functionsOf(messages),
+  notifications: functionsOf(notifications),
   posts: functionsOf(posts),
   reviews: functionsOf(reviews),
   subscriptions: functionsOf(subscriptions),
