@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils.ts";
 import AgeGate from "./age-gate.tsx";
 import AccountTypeDialog from "./account-type-dialog.tsx";
 import UserMenu from "./user-menu.tsx";
+import MobileNav from "./mobile-nav.tsx";
 import { usePresenceHeartbeat } from "@/hooks/use-activity.ts";
 
 export function Logo({ className }: { className?: string }) {
@@ -97,7 +98,10 @@ function Header() {
     <header className="sticky top-0 z-40 border-b bg-background/85 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-4">
         <div className="flex items-center gap-6">
-          <Logo />
+          <div className="flex items-center gap-1">
+            <MobileNav />
+            <Logo />
+          </div>
           {NAV.map((n) => (
             <NavLink key={n.to} href={n.to} label={n.label} />
           ))}

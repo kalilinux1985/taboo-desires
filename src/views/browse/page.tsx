@@ -2,7 +2,8 @@
 
 import { useSearchParams } from "@/lib/navigation.ts";
 import { usePaginatedQuery } from "@/lib/backend/react.tsx";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
+import MemberResults from "./_components/member-results.tsx";
 import { api } from "@/lib/backend/api.ts";
 import { Input } from "@/components/ui/input.tsx";
 import {
@@ -42,6 +43,9 @@ export default function BrowsePage() {
   const condition = parseParam<Condition>(params.get("condition"), CONDITIONS);
   const sort = parseParam<Sort>(params.get("sort"), SORTS) ?? "newest";
   const searchInput = params.get("q") ?? "";
+  // Set by the shop sections in the mobile menu
+  const instant = params.get("instant") === "1";
+  const mens = params.get("sellers") === "men";
   const [search] = useDebounce(searchInput, 300);
 
   const setParam = (key: string, value: string | undefined) => {
@@ -58,6 +62,8 @@ export default function BrowsePage() {
       category,
       condition,
       sort,
+      lockedOnly: instant || undefined,
+      seller: mens ? [{ key: "gender", values: ["Male", "Trans man"] }] : undefined,
     },
     { initialNumItems: 24 },
   );
@@ -65,8 +71,20 @@ export default function BrowsePage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-10">
       <h1 className="font-display text-5xl md:text-7xl">
-        {category ? CATEGORIES.find((c) => c.value === category)?.label : "Shop all"}
+        {category
+          ? CATEGORIES.find((c) => c.value === category)?.label
+          : instant
+            ? "Instant content"
+            : "Shop all"}
       </h1>
+      {(instant || mens) && (
+        <div className="flex flex-wrap gap-2 pt-3">
+          {instant && (
+            <FilterPill label="Photo & video sets" onClear={() => setParam("instant", undefined)} />
+          )}
+          {mens && <FilterPill label="Men's items" onClear={() => setParam("sellers", undefined)} />}
+        </div>
+      )}
 
       <div className="flex flex-col gap-4 py-6">
         <div className="flex flex-col gap-3 sm:flex-row">
@@ -75,7 +93,7 @@ export default function BrowsePage() {
             <Input
               value={searchInput}
               onChange={(e) => setParam("q", e.target.value)}
-              placeholder="Search lace, cotton, gym socks..."
+              placeholder="Search members, lace, gym socks..."
               className="h-10 pl-9"
             />
           </div>
@@ -134,11 +152,25 @@ export default function BrowsePage() {
         </div>
       </div>
 
+      <MemberResults search={search} />
+
       <ListingGrid
         query={query}
         emptyTitle="Nothing here yet"
         emptyDescription="Try a different search or filter."
       />
     </div>
+  );
+}
+
+function FilterPill({ label, onClear }: { label: string; onClear: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClear}
+      className="flex cursor-pointer items-center gap-1.5 rounded-full border border-violet-600 bg-primary px-3 py-1 text-sm font-semibold text-primary-foreground"
+    >
+      {label} <X className="size-3.5" aria-label="Remove filter" />
+    </button>
   );
 }

@@ -330,3 +330,32 @@ export const removeProfilePhoto = mutation({
     return null;
   },
 });
+
+/** Sellers whose shop name (or name) matches, for the search box. Buyers stay anonymous. */
+export const search = query({
+  args: { search: v.string() },
+  handler: async (ctx, { search: text }) => {
+    const term = text.trim().slice(0, 60);
+    if (term.length < 2) return [];
+    // Match anywhere in the name; % and _ typed by the user are literal
+    const pattern = `%${term.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
+    const rows = await ctx.db.rows(sql`
+      select id, coalesce(nullif(shop_name, ''), name) as display_name,
+             avatar_storage_id, verified
+        from public.users
+       where account_type = 'seller'
+         and coalesce(nullif(shop_name, ''), name) ilike ${pattern}
+       order by verified desc, created_at desc
+       limit 8`);
+    return await Promise.all(
+      rows.map(async (r) => ({
+        _id: r.id as Id<"users">,
+        name: r.display_name as string,
+        verified: !!r.verified,
+        avatarUrl: r.avatar_storage_id
+          ? await ctx.storage.getUrl(r.avatar_storage_id as Id<"_storage">)
+          : null,
+      })),
+    );
+  },
+});

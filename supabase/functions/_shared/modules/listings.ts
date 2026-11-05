@@ -189,6 +189,8 @@ export const browse = query({
     maxPriceCents: v.optional(v.number()),
     listedWithinDays: v.optional(v.number()),
     verifiedOnly: v.optional(v.boolean()),
+    /** Only listings with locked photos or videos buyers can unlock right away */
+    lockedOnly: v.optional(v.boolean()),
     /** Seller profile filters: each listed field must match one of its values. */
     seller: v.optional(
       v.array(
@@ -203,6 +205,7 @@ export const browse = query({
     if (category) filters.push(sql`category = ${category}`);
     if (condition) filters.push(sql`condition = ${condition}`);
     if (saleType) filters.push(sql`sale_type = ${saleType}`);
+    if (args.lockedOnly) filters.push(sql`paywall is not null`);
     if (args.minPriceCents !== undefined)
       filters.push(sql`price_cents >= ${Math.floor(args.minPriceCents)}::int`);
     if (args.maxPriceCents !== undefined)
