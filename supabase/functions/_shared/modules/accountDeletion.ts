@@ -50,6 +50,24 @@ export const deleteMyAccount = mutation({
     for (const f of files) ctx.storage.delete(f.storage_id as Id<"_storage">);
 
     // Counters on content that survives the deletion
+    // Others' replies under this user's comments go with them
+    await ctx.db.rows(sql`
+      update public.posts p set comment_count = greatest(0, p.comment_count - r.n)
+        from (select c.post_id, count(*)::int as n from public.post_comments r
+                join public.post_comments c on c.id = r.parent_id
+               where c.author_id = ${id}::uuid and r.author_id <> ${id}::uuid
+               group by c.post_id) r
+       where p.id = r.post_id and p.author_id <> ${id}::uuid`);
+    await ctx.db.rows(sql`
+      update public.post_comments c set like_count = greatest(0, c.like_count - l.n)
+        from (select comment_id, count(*)::int as n from public.post_comment_likes
+               where user_id = ${id}::uuid group by comment_id) l
+       where c.id = l.comment_id and c.author_id <> ${id}::uuid`);
+    await ctx.db.rows(sql`
+      update public.post_comments c set reply_count = greatest(0, c.reply_count - r.n)
+        from (select parent_id, count(*)::int as n from public.post_comments
+               where author_id = ${id}::uuid and parent_id is not null group by parent_id) r
+       where c.id = r.parent_id and c.author_id <> ${id}::uuid`);
     await ctx.db.rows(sql`
       update public.posts p set comment_count = greatest(0, p.comment_count - c.n)
         from (select post_id, count(*)::int as n from public.post_comments

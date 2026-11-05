@@ -29,6 +29,7 @@ export async function toCard(ctx: QueryCtx, listing: Doc<"listings">) {
     status: listing.status,
     saleType,
     isLocked: !!listing.paywall,
+    lockedKinds: [...new Set((listing.paywall?.media ?? []).map((m) => m.kind))],
     auction: auction
       ? {
           endsAt: auction.endsAt,

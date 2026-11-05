@@ -159,7 +159,16 @@ type Fields = {
     commentCount: number;
   };
   postLikes: { postId: Id<"posts">; userId: Id<"users"> };
-  postComments: { postId: Id<"posts">; authorId: Id<"users">; body: string };
+  postComments: {
+    postId: Id<"posts">;
+    authorId: Id<"users">;
+    body: string;
+    /** Set on replies (one level deep) */
+    parentId?: Id<"postComments">;
+    likeCount: number;
+    replyCount: number;
+  };
+  postCommentLikes: { commentId: Id<"postComments">; userId: Id<"users"> };
   messages: {
     conversationId: Id<"conversations">;
     senderId: Id<"users">;
@@ -406,6 +415,16 @@ export const TABLES: { [T in DbTable]: TableDef<T> } = {
       postId: c("post_id", "uuid"),
       authorId: c("author_id", "uuid"),
       body: c("body"),
+      parentId: c("parent_id", "uuid"),
+      likeCount: c("like_count", "int"),
+      replyCount: c("reply_count", "int"),
+    },
+  },
+  postCommentLikes: {
+    sqlName: "post_comment_likes",
+    columns: {
+      commentId: c("comment_id", "uuid"),
+      userId: c("user_id", "uuid"),
     },
   },
   messages: {

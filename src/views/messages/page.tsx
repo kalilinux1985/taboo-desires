@@ -79,7 +79,7 @@ function InboxList({ activeId }: { activeId?: string }) {
                 </span>
               </div>
               <p className="truncate text-xs text-muted-foreground">
-                {c.listing?.title ?? "Listing removed"}
+                {c.listing?.title ?? "Direct message"}
               </p>
               <p className={cn("truncate text-xs", c.unread ? "text-foreground font-semibold" : "text-muted-foreground")}>
                 {c.lastFromMe && "You: "}

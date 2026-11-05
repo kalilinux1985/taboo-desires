@@ -143,6 +143,44 @@ export const start = mutation({
   },
 });
 
+/** Message a seller from their profile: one direct conversation per buyer and seller. */
+export const startWithSeller = mutation({
+  args: { sellerId: v.id("users"), body: v.string() },
+  handler: async (ctx, { sellerId, body }) => {
+    await requireCapability(ctx, "message");
+    const user = await requireCapability(ctx, "buy");
+    const text = cleanBody(body);
+    if (sellerId === user._id)
+      throw new AppError({ code: "BAD_REQUEST", message: "This is your own profile" });
+    const seller = await ctx.db.get("users", sellerId);
+    if (!seller || seller.accountType !== "seller")
+      throw new AppError({ code: "NOT_FOUND", message: "Seller not found" });
+
+    const existing = await ctx.db.first(
+      "conversations",
+      sql`where listing_id is null and buyer_id = ${user._id}::uuid and seller_id = ${sellerId}::uuid`,
+    );
+    const convo =
+      existing ??
+      (await ctx.db.get(
+        "conversations",
+        await ctx.db.insert("conversations", {
+          buyerId: user._id,
+          sellerId,
+          lastMessageAt: new Date(ctx.now()).toISOString(),
+          lastMessagePreview: "",
+          lastSenderId: user._id,
+          buyerUnread: false,
+          sellerUnread: true,
+        }),
+      ));
+    if (!convo)
+      throw new AppError({ code: "NOT_FOUND", message: "Conversation missing" });
+    await appendMessage(ctx, convo, user._id, text);
+    return convo._id;
+  },
+});
+
 export const send = mutation({
   args: { conversationId: v.id("conversations"), body: v.string() },
   handler: async (ctx, { conversationId, body }) => {

@@ -2,19 +2,13 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
-import { usePaginatedQuery, useQuery } from "@/lib/backend/react.tsx";
-import { EllipsisVertical, Link2, UserX } from "lucide-react";
+import { useQuery } from "@/lib/backend/react.tsx";
+import { UserX } from "lucide-react";
 import { api } from "@/lib/backend/api.ts";
 import type { Id } from "@/lib/backend/types.ts";
-import { Button } from "@/components/ui/button.tsx";
+import { cn } from "@/lib/utils.ts";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu.tsx";
 import {
   Empty,
   EmptyDescription,
@@ -23,39 +17,25 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty.tsx";
 import RequireAuth from "@/components/require-auth.tsx";
-import SellerListings, { type ListingKind } from "@/components/seller-listings.tsx";
-import { ListingCard } from "@/components/listing-card.tsx";
+import SellerListings from "@/components/seller-listings.tsx";
 import ProfilePhotos from "./_components/profile-photos.tsx";
 import SellerReviews from "./_components/seller-reviews.tsx";
 import VerificationPanel from "./_components/verification-panel.tsx";
-import ProfileHeader from "./_components/profile-header.tsx";
-import OverviewCard from "./_components/overview-card.tsx";
-import SectionPreview from "./_components/section-preview.tsx";
 import BuyerProfile from "./_components/buyer-profile.tsx";
-import { copyProfileLink } from "./_lib/profile-share.ts";
-import { PILL } from "./_components/profile-tabs.ts";
+import ProfileSidebar from "./_components/profile-sidebar.tsx";
+import QuickListing from "./_components/quick-listing.tsx";
+import {
+  ActivitySection,
+  InstantSection,
+  ProfilePanel,
+  ShopSection,
+} from "./_components/profile-sections.tsx";
+import { PANEL, TAB_PILL, TEXT_FONT } from "./_lib/theme.ts";
 import { useRecordProfileVisit } from "@/hooks/use-activity.ts";
 
 const TABS = ["overview", "shop", "instant", "photos", "reviews"] as const;
 type Tab = (typeof TABS)[number];
 const isTab = (v: string): v is Tab => (TABS as readonly string[]).includes(v);
-
-/** First few active listings of one kind, shown under the Overview card. */
-function ListingPreview({ sellerId, kind }: { sellerId: Id<"users">; kind: ListingKind }) {
-  const { results, status } = usePaginatedQuery(
-    api.listings.bySeller,
-    { sellerId, status: "active", kind },
-    { initialNumItems: 4 },
-  );
-  if (status === "LoadingFirstPage") return <Skeleton className="h-48 w-full" />;
-  return (
-    <div className="grid grid-cols-2 gap-x-4 gap-y-6 md:grid-cols-4">
-      {results.slice(0, 4).map((l) => (
-        <ListingCard key={l._id} listing={l} />
-      ))}
-    </div>
-  );
-}
 
 function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
   const profile = useQuery(api.users.getProfile, { userId: sellerId });
@@ -64,7 +44,7 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
 
   if (profile === undefined) {
     return (
-      <div className="mx-auto grid max-w-7xl gap-6 px-4 py-10 lg:grid-cols-[22rem_1fr]">
+      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-6 lg:grid-cols-[20rem_1fr]">
         <Skeleton className="h-[36rem] w-full" />
         <Skeleton className="h-[28rem] w-full" />
       </div>
@@ -86,32 +66,18 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
 
   if (profile.accountType === "buyer") return <BuyerProfile profile={profile} />;
 
-  const isSeller = true;
   const showTab = (next: Tab) => {
     setTab(next);
     document.getElementById("profile-tabs")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
-  const copyLink = () => copyProfileLink(profile._id);
+  const label = profile.isPro ? "Premium seller" : "Seller";
 
   return (
-    <div className="mx-auto grid max-w-7xl items-start gap-8 px-4 py-8 lg:grid-cols-[22rem_1fr]">
-      <aside className="flex flex-col gap-6 lg:sticky lg:top-20">
-        <ProfileHeader
-          sellerId={profile._id}
-          name={profile.name}
-          avatarUrl={profile.avatarUrl}
-          verified={profile.verified}
-          isMe={profile.isMe}
-          isSeller={isSeller}
-          accountType={profile.accountType}
-          location={profile.sellerDetails.country ?? profile.location}
-          rating={profile.stats.rating}
-          listingCount={profile.counts.listings}
-          instantCount={profile.counts.instantContent}
-          onShowTab={showTab}
-        />
-        {profile.isMe && isSeller && <VerificationPanel />}
-      </aside>
+    <div className={cn(TEXT_FONT, "mx-auto grid max-w-6xl items-start gap-8 px-4 py-6 lg:grid-cols-[20rem_1fr] lg:gap-12")}>
+      <div className="flex flex-col gap-6">
+        <ProfileSidebar profile={profile} />
+        {profile.isMe && <VerificationPanel />}
+      </div>
 
       <Tabs
         id="profile-tabs"
@@ -119,82 +85,54 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
         onValueChange={(v) => isTab(v) && setTab(v)}
         className="min-w-0 scroll-mt-20 gap-6"
       >
-        <div className="flex items-start gap-1">
-          <TabsList className="h-auto flex-wrap justify-start gap-2 bg-transparent p-0">
-            <TabsTrigger value="overview" className={PILL}>Overview</TabsTrigger>
-            {isSeller && <TabsTrigger value="shop" className={PILL}>Shop</TabsTrigger>}
-            {isSeller && <TabsTrigger value="instant" className={PILL}>Instant Content</TabsTrigger>}
-            <TabsTrigger value="photos" className={PILL}>Photos</TabsTrigger>
-            {isSeller && <TabsTrigger value="reviews" className={PILL}>Reviews</TabsTrigger>}
-          </TabsList>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="size-8 cursor-pointer" aria-label="More options">
-                <EllipsisVertical />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem className="cursor-pointer" onSelect={copyLink}>
-                <Link2 /> Copy profile link
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        <div className={cn(PANEL, "flex flex-col gap-4 p-5")}>
+          {profile.isMe && <QuickListing />}
+          <div className="rounded-sm border border-white/[0.06] bg-[#050a16] p-3">
+            <TabsList className="h-auto w-full flex-wrap justify-start gap-3 bg-transparent p-0">
+              <TabsTrigger value="overview" className={TAB_PILL}>Overview</TabsTrigger>
+              <TabsTrigger value="shop" className={TAB_PILL}>Shop</TabsTrigger>
+              <TabsTrigger value="instant" className={TAB_PILL}>Instant Content</TabsTrigger>
+              <TabsTrigger value="photos" className={TAB_PILL}>Photos</TabsTrigger>
+              <TabsTrigger value="reviews" className={TAB_PILL}>Reviews</TabsTrigger>
+            </TabsList>
+          </div>
         </div>
 
-        <TabsContent value="overview" className="flex flex-col gap-8">
-          <OverviewCard
-            name={profile.name}
-            bio={profile.bio}
-            isSeller={isSeller}
-            details={profile.sellerDetails}
-            followers={profile.stats.followerCount}
-            following={profile.counts.following}
-            memberSince={profile.memberSince}
+        <TabsContent value="overview" className="flex flex-col gap-6">
+          {profile.bio && (
+            <ProfilePanel title={`About ${profile.name}`}>
+              <p className="whitespace-pre-line break-words text-slate-300">{profile.bio}</p>
+            </ProfilePanel>
+          )}
+          <ShopSection sellerId={profile._id} count={profile.counts.listings} onViewAll={() => showTab("shop")} />
+          <InstantSection
+            sellerId={profile._id}
+            count={profile.counts.instantContent}
+            onViewAll={() => showTab("instant")}
           />
-          {isSeller && (
-            <>
-              <SectionPreview
-                title="Shop"
-                count={profile.counts.listings}
-                unit="Listing"
-                actionLabel="View All Listings"
-                emptyLabel="No listings"
-                onViewAll={() => showTab("shop")}
-              >
-                <ListingPreview sellerId={profile._id} kind="items" />
-              </SectionPreview>
-              <SectionPreview
-                title="Instant Content"
-                count={profile.counts.instantContent}
-                unit="Items"
-                actionLabel="View All Content"
-                emptyLabel="No instant content"
-                onViewAll={() => showTab("instant")}
-              >
-                <ListingPreview sellerId={profile._id} kind="instant" />
-              </SectionPreview>
-            </>
-          )}
+          <ActivitySection authorId={profile._id} label={label} />
         </TabsContent>
-        {isSeller && (
-          <TabsContent value="shop">
+        <TabsContent value="shop">
+          <ProfilePanel title="Shop" count={`${profile.counts.listings} Listings`}>
             <SellerListings sellerId={profile._id} isMe={profile.isMe} kind="items" />
-          </TabsContent>
-        )}
-        {isSeller && (
-          <TabsContent value="instant">
-            <SellerListings sellerId={profile._id} isMe={profile.isMe} kind="instant" />
-          </TabsContent>
-        )}
-        <TabsContent value="photos">
-          {profile.isMe || profile.photos.length > 0 ? (
-            <ProfilePhotos photos={profile.photos} isMe={profile.isMe} />
-          ) : (
-            <p className="rounded-lg bg-accent/40 px-4 py-4 text-sm text-accent-foreground">No photos yet</p>
-          )}
+          </ProfilePanel>
         </TabsContent>
-        {isSeller && (
-          <TabsContent value="reviews">
+        <TabsContent value="instant">
+          <ProfilePanel title="Instant Content" count={`${profile.counts.instantContent} Items`}>
+            <SellerListings sellerId={profile._id} isMe={profile.isMe} kind="instant" />
+          </ProfilePanel>
+        </TabsContent>
+        <TabsContent value="photos">
+          <ProfilePanel title="Photos">
+            {profile.isMe || profile.photos.length > 0 ? (
+              <ProfilePhotos photos={profile.photos} isMe={profile.isMe} />
+            ) : (
+              <p className="text-sm text-slate-400">No photos yet</p>
+            )}
+          </ProfilePanel>
+        </TabsContent>
+        <TabsContent value="reviews">
+          <ProfilePanel title="Reviews">
             <SellerReviews
               sellerId={profile._id}
               sellerName={profile.name}
@@ -202,8 +140,8 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
               rating={profile.stats.rating}
               reviewCount={profile.stats.reviewCount}
             />
-          </TabsContent>
-        )}
+          </ProfilePanel>
+        </TabsContent>
       </Tabs>
     </div>
   );
