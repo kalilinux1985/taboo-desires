@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
-import { ImageIcon, X } from "lucide-react";
+import { ImageIcon, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import { useMutation } from "@/lib/backend/react.tsx";
 import { api } from "@/lib/backend/api.ts";
@@ -20,7 +20,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select.tsx";
-import { INSET, HEADING_FONT } from "../_lib/theme.ts";
+import { Button } from "@/components/ui/button.tsx";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog.tsx";
+import { HEADING_FONT, INSET, TEXT_FONT } from "../_lib/theme.ts";
+import { profileFontVars } from "../_lib/fonts.ts";
 
 const MAX_BYTES = 10 * 1024 * 1024;
 const MAX_PHOTOS = 4;
@@ -29,11 +39,11 @@ const FIELD = "h-9 rounded-sm border-white/[0.06] bg-[#0d1426] text-sm placehold
 type Photo = { id: Id<"_storage">; url: string };
 
 /**
- * "Create a listing" on the seller's own profile: title, description, category,
+ * "Create a listing" form on the seller's own profile: title, description, category,
  * price and photos. Size and wear time default to "One size" and custom wear;
  * the seller can refine them from the listing's Edit page.
  */
-export default function QuickListing() {
+function QuickListingForm({ onPosted }: { onPosted: () => void }) {
   const access = useAccess();
   const create = useMutation(api.listings.create);
   const generateUploadUrl = useMutation(api.listings.generateUploadUrl);
@@ -97,6 +107,7 @@ export default function QuickListing() {
       setCategory("");
       setPrice("");
       setPhotos([]);
+      onPosted();
     } catch (err) {
       toast.error(getErrorMessage(err, "Could not post the listing"));
     } finally {
@@ -106,7 +117,6 @@ export default function QuickListing() {
 
   return (
     <form onSubmit={post} className={cn(INSET, "flex flex-col gap-3 p-4")}>
-      <h2 className={cn(HEADING_FONT, "w-fit border-b-2 border-violet-600 pb-0.5 text-2xl")}>Create a Listing</h2>
       <Input value={title} maxLength={80} onChange={(e) => setTitle(e.target.value)} placeholder="Add a brief title about your listing..." className={FIELD} />
       <Input value={description} maxLength={2000} onChange={(e) => setDescription(e.target.value)} placeholder="Add description about what it is you're selling..." className={cn(FIELD, "h-11")} />
       <div className="flex flex-wrap gap-3">
@@ -174,5 +184,32 @@ export default function QuickListing() {
         <Link href="/sell" className="text-violet-400 hover:underline">Use the full listing form</Link>
       </p>
     </form>
+  );
+}
+
+/** "Create Listing" button on the seller's own profile; opens the quick listing form. */
+export default function CreateListingButton() {
+  const [open, setOpen] = useState(false);
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button className="h-9 cursor-pointer rounded-sm bg-violet-600 px-4 font-bold text-white hover:bg-violet-500">
+          <Plus /> Create Listing
+        </Button>
+      </DialogTrigger>
+      <DialogContent
+        className={cn(profileFontVars, TEXT_FONT, "max-h-[90vh] overflow-y-auto border-white/[0.06] bg-[#0a1020] sm:max-w-lg")}
+      >
+        <DialogHeader>
+          <DialogTitle className={cn(HEADING_FONT, "w-fit border-b-2 border-violet-600 pb-0.5 text-2xl font-normal")}>
+            Create a Listing
+          </DialogTitle>
+          <DialogDescription className="text-slate-400">
+            Add photos, a title and a price. It goes live in your shop right away.
+          </DialogDescription>
+        </DialogHeader>
+        <QuickListingForm onPosted={() => setOpen(false)} />
+      </DialogContent>
+    </Dialog>
   );
 }

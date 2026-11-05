@@ -20,10 +20,9 @@ import RequireAuth from "@/components/require-auth.tsx";
 import SellerListings from "@/components/seller-listings.tsx";
 import ProfilePhotos from "./_components/profile-photos.tsx";
 import SellerReviews from "./_components/seller-reviews.tsx";
-import VerificationPanel from "./_components/verification-panel.tsx";
 import BuyerProfile from "./_components/buyer-profile.tsx";
 import ProfileSidebar from "./_components/profile-sidebar.tsx";
-import QuickListing from "./_components/quick-listing.tsx";
+import CreateListingButton from "./_components/quick-listing.tsx";
 import {
   ActivitySection,
   InstantSection,
@@ -74,10 +73,7 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
 
   return (
     <div className={cn(TEXT_FONT, "mx-auto grid max-w-6xl items-start gap-8 px-4 py-6 lg:grid-cols-[20rem_1fr] lg:gap-12")}>
-      <div className="flex flex-col gap-6">
-        <ProfileSidebar profile={profile} />
-        {profile.isMe && <VerificationPanel />}
-      </div>
+      <ProfileSidebar profile={profile} />
 
       <Tabs
         id="profile-tabs"
@@ -86,15 +82,15 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
         className="min-w-0 scroll-mt-20 gap-6"
       >
         <div className={cn(PANEL, "flex flex-col gap-4 p-5")}>
-          {profile.isMe && <QuickListing />}
-          <div className="rounded-sm border border-white/[0.06] bg-[#050a16] p-3">
-            <TabsList className="h-auto w-full flex-wrap justify-start gap-3 bg-transparent p-0">
+          <div className="flex flex-wrap items-center gap-3 rounded-sm border border-white/[0.06] bg-[#050a16] p-3">
+            <TabsList className="h-auto flex-1 flex-wrap justify-start gap-3 bg-transparent p-0">
               <TabsTrigger value="overview" className={TAB_PILL}>Overview</TabsTrigger>
               <TabsTrigger value="shop" className={TAB_PILL}>Shop</TabsTrigger>
               <TabsTrigger value="instant" className={TAB_PILL}>Instant Content</TabsTrigger>
               <TabsTrigger value="photos" className={TAB_PILL}>Photos</TabsTrigger>
               <TabsTrigger value="reviews" className={TAB_PILL}>Reviews</TabsTrigger>
             </TabsList>
+            {profile.isMe && <CreateListingButton />}
           </div>
         </div>
 
