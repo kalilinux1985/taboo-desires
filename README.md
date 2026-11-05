@@ -63,33 +63,13 @@ Pages: `/signin` (sign in, create account, email link), `/auth/callback` (where 
 3. Locked videos can be up to 200 MB. Raise **Storage → Settings → Upload file size limit** to match; the Free plan allows at most 50 MB.
 4. Optional: set `ALLOWED_ORIGINS=https://your-domain` as a function secret to restrict CORS.
 
-## Moving your Convex data
-
-```sh
-# unzip the Convex snapshot export, then:
-pnpm import:convex ./convex-export --out convex-import.sql
-psql "<connection string from Dashboard → Connect>" -f convex-import.sql
-```
-
-Convex ids become UUIDs derived from the old id, and the import can be re-run safely. Existing users keep their accounts: each one is claimed by the first Supabase Auth login whose verified email matches. Old links that contain Convex ids (`/listing/j97...`) won't resolve.
-
-The export you have doesn't include the uploaded files. To copy those, re-export with `npx convex export --include-file-storage --path export.zip`, unzip it, and run the import with `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` set.
-
 ## Local development
 
 ```sh
 pnpm db:start                                     # local Supabase (Docker)
-cp supabase/functions/api/env.example supabase/functions/.env   # fill in, set PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+echo PUBLIC_SUPABASE_URL=http://127.0.0.1:54321 > supabase/functions/.env
 pnpm functions:serve
 pnpm dev
-```
-
-## Tests
-
-`pnpm test` runs the backend suites in `supabase/functions/_shared/tests` against the real schema. Each test gets a fresh database: in-process PGlite by default, or any Postgres via `TEST_DATABASE_URL`. For example, with `supabase start` running:
-
-```sh
-TEST_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres pnpm test
 ```
 
 ## Adding a backend function
