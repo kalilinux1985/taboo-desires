@@ -42,95 +42,9 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible.tsx";
 import ProfileAvatar from "./profile-avatar.tsx";
+import { SHOP_SECTIONS, shopPageHref } from "@/lib/shop-pages.ts";
 
 type Icon = ComponentType<{ className?: string }>;
-
-/** Shop sections, each opening to links into Browse with the matching filters. */
-const SECTIONS: { label: string; links: { label: string; href: string }[] }[] = [
-  {
-    label: "Used Underwear",
-    links: [
-      { label: "Used Panties", href: "/browse?sub=panties" },
-      { label: "Used Thongs", href: "/browse?sub=thongs" },
-      { label: "Used Lingerie", href: "/browse?sub=lingerie" },
-      { label: "Used Bras", href: "/browse?sub=bras" },
-      { label: "All Used Underwear", href: "/browse?group=underwear" },
-    ],
-  },
-  {
-    label: "Used Shoes",
-    links: [
-      { label: "Used High Heels", href: "/browse?sub=high_heels" },
-      { label: "Used Flat Shoes", href: "/browse?sub=flats" },
-      { label: "Used Sneakers", href: "/browse?sub=sneakers" },
-      { label: "Used Slippers", href: "/browse?sub=slippers" },
-      { label: "Used Uniform Shoes", href: "/browse?sub=uniform_shoes" },
-      { label: "Used Boots", href: "/browse?sub=boots" },
-      { label: "All Used Shoes", href: "/browse?category=shoes" },
-    ],
-  },
-  {
-    label: "Used Hosiery",
-    links: [
-      { label: "Used Socks", href: "/browse?sub=socks" },
-      { label: "Used Pantyhose", href: "/browse?sub=pantyhose" },
-      { label: "Used Stockings", href: "/browse?sub=stockings" },
-      { label: "Buy Feet Pics", href: "/browse?sub=feet_pics" },
-      { label: "Sell Feet Pics", href: "/sell?category=extras&subcategory=feet_pics" },
-      { label: "All Used Hosiery", href: "/browse?category=socks" },
-    ],
-  },
-  {
-    label: "Used Clothing",
-    links: [
-      { label: "Used Skirts", href: "/browse?sub=skirts" },
-      { label: "Used Dresses", href: "/browse?sub=dresses" },
-      { label: "Used Tops", href: "/browse?sub=tops" },
-      { label: "Used Gym Clothes", href: "/browse?sub=gym_clothes" },
-      { label: "Other Clothing", href: "/browse?sub=other_clothing" },
-      { label: "Used Swimwear", href: "/browse?sub=swimwear" },
-      { label: "All Used Clothing", href: "/browse?group=clothing" },
-    ],
-  },
-  {
-    label: "Naughty Extras",
-    links: [
-      { label: "Used Accessories", href: "/browse?sub=accessories" },
-      { label: "Photo Sets", href: "/browse?sub=photo_sets" },
-      { label: "Video Clips", href: "/browse?sub=video_clips" },
-      { label: "Experiences", href: "/browse?sub=experiences" },
-      { label: "Dick Ratings", href: "/browse?sub=dick_ratings" },
-      { label: "Used Sex Toys", href: "/browse?sub=sex_toys" },
-      { label: "Sexting", href: "/browse?sub=sexting" },
-      { label: "All Naughty Extras", href: "/browse?category=extras" },
-    ],
-  },
-  {
-    label: "Instant Content",
-    links: [
-      { label: "Instant Pics", href: "/browse?instant=pics" },
-      { label: "Instant Vids", href: "/browse?instant=vids" },
-      { label: "All Instant Content", href: "/browse?instant=1" },
-    ],
-  },
-  {
-    label: "Used Mens",
-    links: [
-      { label: "All men's items", href: "/browse?sellers=men" },
-      { label: "Men's underwear", href: "/browse?sellers=men&category=panties" },
-      { label: "Men's socks", href: "/browse?sellers=men&category=socks" },
-      { label: "Men's gym clothes", href: "/browse?sellers=men&category=activewear" },
-    ],
-  },
-  {
-    label: "Sell Used Clothing",
-    links: [
-      { label: "List an item", href: "/sell" },
-      { label: "My shop", href: "/shop" },
-      { label: "Seller plans", href: "/pricing" },
-    ],
-  },
-];
 
 function NavLink({
   href,
@@ -171,7 +85,7 @@ function ShopSection({
   section,
   onNavigate,
 }: {
-  section: (typeof SECTIONS)[number];
+  section: (typeof SHOP_SECTIONS)[number];
   onNavigate: () => void;
 }) {
   return (
@@ -183,17 +97,20 @@ function ShopSection({
       </CollapsibleTrigger>
       <CollapsibleContent className="data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down overflow-hidden">
         <ul className="mx-1 mb-2 mt-1 rounded-xl bg-background py-1.5">
-          {section.links.map((l) => (
-            <li key={l.href}>
+          {section.links.map((l) => {
+            const href = "page" in l ? shopPageHref(l.page) : l.href;
+            return (
+            <li key={href}>
               <Link
-                href={l.href}
+                href={href}
                 onClick={onNavigate}
                 className="mx-1.5 block rounded-lg px-4 py-2.5 text-base transition-colors hover:bg-white/5"
               >
                 {l.label}
               </Link>
             </li>
-          ))}
+            );
+          })}
         </ul>
       </CollapsibleContent>
     </Collapsible>
@@ -395,7 +312,7 @@ export default function MobileNav() {
         <div className="flex-1" />
         <Separator className="bg-white/10" />
         <nav aria-label="Shop" className="flex flex-col gap-0.5 px-3 py-3">
-          {SECTIONS.map((s) => (
+          {SHOP_SECTIONS.map((s) => (
             <ShopSection key={s.label} section={s} onNavigate={close} />
           ))}
         </nav>
