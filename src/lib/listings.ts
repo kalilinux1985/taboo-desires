@@ -7,9 +7,11 @@ export const CATEGORIES: { value: Category; label: string }[] = [
   { value: "panties", label: "Panties" },
   { value: "bras", label: "Bras" },
   { value: "lingerie", label: "Lingerie" },
-  { value: "socks", label: "Socks" },
+  { value: "socks", label: "Socks & hosiery" },
   { value: "shoes", label: "Shoes" },
   { value: "activewear", label: "Activewear" },
+  { value: "clothing", label: "Clothing" },
+  { value: "extras", label: "Naughty extras" },
   { value: "custom", label: "Customs" },
 ];
 

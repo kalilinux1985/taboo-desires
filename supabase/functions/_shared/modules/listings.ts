@@ -36,6 +36,12 @@ import { deleteListingCascade } from "../lib/listingDelete.ts";
 import { insertListingPost } from "../lib/posts.ts";
 import { assertOwnFiles } from "../lib/files.ts";
 import { SELLER_DETAIL_FIELDS } from "../domain/sellerDetails.ts";
+import {
+  SUBCATEGORIES,
+  SUBCATEGORY_VALUES,
+  subcategoryInfo,
+  type Subcategory,
+} from "../domain/subcategories.ts";
 
 const MAX_PRICE_CENTS = 100_000_00;
 
@@ -59,6 +65,7 @@ const listingFields = {
   title: v.string(),
   description: v.string(),
   category: categoryValidator,
+  subcategory: v.optional(v.union(...SUBCATEGORY_VALUES.map((s) => v.literal(s)))),
   brand: v.string(),
   size: v.string(),
   condition: conditionValidator,
@@ -76,6 +83,8 @@ const listingFields = {
 type ListingInput = {
   title: string;
   description: string;
+  category: string;
+  subcategory?: Subcategory;
   brand: string;
   size: string;
   priceCents: number;
@@ -97,6 +106,11 @@ function validateListing(input: ListingInput) {
   )
     throw bad("Price must be between $1 and $100,000");
   if (input.imageIds.length < 1) throw bad("Add at least one photo");
+  if (
+    input.subcategory &&
+    subcategoryInfo(input.subcategory)?.category !== input.category
+  )
+    throw bad("That type doesn't belong to the chosen category");
 }
 
 /** Free sellers get fewer photos; a downgraded seller can keep (not grow) what they had. */
@@ -115,6 +129,8 @@ function cleanListing<T extends ListingInput>(input: T): T {
     description: input.description.trim(),
     brand: input.brand.trim(),
     size: input.size.trim(),
+    // Always sent, so changing category can clear an old sub-category
+    subcategory: input.subcategory ?? undefined,
   };
 }
 
@@ -191,6 +207,11 @@ export const browse = query({
     verifiedOnly: v.optional(v.boolean()),
     /** Only listings with locked photos or videos buyers can unlock right away */
     lockedOnly: v.optional(v.boolean()),
+    /** Only locked listings that include this kind of media */
+    lockedMedia: v.optional(mediaKindValidator),
+    /** Several categories at once (a whole menu section) */
+    categories: v.optional(v.array(categoryValidator, 10)),
+    subcategory: v.optional(v.string()),
     /** Seller profile filters: each listed field must match one of its values. */
     seller: v.optional(
       v.array(
@@ -206,6 +227,22 @@ export const browse = query({
     if (condition) filters.push(sql`condition = ${condition}`);
     if (saleType) filters.push(sql`sale_type = ${saleType}`);
     if (args.lockedOnly) filters.push(sql`paywall is not null`);
+    if (args.lockedMedia)
+      filters.push(
+        sql`exists (select 1 from jsonb_array_elements(paywall -> 'media') m where m ->> 'kind' = ${args.lockedMedia})`,
+      );
+    if (args.categories?.length)
+      filters.push(sql`category = any(${args.categories}::text[])`);
+    if (args.subcategory) {
+      const sub = SUBCATEGORIES.find((s) => s.value === args.subcategory);
+      if (!sub)
+        throw new AppError({ code: "BAD_REQUEST", message: "Unknown listing type" });
+      filters.push(
+        "isDefault" in sub && sub.isDefault
+          ? sql`(subcategory = ${sub.value} or (subcategory is null and category = ${sub.category}))`
+          : sql`subcategory = ${sub.value}`,
+      );
+    }
     if (args.minPriceCents !== undefined)
       filters.push(sql`price_cents >= ${Math.floor(args.minPriceCents)}::int`);
     if (args.maxPriceCents !== undefined)

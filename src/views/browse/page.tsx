@@ -4,6 +4,19 @@ import { useSearchParams } from "@/lib/navigation.ts";
 import { usePaginatedQuery } from "@/lib/backend/react.tsx";
 import { Search, X } from "lucide-react";
 import MemberResults from "./_components/member-results.tsx";
+import { subcategoryInfo } from "@/shared/subcategories.ts";
+
+/** Menu sections that span several categories ("All used underwear"). */
+const GROUPS: Record<string, { label: string; categories: Category[] }> = {
+  underwear: { label: "Used underwear", categories: ["panties", "bras", "lingerie"] },
+  clothing: { label: "Used clothing", categories: ["clothing", "activewear"] },
+};
+
+const INSTANT: Record<string, { label: string; media?: "image" | "video" }> = {
+  "1": { label: "Instant content" },
+  pics: { label: "Instant pics", media: "image" },
+  vids: { label: "Instant vids", media: "video" },
+};
 import { api } from "@/lib/backend/api.ts";
 import { Input } from "@/components/ui/input.tsx";
 import {
@@ -44,14 +57,25 @@ export default function BrowsePage() {
   const sort = parseParam<Sort>(params.get("sort"), SORTS) ?? "newest";
   const searchInput = params.get("q") ?? "";
   // Set by the shop sections in the mobile menu
-  const instant = params.get("instant") === "1";
+  const instant = INSTANT[params.get("instant") ?? ""];
   const mens = params.get("sellers") === "men";
+  const sub = subcategoryInfo(params.get("sub"));
+  const group = GROUPS[params.get("group") ?? ""];
   const [search] = useDebounce(searchInput, 300);
 
   const setParam = (key: string, value: string | undefined) => {
     const next = new URLSearchParams(params);
     if (value) next.set(key, value);
     else next.delete(key);
+    setParams(next, { replace: true });
+  };
+  // Picking a category replaces any narrower type or section from the menu
+  const chooseCategory = (value: string | undefined) => {
+    const next = new URLSearchParams(params);
+    next.delete("sub");
+    next.delete("group");
+    if (value) next.set("category", value);
+    else next.delete("category");
     setParams(next, { replace: true });
   };
 
@@ -62,7 +86,10 @@ export default function BrowsePage() {
       category,
       condition,
       sort,
-      lockedOnly: instant || undefined,
+      lockedOnly: instant ? true : undefined,
+      lockedMedia: instant?.media,
+      subcategory: sub?.value,
+      categories: group?.categories,
       seller: mens ? [{ key: "gender", values: ["Male", "Trans man"] }] : undefined,
     },
     { initialNumItems: 24 },
@@ -71,16 +98,22 @@ export default function BrowsePage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-10">
       <h1 className="font-display text-5xl md:text-7xl">
-        {category
-          ? CATEGORIES.find((c) => c.value === category)?.label
-          : instant
-            ? "Instant content"
-            : "Shop all"}
+        {sub
+          ? `Used ${sub.label.toLowerCase()}`
+          : group
+            ? group.label
+            : category
+              ? CATEGORIES.find((c) => c.value === category)?.label
+              : instant
+                ? instant.label
+                : "Shop all"}
       </h1>
-      {(instant || mens) && (
+      {(instant || mens || sub || group) && (
         <div className="flex flex-wrap gap-2 pt-3">
+          {sub && <FilterPill label={sub.label} onClear={() => setParam("sub", undefined)} />}
+          {group && <FilterPill label={group.label} onClear={() => setParam("group", undefined)} />}
           {instant && (
-            <FilterPill label="Photo & video sets" onClear={() => setParam("instant", undefined)} />
+            <FilterPill label={instant.label} onClear={() => setParam("instant", undefined)} />
           )}
           {mens && <FilterPill label="Men's items" onClear={() => setParam("sellers", undefined)} />}
         </div>
@@ -138,7 +171,7 @@ export default function BrowsePage() {
             <button
               key={c.label}
               type="button"
-              onClick={() => setParam("category", c.value)}
+              onClick={() => chooseCategory(c.value)}
               className={cn(
                 "cursor-pointer rounded-sm border px-3 py-1.5 text-sm font-semibold uppercase tracking-wide transition-colors",
                 category === c.value

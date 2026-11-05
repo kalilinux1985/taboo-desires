@@ -65,6 +65,7 @@ function EditForm({ listingId }: { listingId: Id<"listings"> }) {
         brand: listing.brand,
         size: listing.size,
         category: listing.category,
+        subcategory: listing.subcategory ?? "",
         condition: listing.condition,
         price: String(listing.priceCents / 100),
         description: listing.description,

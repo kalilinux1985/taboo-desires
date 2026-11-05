@@ -16,6 +16,7 @@ import type {
   UnlockStatus,
 } from "../domain/enums.ts";
 import type { SellerDetails } from "../domain/sellerDetails.ts";
+import type { Subcategory } from "../domain/subcategories.ts";
 import type { BuyerDetails } from "../domain/buyerDetails.ts";
 
 /** Branded string id so ids of different tables can't be mixed up. */
@@ -66,6 +67,7 @@ type Fields = {
     title: string;
     description: string;
     category: Category;
+    subcategory?: Subcategory;
     brand: string;
     size: string;
     condition: Condition;
@@ -263,6 +265,7 @@ export const TABLES: { [T in DbTable]: TableDef<T> } = {
       title: c("title"),
       description: c("description"),
       category: c("category"),
+      subcategory: c("subcategory"),
       brand: c("brand"),
       size: c("size"),
       condition: c("condition"),

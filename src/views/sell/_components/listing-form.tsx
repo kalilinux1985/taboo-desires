@@ -33,6 +33,7 @@ import LockedMediaUploader, { type LockedItem } from "./locked-media-uploader.ts
 import { Switch } from "@/components/ui/switch.tsx";
 import { Crown, Lock } from "lucide-react";
 import { LOCKED_MEDIA_MAX } from "@/shared/plans.ts";
+import { subcategoriesOf, type Subcategory } from "@/shared/subcategories.ts";
 
 const CATEGORY_VALUES = CATEGORIES.map((c) => c.value) as [Category, ...Category[]];
 const CONDITION_VALUES = CONDITIONS.map((c) => c.value) as [Condition, ...Condition[]];
@@ -42,6 +43,8 @@ const schema = z.object({
   brand: z.string().trim().min(1, "Required").max(40),
   size: z.string().trim().min(1, "Required").max(20),
   category: z.enum(CATEGORY_VALUES, { message: "Pick a category" }),
+  // "" while not chosen; optional so older listings can be saved as they are
+  subcategory: z.string(),
   condition: z.enum(CONDITION_VALUES, { message: "Pick a condition" }),
   price: z
     .string()
@@ -55,7 +58,8 @@ const schema = z.object({
 
 export type ListingFormValues = z.infer<typeof schema>;
 
-export type ListingSubmit = Omit<ListingFormValues, "price" | "durationHours"> & {
+export type ListingSubmit = Omit<ListingFormValues, "price" | "durationHours" | "subcategory"> & {
+  subcategory?: Subcategory;
   priceCents: number;
   durationHours: number;
   imageIds: Photo["id"][];
@@ -96,6 +100,7 @@ export default function ListingForm({
       description: "",
       saleType: "fixed",
       durationHours: "72",
+      subcategory: "",
       ...defaultValues,
     },
   });
@@ -114,13 +119,17 @@ export default function ListingForm({
     if (on) form.setValue("saleType", "fixed");
   };
 
-  const submit = form.handleSubmit(async ({ price, durationHours, ...values }) => {
+  const category = useWatch({ control: form.control, name: "category" });
+  const typeOptions = category ? subcategoriesOf(category) : [];
+
+  const submit = form.handleSubmit(async ({ price, durationHours, subcategory, ...values }) => {
     if ((isLocked ? lockedItems.length : photos.length) === 0) {
       setPhotoError(true);
       return;
     }
     await onSubmit({
       ...values,
+      subcategory: (subcategory || undefined) as Subcategory | undefined,
       priceCents: Math.round(Number(price) * 100),
       durationHours: Number(durationHours),
       // Locked listings show only the blurred previews publicly
@@ -265,7 +274,13 @@ export default function ListingForm({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Category</FormLabel>
-                <Select value={field.value} onValueChange={field.onChange}>
+                <Select
+                  value={field.value}
+                  onValueChange={(v) => {
+                    field.onChange(v);
+                    form.setValue("subcategory", "");
+                  }}
+                >
                   <FormControl>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select a category" />
@@ -283,6 +298,32 @@ export default function ListingForm({
               </FormItem>
             )}
           />
+          {typeOptions.length > 0 && (
+            <FormField
+              control={form.control}
+              name="subcategory"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Type</FormLabel>
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select a type (helps buyers find it)" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {typeOptions.map((t) => (
+                        <SelectItem key={t.value} value={t.value}>
+                          {t.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
           <FormField
             control={form.control}
             name="condition"

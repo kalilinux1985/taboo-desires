@@ -7,6 +7,8 @@ export const CATEGORIES = [
   "socks",
   "shoes",
   "activewear",
+  "clothing",
+  "extras",
   "custom",
 ] as const;
 export type Category = (typeof CATEGORIES)[number];

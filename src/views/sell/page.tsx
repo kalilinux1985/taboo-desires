@@ -1,6 +1,8 @@
 "use client";
 
-import { useNavigate } from "@/lib/navigation.ts";
+import { useNavigate, useSearchParams } from "@/lib/navigation.ts";
+import { CATEGORIES } from "@/lib/listings.ts";
+import { subcategoryInfo } from "@/shared/subcategories.ts";
 import { useMutation } from "@/lib/backend/react.tsx";
 import { Store } from "lucide-react";
 import { toast } from "sonner";
@@ -38,8 +40,17 @@ function BecomeSeller() {
   );
 }
 
+/** "/sell?category=extras&subcategory=feet_pics" opens the form with those chosen. */
+function presetFromLink(params: URLSearchParams) {
+  const category = CATEGORIES.find((c) => c.value === params.get("category"))?.value;
+  if (!category) return undefined;
+  const sub = subcategoryInfo(params.get("subcategory"));
+  return { category, subcategory: sub?.category === category ? sub.value : "" };
+}
+
 function SellForm() {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
   const access = useAccess();
   const create = useMutation(api.listings.create);
 
@@ -61,7 +72,13 @@ function SellForm() {
     }
   };
 
-  return <ListingForm submitLabel="Publish listing" onSubmit={onSubmit} />;
+  return (
+    <ListingForm
+      submitLabel="Publish listing"
+      onSubmit={onSubmit}
+      defaultValues={presetFromLink(params)}
+    />
+  );
 }
 
 export default function SellPage() {

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useNavigate } from "@/lib/navigation.ts";
 import { useParams } from "next/navigation";
+import { subcategoryInfo } from "@/shared/subcategories.ts";
 import { useMutation, useQuery } from "@/lib/backend/react.tsx";
 import { formatDistanceToNow } from "date-fns";
 import { CheckCircle2, Lock, MapPin, Pencil, ShoppingBag, Trash2 } from "lucide-react";
@@ -224,7 +225,12 @@ export default function ListingPage() {
   const specs = [
     { label: "Size", value: listing.size },
     { label: "Wear time", value: CONDITION_LABEL[listing.condition] },
-    { label: "Category", value: CATEGORY_LABEL[listing.category] },
+    {
+      label: "Category",
+      value: subcategoryInfo(listing.subcategory)
+        ? `${CATEGORY_LABEL[listing.category]} · ${subcategoryInfo(listing.subcategory)!.label}`
+        : CATEGORY_LABEL[listing.category],
+    },
     { label: "Brand", value: listing.brand },
   ];
 
