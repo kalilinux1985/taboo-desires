@@ -19,15 +19,14 @@ function Detail({ label, value }: { label: string; value: string | number | null
   );
 }
 
-/** Overview's first card: followers, bio and details (more behind Show more). */
+/** Overview's first card: followers, following, bio and details (more behind Show more). */
 export default function ProfileAbout({ profile }: { profile: Profile }) {
   const [open, setOpen] = useState(false);
   const d = profile.sellerDetails;
   return (
     <ProfilePanel title={`About ${profile.name}`}>
       <p className="-mt-2 text-sm text-slate-300">
-        {profile.stats.followerCount} Followers · {profile.counts.following} Following ·{" "}
-        {profile.badges.length} Badges
+        {profile.stats.followerCount} Followers · {profile.counts.following} Following
       </p>
       {profile.bio && (
         <p className="whitespace-pre-line break-words border-t border-white/[0.06] pt-4 text-slate-300">
