@@ -6,23 +6,39 @@ import { ChevronDown } from "lucide-react";
 import type { FunctionReturnType } from "@/lib/backend/types.ts";
 import type { api } from "@/lib/backend/api.ts";
 import { cn } from "@/lib/utils.ts";
+import { SELLER_DETAIL_FIELDS } from "@/shared/sellerDetails.ts";
 import { ProfilePanel } from "./profile-sections.tsx";
 
 type Profile = NonNullable<FunctionReturnType<typeof api.users.getProfile>>;
 
-function Detail({ label, value }: { label: string; value: string | number | null | undefined }) {
+function Detail({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="flex items-baseline justify-between gap-4 py-1 text-sm">
       <dt className="text-slate-400">{label}:</dt>
-      <dd className="truncate text-right text-slate-200">{value ?? "-"}</dd>
+      <dd className="truncate text-right text-slate-200">{value}</dd>
     </div>
   );
+}
+
+// Shown before "Show more"; country already appears on the profile card
+const FIRST = ["gender", "ageRange"];
+const SKIP = new Set(["country"]);
+
+/** Settings fields the seller filled in ("Prefer not to say" counts as not shared). */
+function filledDetails(details: Record<string, string | undefined>) {
+  return SELLER_DETAIL_FIELDS.filter((f) => !SKIP.has(f.key))
+    .map((f) => ({ key: f.key, label: f.label, value: details[f.key]?.trim() }))
+    .filter((f): f is { key: typeof f.key; label: typeof f.label; value: string } =>
+      !!f.value && f.value !== "Prefer not to say",
+    );
 }
 
 /** Overview's first card: followers, following, bio and details (more behind Show more). */
 export default function ProfileAbout({ profile }: { profile: Profile }) {
   const [open, setOpen] = useState(false);
-  const d = profile.sellerDetails;
+  const details = filledDetails(profile.sellerDetails as Record<string, string | undefined>);
+  const first = details.filter((f) => FIRST.includes(f.key));
+  const more = details.filter((f) => !FIRST.includes(f.key));
   return (
     <ProfilePanel title={`About ${profile.name}`}>
       <p className="-mt-2 text-sm text-slate-300">
@@ -34,8 +50,9 @@ export default function ProfileAbout({ profile }: { profile: Profile }) {
         </p>
       )}
       <dl className="border-t border-white/[0.06] pt-3">
-        <Detail label="Gender" value={d.gender} />
-        <Detail label="Age" value={d.ageRange} />
+        {first.map((f) => (
+          <Detail key={f.key} label={f.label} value={f.value} />
+        ))}
         <button
           type="button"
           aria-expanded={open}
@@ -47,8 +64,9 @@ export default function ProfileAbout({ profile }: { profile: Profile }) {
         </button>
         {open && (
           <div className="mt-1 border-t border-white/[0.06] pt-2">
-            <Detail label="Ethnicity" value={d.ethnicity} />
-            <Detail label="Body Size" value={d.bodySize} />
+            {more.map((f) => (
+              <Detail key={f.key} label={f.label} value={f.value} />
+            ))}
             <Detail label="Joined" value={format(profile.memberSince, "MMM yyyy")} />
             <Detail label="Profile Visits" value={profile.activity.profileVisits.toLocaleString("en-US")} />
           </div>
