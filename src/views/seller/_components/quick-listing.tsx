@@ -188,13 +188,18 @@ function QuickListingForm({ onPosted }: { onPosted: () => void }) {
 }
 
 /** "Create Listing" button on the seller's own profile; opens the quick listing form. */
-export default function CreateListingButton() {
+export default function CreateListingButton({ className }: { className?: string }) {
   const [open, setOpen] = useState(false);
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="h-9 cursor-pointer rounded-sm bg-violet-600 px-4 font-bold text-white hover:bg-violet-500">
-          <Plus /> Create Listing
+        <Button
+          className={cn(
+            "h-9 w-full cursor-pointer whitespace-nowrap rounded-sm bg-violet-600 px-2 font-bold text-white hover:bg-violet-500 sm:w-auto sm:px-4",
+            className,
+          )}
+        >
+          <Plus className="hidden sm:block" /> Create Listing
         </Button>
       </DialogTrigger>
       <DialogContent

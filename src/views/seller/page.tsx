@@ -87,15 +87,17 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
         className="min-w-0 scroll-mt-20 gap-6"
       >
         <div className={cn(PANEL, "flex flex-col gap-4 p-3 sm:p-5")}>
-          <div className="flex flex-wrap items-center gap-3 rounded-sm border border-white/[0.06] bg-[#050a16] p-3">
-            <TabsList className="h-auto flex-1 flex-wrap justify-start gap-3 bg-transparent p-0">
-              <TabsTrigger value="overview" className={TAB_PILL}>Overview</TabsTrigger>
-              <TabsTrigger value="shop" className={TAB_PILL}>Shop</TabsTrigger>
-              <TabsTrigger value="instant" className={TAB_PILL}>Instant Content</TabsTrigger>
-              <TabsTrigger value="photos" className={TAB_PILL}>Photos</TabsTrigger>
-              <TabsTrigger value="reviews" className={TAB_PILL}>Reviews</TabsTrigger>
+          <div className="rounded-sm border border-white/[0.06] bg-[#050a16] p-3">
+            {/* Phones: Overview + Shop, then Instant Content, then Photos + Reviews (+ Create Listing).
+                Wider screens: one row. Height grows with the rows instead of a fixed 36px. */}
+            <TabsList className="grid w-full grid-cols-6 gap-2 bg-transparent p-0 group-data-[orientation=horizontal]/tabs:h-auto sm:flex sm:flex-wrap sm:justify-start sm:gap-3">
+              <TabsTrigger value="overview" className={cn(TAB_PILL, "col-span-3")}>Overview</TabsTrigger>
+              <TabsTrigger value="shop" className={cn(TAB_PILL, "col-span-3")}>Shop</TabsTrigger>
+              <TabsTrigger value="instant" className={cn(TAB_PILL, "col-span-6")}>Instant Content</TabsTrigger>
+              <TabsTrigger value="photos" className={cn(TAB_PILL, profile.isMe ? "col-span-2" : "col-span-3")}>Photos</TabsTrigger>
+              <TabsTrigger value="reviews" className={cn(TAB_PILL, profile.isMe ? "col-span-2" : "col-span-3")}>Reviews</TabsTrigger>
+              {profile.isMe && <CreateListingButton className="col-span-2 sm:ml-auto" />}
             </TabsList>
-            {profile.isMe && <CreateListingButton />}
           </div>
         </div>
 
