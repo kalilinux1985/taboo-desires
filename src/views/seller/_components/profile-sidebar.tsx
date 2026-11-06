@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { format } from "date-fns";
-import { Award, EllipsisVertical, IdCard, Link2, Pencil, Star, UserRound } from "lucide-react";
+import { Award, EllipsisVertical, IdCard, Images, Link2, Pencil, ShoppingBag, Star, UserRound } from "lucide-react";
 import type { FunctionReturnType } from "@/lib/backend/types.ts";
 import type { api } from "@/lib/backend/api.ts";
 import { settingsPathFor } from "@/lib/settings.ts";
@@ -22,28 +21,36 @@ import { PANEL } from "../_lib/theme.ts";
 
 type Profile = NonNullable<FunctionReturnType<typeof api.users.getProfile>>;
 
-function Detail({ label, value }: { label: string; value: string | number | null | undefined }) {
-  return (
-    <div className="flex items-baseline justify-between gap-4 py-1 text-sm">
-      <dt className="text-slate-400">{label}:</dt>
-      <dd className="truncate text-right text-slate-200">{value ?? "-"}</dd>
-    </div>
-  );
-}
+const ONLINE_WINDOW_MS = 5 * 60 * 1000;
+const isOnline = (lastSeenAt: string | null) =>
+  !!lastSeenAt && Date.now() - Date.parse(lastSeenAt) < ONLINE_WINDOW_MS;
 
-/** Left column: big profile picture, then name, rating, actions, counts and details. */
-export default function ProfileSidebar({ profile }: { profile: Profile }) {
-  const d = profile.sellerDetails;
+/** Profile picture with online badge, then name, rating, country, actions and counts. */
+export default function ProfileSidebar({
+  profile,
+  onShowShop,
+  onShowInstant,
+}: {
+  profile: Profile;
+  onShowShop: () => void;
+  onShowInstant: () => void;
+}) {
   const rating = profile.stats.rating;
+  const country = profile.sellerDetails.country;
   return (
     <aside className="flex flex-col gap-4 lg:sticky lg:top-20">
-      <div className={cn(PANEL, "aspect-square overflow-hidden bg-[#8b8b90]")}>
+      <div className={cn(PANEL, "relative aspect-square overflow-hidden bg-[#8b8b90]")}>
         {profile.avatarUrl ? (
           <img src={profile.avatarUrl} alt={profile.name} className="size-full object-cover" />
         ) : (
           <div className="flex size-full items-center justify-center">
             <UserRound className="size-2/3 text-[#5f5f64]" strokeWidth={1.1} />
           </div>
+        )}
+        {isOnline(profile.activity.lastSeenAt) && (
+          <span className="absolute right-0 top-0 rounded-bl-md bg-emerald-500 px-2.5 py-0.5 text-xs font-bold text-white">
+            Online
+          </span>
         )}
       </div>
 
@@ -59,17 +66,24 @@ export default function ProfileSidebar({ profile }: { profile: Profile }) {
               {rating ? rating.toFixed(1) : "No ratings"}
               {profile.stats.reviewCount > 0 && <span className="text-xs">({profile.stats.reviewCount})</span>}
             </span>
-            {profile.verified && (
+            {country && <span>{country}</span>}
+            {profile.verified ? (
               <span className="flex items-center gap-1">
                 <IdCard className="size-4 text-violet-500" /> ID Verified
               </span>
+            ) : (
+              profile.isMe && (
+                <Link href={settingsPathFor(profile.accountType)} className="flex items-center gap-1 font-bold text-slate-200 hover:underline">
+                  <IdCard className="size-4 text-violet-500" /> Verify Your Identity &gt;
+                </Link>
+              )
             )}
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           {profile.isMe ? (
-            <Button asChild size="sm" variant="ghost" className="h-8 cursor-pointer rounded-sm border border-violet-600 text-xs font-bold uppercase text-violet-400 hover:bg-violet-600 hover:text-white">
+            <Button asChild size="sm" variant="ghost" className="h-8 flex-1 cursor-pointer rounded-sm border border-violet-600 text-xs font-bold uppercase text-violet-400 hover:bg-violet-600 hover:text-white">
               <Link href={settingsPathFor(profile.accountType)}>
                 <Pencil /> Edit profile
               </Link>
@@ -106,19 +120,23 @@ export default function ProfileSidebar({ profile }: { profile: Profile }) {
           <CustomRequestButton sellerId={profile._id} sellerName={profile.name} className="w-full" />
         )}
 
-        <p className="py-6 text-center text-sm text-slate-300">
-          ({profile.stats.followerCount}) Followers · ({profile.counts.following}) Following ·{" "}
-          ({profile.badges.length}) Badges
-        </p>
-
-        <dl>
-          <Detail label="Gender" value={d.gender} />
-          <Detail label="Age" value={d.ageRange} />
-          <Detail label="Ethnicity" value={d.ethnicity} />
-          <Detail label="Body Size" value={d.bodySize} />
-          <Detail label="Joined" value={format(profile.memberSince, "MMM yyyy")} />
-          <Detail label="Profile Visits" value={profile.activity.profileVisits.toLocaleString("en-US")} />
-        </dl>
+        <div className="flex flex-wrap gap-2 border-t border-white/[0.06] pt-4">
+          <button
+            type="button"
+            onClick={onShowShop}
+            className="flex cursor-pointer items-center gap-1.5 rounded-full bg-[#1b2235] px-3 py-1.5 text-sm font-bold text-slate-200 hover:bg-violet-600/30"
+          >
+            <ShoppingBag className="size-4 text-violet-500" /> {profile.counts.listings} Listing
+            {profile.counts.listings === 1 ? "" : "s"}
+          </button>
+          <button
+            type="button"
+            onClick={onShowInstant}
+            className="flex cursor-pointer items-center gap-1.5 rounded-full bg-[#1b2235] px-3 py-1.5 text-sm font-bold text-slate-200 hover:bg-violet-600/30"
+          >
+            <Images className="size-4 text-violet-500" /> {profile.counts.instantContent} Instant Content
+          </button>
+        </div>
       </div>
     </aside>
   );

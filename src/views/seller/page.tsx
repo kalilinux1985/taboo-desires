@@ -22,6 +22,7 @@ import ProfilePhotos from "./_components/profile-photos.tsx";
 import SellerReviews from "./_components/seller-reviews.tsx";
 import BuyerProfile from "./_components/buyer-profile.tsx";
 import ProfileSidebar from "./_components/profile-sidebar.tsx";
+import ProfileAbout from "./_components/profile-about.tsx";
 import CreateListingButton from "./_components/quick-listing.tsx";
 import {
   ActivitySection,
@@ -72,8 +73,12 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
   const label = profile.isPro ? "Premium seller" : "Seller";
 
   return (
-    <div className={cn(TEXT_FONT, "mx-auto grid max-w-6xl items-start gap-8 px-4 py-6 lg:grid-cols-[20rem_1fr] lg:gap-12")}>
-      <ProfileSidebar profile={profile} />
+    <div className={cn(TEXT_FONT, "mx-auto grid max-w-6xl items-start gap-6 px-4 py-6 lg:grid-cols-[20rem_1fr] lg:gap-12")}>
+      <ProfileSidebar
+        profile={profile}
+        onShowShop={() => showTab("shop")}
+        onShowInstant={() => showTab("instant")}
+      />
 
       <Tabs
         id="profile-tabs"
@@ -81,7 +86,7 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
         onValueChange={(v) => isTab(v) && setTab(v)}
         className="min-w-0 scroll-mt-20 gap-6"
       >
-        <div className={cn(PANEL, "flex flex-col gap-4 p-5")}>
+        <div className={cn(PANEL, "flex flex-col gap-4 p-3 sm:p-5")}>
           <div className="flex flex-wrap items-center gap-3 rounded-sm border border-white/[0.06] bg-[#050a16] p-3">
             <TabsList className="h-auto flex-1 flex-wrap justify-start gap-3 bg-transparent p-0">
               <TabsTrigger value="overview" className={TAB_PILL}>Overview</TabsTrigger>
@@ -95,11 +100,7 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
         </div>
 
         <TabsContent value="overview" className="flex flex-col gap-6">
-          {profile.bio && (
-            <ProfilePanel title={`About ${profile.name}`}>
-              <p className="whitespace-pre-line break-words text-slate-300">{profile.bio}</p>
-            </ProfilePanel>
-          )}
+          <ProfileAbout profile={profile} />
           <ShopSection sellerId={profile._id} count={profile.counts.listings} onViewAll={() => showTab("shop")} />
           <InstantSection
             sellerId={profile._id}

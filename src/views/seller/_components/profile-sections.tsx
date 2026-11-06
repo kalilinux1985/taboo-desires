@@ -28,7 +28,7 @@ export function ProfilePanel({
 }) {
   return (
     <section className={cn(PANEL, "flex flex-col gap-5 p-5 sm:p-6")}>
-      <div className="flex flex-wrap items-end justify-between gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between [&>button]:w-full [&>button]:justify-center sm:[&>button]:w-auto">
         <h2 className={cn(HEADING_FONT, "flex items-baseline gap-3 text-3xl")}>
           <span className="border-b-2 border-violet-600 pb-0.5">{title}</span>
           {count && <span className="text-lg text-violet-500">{count}</span>}
