@@ -195,11 +195,12 @@ export default function CreateListingButton({ className }: { className?: string 
       <DialogTrigger asChild>
         <Button
           className={cn(
-            "h-9 w-full cursor-pointer whitespace-nowrap rounded-sm bg-violet-600 px-2 font-bold text-white hover:bg-violet-500 sm:w-auto sm:px-4",
+            // Phones: fills the right column's height, icon above the words
+            "h-auto cursor-pointer flex-col gap-1 whitespace-normal rounded-sm bg-violet-600 px-2 py-2 text-center font-bold leading-tight text-white hover:bg-violet-500 md:h-9 md:flex-row md:whitespace-nowrap md:px-4",
             className,
           )}
         >
-          <Plus className="hidden sm:block" /> Create Listing
+          <Plus /> Create Listing
         </Button>
       </DialogTrigger>
       <DialogContent

@@ -14,4 +14,4 @@ export const OUTLINE_ACTION =
   "inline-flex cursor-pointer items-center rounded-sm border-2 border-violet-600 px-4 py-1.5 text-sm font-bold uppercase tracking-tight text-violet-400 transition-colors hover:bg-violet-600 hover:text-white";
 /** Tab pill, active state via data-[state=active] */
 export const TAB_PILL =
-  "h-9 w-full flex-none cursor-pointer rounded-sm border-0 bg-[#1b2235] px-4 py-1.5 sm:w-auto text-sm text-slate-400 shadow-none data-[state=active]:bg-violet-600 data-[state=active]:font-bold data-[state=active]:text-white";
+  "h-9 w-full flex-none cursor-pointer rounded-sm border-0 bg-[#1b2235] px-4 py-1.5 md:w-auto text-sm text-slate-400 shadow-none data-[state=active]:bg-violet-600 data-[state=active]:font-bold data-[state=active]:text-white";
