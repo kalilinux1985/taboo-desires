@@ -14,7 +14,6 @@ import SellerDetailsForm from "./_components/seller-details-form.tsx";
 import BuyerDetailsForm from "./_components/buyer-details-form.tsx";
 import DeleteAccount from "./_components/delete-account.tsx";
 import PlanCard from "./_components/plan-card.tsx";
-import VerificationPanel from "@/views/seller/_components/verification-panel.tsx";
 
 function Row({ label, value }: { label: string; value: ReactNode }) {
   return (
@@ -92,7 +91,6 @@ function SettingsInner({ kind }: { kind?: SettingsKind }) {
       )}
       <div className="flex flex-col gap-6 lg:col-start-2 lg:row-span-2 lg:row-start-1">
       {isSeller && <PlanCard />}
-      {isSeller && <VerificationPanel />}
       <Card>
         <CardHeader>
           <CardTitle className="font-display text-2xl">Account</CardTitle>
