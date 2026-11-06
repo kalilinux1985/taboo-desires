@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Award, EllipsisVertical, IdCard, Images, Link2, Pencil, ShoppingBag, Star, UserRound } from "lucide-react";
+import { Award, EllipsisVertical, Images, Link2, Pencil, ShoppingBag, Star, UserRound } from "lucide-react";
 import type { FunctionReturnType } from "@/lib/backend/types.ts";
 import type { api } from "@/lib/backend/api.ts";
 import { settingsPathFor } from "@/lib/settings.ts";
@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu.tsx";
 import CustomRequestButton from "@/components/custom-request-button.tsx";
+import CountryFlag from "@/components/country-flag.tsx";
 import FollowButton from "./follow-button.tsx";
 import MessageSellerButton from "./message-seller-dialog.tsx";
 import { copyProfileLink } from "../_lib/profile-share.ts";
@@ -57,26 +58,19 @@ export default function ProfileSidebar({
       <div className={cn(PANEL, "flex flex-col gap-3 p-4")}>
         <div>
           <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.18em] text-violet-500">
-            <Award className="size-3.5" /> {profile.isPro ? "Premium seller" : "Seller"}
+            <Award className="size-3.5" /> {profile.accountType === "buyer" ? "Buyer" : "Seller"}
           </p>
           <h1 className="truncate text-3xl font-bold tracking-wide text-slate-200">{profile.name}</h1>
           <p className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1 text-sm text-slate-400">
-            <span className="flex items-center gap-1">
+            <span className="flex items-center gap-1" aria-label={rating ? `Rated ${rating.toFixed(1)}` : "No ratings yet"}>
               <Star className={cn("size-4 text-violet-500", rating && "fill-violet-500")} />
-              {rating ? rating.toFixed(1) : "No ratings"}
-              {profile.stats.reviewCount > 0 && <span className="text-xs">({profile.stats.reviewCount})</span>}
+              {rating ? rating.toFixed(1) : null}
             </span>
-            {country && <span>{country}</span>}
-            {profile.verified ? (
-              <span className="flex items-center gap-1">
-                <IdCard className="size-4 text-violet-500" /> ID Verified
+            {country && (
+              <span className="flex items-center gap-1.5">
+                <CountryFlag country={country} />
+                {country}
               </span>
-            ) : (
-              profile.isMe && (
-                <Link href={settingsPathFor(profile.accountType)} className="flex items-center gap-1 font-bold text-slate-200 hover:underline">
-                  <IdCard className="size-4 text-violet-500" /> Verify Your Identity &gt;
-                </Link>
-              )
             )}
           </p>
         </div>
