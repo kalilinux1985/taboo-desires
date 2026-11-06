@@ -12,7 +12,7 @@ import { shortAge, type FeedItem } from "@/views/home/_lib/feed.ts";
 import PostComments from "@/views/home/_components/post-comments.tsx";
 import { INSET } from "../_lib/theme.ts";
 
-/** A post in the profile's Latest Activity: header, text, photos, like/comment/share, comments. */
+/** A post in the profile's Latest Activity: header, text, photos, like and comment buttons, comments. */
 export default function ProfilePost({ item, label }: { item: FeedItem; label: string }) {
   const toggleLike = useMutation(api.posts.toggleLike);
   const [showComments, setShowComments] = useState(true);
