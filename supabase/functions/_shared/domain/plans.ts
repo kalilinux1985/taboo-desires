@@ -2,6 +2,28 @@
 
 export const PRO_PRICE_CENTS = 14_99;
 
+/** Subscription lengths: the monthly price less 20%, 25% and 50% on longer plans. */
+export const PLAN_OPTIONS = [
+  { months: 1, discountPercent: 0 },
+  { months: 3, discountPercent: 20 },
+  { months: 6, discountPercent: 25 },
+  { months: 12, discountPercent: 50 },
+] as const;
+
+export type PlanMonths = (typeof PLAN_OPTIONS)[number]["months"];
+
+/** Price for the whole plan, in cents. */
+export function planTotalCents(months: number): number {
+  const option = PLAN_OPTIONS.find((o) => o.months === months);
+  const discount = option?.discountPercent ?? 0;
+  return Math.round((PRO_PRICE_CENTS * months * (100 - discount)) / 100);
+}
+
+/** What the plan works out to per month, in cents. */
+export function planMonthlyCents(months: number): number {
+  return Math.round(planTotalCents(months) / months);
+}
+
 export const PLAN_LIMITS = {
   free: { maxPhotos: 4, auctions: false, lockedContent: false },
   pro: { maxPhotos: 12, auctions: true, lockedContent: true },

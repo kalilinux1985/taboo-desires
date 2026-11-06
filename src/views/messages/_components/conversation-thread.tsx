@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge.tsx";
 import { formatPrice, getErrorMessage } from "@/lib/listings.ts";
 import { cn } from "@/lib/utils.ts";
 import { useAccess } from "@/hooks/use-access.ts";
+import { useUpgradeGate } from "@/hooks/use-upgrade-gate.ts";
 import { deniedMessage } from "@/shared/accounts.ts";
 import UpgradeNotice from "@/components/upgrade-notice.tsx";
 
@@ -23,6 +24,7 @@ function formatTime(ms: number) {
 
 function Composer({ conversationId }: { conversationId: Id<"conversations"> }) {
   const access = useAccess();
+  const { blockAndRedirect } = useUpgradeGate();
   const send = useMutation(api.messages.send);
   const [body, setBody] = useState("");
   const [sending, setSending] = useState(false);
@@ -31,6 +33,7 @@ function Composer({ conversationId }: { conversationId: Id<"conversations"> }) {
     e?.preventDefault();
     const text = body.trim();
     if (!text || sending) return;
+    if (blockAndRedirect("message")) return;
     setSending(true);
     try {
       await send({ conversationId, body: text });
@@ -50,7 +53,7 @@ function Composer({ conversationId }: { conversationId: Id<"conversations"> }) {
     }
   };
 
-  if (access && !access.can.message) {
+  if (access && !access.can.message && access.accountType !== "seller") {
     return (
       <div className="border-t bg-card p-3">
         <UpgradeNotice message={deniedMessage("message", access.accountType ?? undefined)} />

@@ -9,6 +9,7 @@ import { api } from "@/lib/backend/api.ts";
 import { uploadFile } from "@/lib/backend/upload.ts";
 import type { Id } from "@/lib/backend/types.ts";
 import { useAccess } from "@/hooks/use-access.ts";
+import { useUpgradeGate } from "@/hooks/use-upgrade-gate.ts";
 import { CATEGORIES, getErrorMessage, type Category } from "@/lib/listings.ts";
 import { cn } from "@/lib/utils.ts";
 import { Input } from "@/components/ui/input.tsx";
@@ -190,8 +191,14 @@ function QuickListingForm({ onPosted }: { onPosted: () => void }) {
 /** "Create Listing" button on the seller's own profile; opens the quick listing form. */
 export default function CreateListingButton({ className }: { className?: string }) {
   const [open, setOpen] = useState(false);
+  const { blockAndRedirect } = useUpgradeGate();
+  // Without Premium the button opens the subscription page instead of the form
+  const onOpenChange = (next: boolean) => {
+    if (next && blockAndRedirect("list")) return;
+    setOpen(next);
+  };
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
         <Button
           className={cn(

@@ -39,8 +39,14 @@ export const mine = query({
 });
 
 export const requestPro = mutation({
-  args: { note: v.string() },
-  handler: async (ctx, { note }) => {
+  args: {
+    note: v.string(),
+    /** Plan length the seller picked (1, 3, 6 or 12 months) */
+    months: v.optional(v.number()),
+    /** The seller wants to pay some way other than the standard subscription */
+    payAnotherWay: v.optional(v.boolean()),
+  },
+  handler: async (ctx, { note, months, payAnotherWay }) => {
     const user = await requireUser(ctx);
     if (user.accountType !== "seller")
       throw new AppError({
@@ -52,6 +58,8 @@ export const requestPro = mutation({
         code: "BAD_REQUEST",
         message: "Message is too long",
       });
+    if (months !== undefined && !isAllowedMonths(months))
+      throw new AppError({ code: "BAD_REQUEST", message: "Pick a valid plan" });
     const sub = await getSubscription(ctx, user._id);
     if (sub?.status === "pending")
       throw new AppError({
@@ -63,6 +71,8 @@ export const requestPro = mutation({
       status: "pending" as const,
       requestedAt: new Date(ctx.now()).toISOString(),
       note: note.trim() || undefined,
+      requestedMonths: months ?? 1,
+      payAnotherWay: !!payAnotherWay,
     };
     // An active seller can request a renewal; their current end date is kept until approved
     if (sub) await ctx.db.patch("subscriptions", sub._id, fields);
@@ -141,6 +151,8 @@ export const adminList = query({
               now,
             ),
             note: s.note ?? null,
+            requestedMonths: s.requestedMonths ?? null,
+            payAnotherWay: !!s.payAnotherWay,
           };
         }),
       ),

@@ -27,6 +27,7 @@ import {
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty.tsx";
 import { Spinner } from "@/components/ui/spinner.tsx";
 import { useAccess } from "@/hooks/use-access.ts";
+import { useUpgradeGate } from "@/hooks/use-upgrade-gate.ts";
 import { cn } from "@/lib/utils.ts";
 import { FEED_FILTERS, isFeedFilter, type FeedFilter, type FeedSort } from "../_lib/feed.ts";
 import PostCard from "./post-card.tsx";
@@ -57,6 +58,7 @@ function FeedSkeleton() {
 /** Signed-in home: community activity feed modeled on the reference "Activity" page. */
 export default function ActivityFeed() {
   const access = useAccess();
+  const { sendToPlans } = useUpgradeGate();
   const me = useQuery(api.users.menu, {});
   const [filter, setFilter] = useState<FeedFilter>("all");
   const [sort, setSort] = useState<FeedSort>("newest");
@@ -114,10 +116,15 @@ export default function ActivityFeed() {
           </div>
         ) : access === undefined ? (
           <Skeleton className="h-11 w-40 rounded-full" />
+        ) : access?.accountType === "seller" ? (
+          <Button
+            onClick={() => sendToPlans("post")}
+            className="h-11 cursor-pointer rounded-full px-5 text-base font-bold"
+          >
+            <Plus className="size-5" /> Add Post
+          </Button>
         ) : (
-          <p className="text-sm text-muted-foreground">
-            {access?.accountType === "seller" ? "Upgrade to Pro to post on the activity feed." : "Choose an account type to start posting."}
-          </p>
+          <p className="text-sm text-muted-foreground">Choose an account type to start posting.</p>
         )}
         <Button
           variant="ghost"

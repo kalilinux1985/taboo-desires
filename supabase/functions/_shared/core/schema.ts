@@ -61,6 +61,10 @@ type Fields = {
     /** "" = never approved / revoked */
     expiresAt: string;
     note?: string;
+    /** Plan length picked on the pricing page */
+    requestedMonths?: number;
+    /** Asked to pay some way other than the standard subscription */
+    payAnotherWay?: boolean;
   };
   listings: {
     sellerId: Id<"users">;
@@ -265,6 +269,8 @@ export const TABLES: { [T in DbTable]: TableDef<T> } = {
       requestedAt: c("requested_at", "ts"),
       expiresAt: c("expires_at", "tsOrEmpty"),
       note: c("note"),
+      requestedMonths: c("requested_months", "int"),
+      payAnotherWay: c("pay_another_way", "bool"),
     },
   },
   listings: {

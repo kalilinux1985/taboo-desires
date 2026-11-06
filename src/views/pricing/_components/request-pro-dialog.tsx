@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useMutation } from "@/lib/backend/react.tsx";
 import { toast } from "sonner";
 import { api } from "@/lib/backend/api.ts";
@@ -16,19 +16,39 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog.tsx";
 import { formatPrice, getErrorMessage } from "@/lib/listings.ts";
-import { PRO_PRICE_CENTS } from "@/shared/plans.ts";
+import { planTotalCents } from "@/shared/plans.ts";
 
-export default function RequestProDialog({ label }: { label: string }) {
+const lengthLabel = (months: number) => (months === 1 ? "1 month" : `${months} months`);
+
+/**
+ * Requests Premium for the chosen plan. Our team reviews each request and
+ * switches Premium on; "pay another way" asks the seller how they'd like to pay.
+ */
+export default function RequestProDialog({
+  months = 1,
+  payAnotherWay = false,
+  trigger,
+}: {
+  months?: number;
+  payAnotherWay?: boolean;
+  /** The button that opens the dialog */
+  trigger: ReactNode;
+}) {
   const requestPro = useMutation(api.subscriptions.requestPro);
   const [open, setOpen] = useState(false);
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
+  const price = formatPrice(planTotalCents(months));
 
   const submit = async () => {
+    if (payAnotherWay && !note.trim()) {
+      toast.error("Tell us how you'd like to pay");
+      return;
+    }
     setSaving(true);
     try {
-      await requestPro({ note });
-      toast.success("Request sent. We'll switch on Pro once it's approved.");
+      await requestPro({ note, months, payAnotherWay });
+      toast.success("Request sent. We'll switch on Premium once it's approved.");
       setOpen(false);
       setNote("");
     } catch (e) {
@@ -40,26 +60,28 @@ export default function RequestProDialog({ label }: { label: string }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button size="lg" className="w-full cursor-pointer">
-          {label}
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="font-display text-2xl">Request Pro</DialogTitle>
+          <DialogTitle className="font-display text-2xl">
+            Premium · {lengthLabel(months)}
+          </DialogTitle>
           <DialogDescription>
-            Pro is {formatPrice(PRO_PRICE_CENTS)} a month. Our team reviews each request and
-            turns Pro on for your shop, usually within a day.
+            {price} for {lengthLabel(months)}.{" "}
+            {payAnotherWay
+              ? "Tell us how you'd like to pay and we'll get back to you with the details."
+              : "Our team reviews each request and turns Premium on for your shop, usually within a day."}
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-2">
-          <Label htmlFor="pro-note">Message for our team (optional)</Label>
+          <Label htmlFor="pro-note">
+            {payAnotherWay ? "How would you like to pay?" : "Message for our team (optional)"}
+          </Label>
           <Textarea
             id="pro-note"
             rows={4}
             maxLength={500}
-            placeholder="How you'd like to pay, or anything we should know."
+            placeholder={payAnotherWay ? "For example: gift card, crypto, bank transfer..." : "Anything we should know."}
             value={note}
             onChange={(e) => setNote(e.target.value)}
           />

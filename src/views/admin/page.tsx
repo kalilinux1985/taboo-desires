@@ -51,11 +51,19 @@ function useRun() {
   return { busy, run };
 }
 
-function ApproveControls({ subscriptionId, pending }: { subscriptionId: Id<"subscriptions">; pending: boolean }) {
+function ApproveControls({
+  subscriptionId,
+  pending,
+  requestedMonths,
+}: {
+  subscriptionId: Id<"subscriptions">;
+  pending: boolean;
+  requestedMonths: number | null;
+}) {
   const approve = useMutation(api.subscriptions.approve);
   const decline = useMutation(api.subscriptions.decline);
   const revoke = useMutation(api.subscriptions.revoke);
-  const [months, setMonths] = useState("1");
+  const [months, setMonths] = useState(String(requestedMonths ?? 1));
   const { busy, run } = useRun();
 
   return (
@@ -161,11 +169,17 @@ function SubscriptionList({ tab }: { tab: "pending" | "active" }) {
                 {tab === "pending" && s.isCurrentlyPro && s.expiresAt &&
                   ` · Pro until ${format(new Date(s.expiresAt), "MMM d, yyyy")}`}
               </p>
+              {tab === "pending" && s.requestedMonths && (
+                <p className="mt-2 text-sm font-semibold">
+                  Picked {s.requestedMonths === 1 ? "1 month" : `${s.requestedMonths} months`}
+                  {s.payAnotherWay && " · wants to pay another way"}
+                </p>
+              )}
               {s.note && (
                 <p className="mt-2 break-words rounded-md bg-muted px-3 py-2 text-sm">{s.note}</p>
               )}
             </div>
-            <ApproveControls subscriptionId={s._id} pending={tab === "pending"} />
+            <ApproveControls subscriptionId={s._id} pending={tab === "pending"} requestedMonths={s.requestedMonths} />
           </CardContent>
         </Card>
       ))}

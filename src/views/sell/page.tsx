@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "@/lib/navigation.ts";
+import { useUpgradeGate } from "@/hooks/use-upgrade-gate.ts";
 import { CATEGORIES } from "@/lib/listings.ts";
 import { subcategoryInfo } from "@/shared/subcategories.ts";
 import { useMutation } from "@/lib/backend/react.tsx";
@@ -48,6 +50,15 @@ function presetFromLink(params: URLSearchParams) {
   return { category, subcategory: sub?.category === category ? sub.value : "" };
 }
 
+/** Sellers without Premium land on the subscription page instead of the form. */
+function RedirectToPlans() {
+  const { sendToPlans } = useUpgradeGate();
+  useEffect(() => {
+    sendToPlans("list", { replace: true });
+  }, [sendToPlans]);
+  return <Skeleton className="h-96 w-full" />;
+}
+
 function SellForm() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
@@ -57,7 +68,10 @@ function SellForm() {
   if (access === undefined) return <Skeleton className="h-96 w-full" />;
   if (access === null) return null;
   if (access.accountType === "buyer" && !access.isAdmin) return <BecomeSeller />;
-  if (!access.can.list) return <UpgradeNotice message={deniedMessage("list", access.accountType ?? undefined)} />;
+  if (!access.can.list) {
+    if (access.accountType === "seller") return <RedirectToPlans />;
+    return <UpgradeNotice message={deniedMessage("list", access.accountType ?? undefined)} />;
+  }
 
   const onSubmit = async ({ durationHours, ...values }: ListingSubmit) => {
     try {

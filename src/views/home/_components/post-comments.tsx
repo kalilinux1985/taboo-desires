@@ -15,6 +15,7 @@ import ProfileAvatar from "@/components/profile-avatar.tsx";
 import { getErrorMessage } from "@/lib/listings.ts";
 import { cn } from "@/lib/utils.ts";
 import { shortAge } from "../_lib/feed.ts";
+import { useUpgradeGate } from "@/hooks/use-upgrade-gate.ts";
 
 type Comment = FunctionReturnType<typeof api.posts.listComments>["page"][number];
 
@@ -32,11 +33,13 @@ function CommentForm({
   onDone?: () => void;
 }) {
   const add = useMutation(api.posts.addComment);
+  const { blockAndRedirect } = useUpgradeGate();
   const [body, setBody] = useState("");
   const [sending, setSending] = useState(false);
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!body.trim()) return;
+    if (blockAndRedirect("post")) return;
     setSending(true);
     try {
       await add({ postId, body, parentId });
