@@ -27,6 +27,7 @@ import CreateListingButton from "./_components/quick-listing.tsx";
 import {
   ActivitySection,
   InstantSection,
+  PhotosSection,
   ProfilePanel,
   ShopSection,
 } from "./_components/profile-sections.tsx";
@@ -108,6 +109,7 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
             count={profile.counts.instantContent}
             onViewAll={() => showTab("instant")}
           />
+          <PhotosSection photos={profile.photos} onViewAll={() => showTab("photos")} />
           <ActivitySection authorId={profile._id} />
         </TabsContent>
         <TabsContent value="shop">

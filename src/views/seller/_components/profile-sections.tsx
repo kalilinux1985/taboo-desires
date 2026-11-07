@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { Film, ImageIcon, Images } from "lucide-react";
+import { ImageIcon, Images, Video } from "lucide-react";
 import { usePaginatedQuery } from "@/lib/backend/react.tsx";
 import { api } from "@/lib/backend/api.ts";
 import type { Id } from "@/lib/backend/types.ts";
@@ -12,7 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { Spinner } from "@/components/ui/spinner.tsx";
 import { ShopCard } from "@/components/shop/shop-grid.tsx";
 import PostCard from "@/views/home/_components/post-card.tsx";
-import { HEADING_FONT, OUTLINE_ACTION, PANEL } from "../_lib/theme.ts";
+import { HEADING_FONT, PANEL } from "../_lib/theme.ts";
 
 /** A titled panel: heading with a violet underline, optional count and action. */
 export function ProfilePanel({
@@ -42,6 +42,84 @@ export function ProfilePanel({
 
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
+/**
+ * An Overview section: title with its count, a short violet underline, then a
+ * full-width "View All" button above the preview.
+ */
+function OverviewPanel({
+  title,
+  count,
+  viewAll,
+  onViewAll,
+  children,
+}: {
+  title: string;
+  count: string;
+  viewAll: string;
+  onViewAll: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <section className={cn(PANEL, "flex flex-col gap-5 p-5 sm:p-6")}>
+      <div className="flex flex-col gap-3">
+        <h2 className={cn(HEADING_FONT, "flex flex-wrap items-baseline gap-x-2.5 text-3xl font-bold")}>
+          {title}
+          <span className="text-2xl font-normal text-violet-400">{count}</span>
+        </h2>
+        <span className="h-0.5 w-16 bg-violet-600" />
+      </div>
+      <button
+        type="button"
+        onClick={onViewAll}
+        className="w-full cursor-pointer rounded-full border-2 border-violet-600 py-2 text-sm font-bold text-violet-400 transition-colors hover:bg-violet-600 hover:text-white"
+      >
+        {viewAll}
+      </button>
+      {children}
+    </section>
+  );
+}
+
+/** A square thumbnail with a small label underneath ("Vid", "Pics"). */
+function Tile({
+  href,
+  onClick,
+  title,
+  imageUrl,
+  icon: Icon,
+  label,
+}: {
+  href?: string;
+  onClick?: () => void;
+  title?: string;
+  imageUrl: string | null;
+  icon?: typeof ImageIcon;
+  label?: string;
+}) {
+  const body = (
+    <>
+      <span className="flex aspect-square w-full items-center justify-center overflow-hidden rounded-sm bg-[#0d1426] text-violet-500">
+        {imageUrl ? (
+          <img src={imageUrl} alt="" loading="lazy" className="size-full object-cover transition-transform duration-300 group-hover:scale-105" />
+        ) : (
+          Icon && <Icon className="size-9" strokeWidth={1.5} />
+        )}
+      </span>
+      {label && Icon && (
+        <span className="flex items-center gap-1.5 text-sm font-bold text-slate-200">
+          <Icon className="size-4 text-slate-300" /> {label}
+        </span>
+      )}
+    </>
+  );
+  const className = "group flex min-w-0 cursor-pointer flex-col items-center gap-2";
+  return href ? (
+    <Link href={href} title={title} className={className}>{body}</Link>
+  ) : (
+    <button type="button" onClick={onClick} title={title} className={className}>{body}</button>
+  );
+}
+
 /** Overview: two newest listings. */
 export function ShopSection({
   sellerId,
@@ -58,15 +136,7 @@ export function ShopSection({
     { initialNumItems: 2 },
   );
   return (
-    <ProfilePanel
-      title="Shop"
-      count={plural(count, "Listing")}
-      action={
-        <button type="button" onClick={onViewAll} className={cn(OUTLINE_ACTION, HEADING_FONT, "normal-case text-base")}>
-          VIEW ALL LISTINGS
-        </button>
-      }
-    >
+    <OverviewPanel title="Shop" count={plural(count, "Listing")} viewAll="View All Listings" onViewAll={onViewAll}>
       {status === "LoadingFirstPage" ? (
         <div className="grid gap-6 sm:grid-cols-2">
           <Skeleton className="h-72" />
@@ -81,7 +151,7 @@ export function ShopSection({
           ))}
         </div>
       )}
-    </ProfilePanel>
+    </OverviewPanel>
   );
 }
 
@@ -98,46 +168,64 @@ export function InstantSection({
   const { results, status } = usePaginatedQuery(
     api.listings.bySeller,
     { sellerId, status: "active", kind: "instant" },
-    { initialNumItems: 8 },
+    { initialNumItems: 6 },
   );
   return (
-    <ProfilePanel
+    <OverviewPanel
       title="Instant Content"
       count={plural(count, "Item")}
-      action={
-        <button type="button" onClick={onViewAll} className={cn(OUTLINE_ACTION, HEADING_FONT, "normal-case text-base")}>
-          VIEW ALL CONTENT
-        </button>
-      }
+      viewAll="View All Content"
+      onViewAll={onViewAll}
     >
       {status === "LoadingFirstPage" ? (
-        <Skeleton className="h-24 w-72" />
+        <div className="grid grid-cols-3 gap-3">
+          {[0, 1, 2].map((i) => <Skeleton key={i} className="aspect-square" />)}
+        </div>
       ) : results.length === 0 ? (
         <p className="text-sm text-slate-400">No instant content yet.</p>
       ) : (
-        <div className="flex flex-wrap gap-3">
-          {results.map((l) => {
+        <div className="grid grid-cols-3 gap-x-3 gap-y-4">
+          {results.slice(0, 6).map((l) => {
             const kinds = l.lockedKinds ?? [];
             const both = kinds.length > 1;
-            const Icon = both ? Images : kinds[0] === "video" ? Film : ImageIcon;
-            const label = both ? "Pics & vids" : kinds[0] === "video" ? "Videos" : "Pics";
+            const video = !both && kinds[0] === "video";
             return (
-              <Link
+              <Tile
                 key={l._id}
                 href={`/listing/${l._id}`}
                 title={l.title}
-                className="flex w-20 flex-col items-center gap-2 text-center"
-              >
-                <span className="flex size-20 items-center justify-center rounded-sm bg-[#0d1426] text-violet-500 transition-colors hover:bg-violet-600/20">
-                  <Icon className="size-9" strokeWidth={1.5} />
-                </span>
-                <span className="text-sm font-bold text-slate-200">{label}</span>
-              </Link>
+                imageUrl={l.imageUrl ?? null}
+                icon={both ? Images : video ? Video : ImageIcon}
+                label={both ? "Pics & Vids" : video ? "Vid" : "Pics"}
+              />
             );
           })}
         </div>
       )}
-    </ProfilePanel>
+    </OverviewPanel>
+  );
+}
+
+/** Overview: the member's profile photos. */
+export function PhotosSection({
+  photos,
+  onViewAll,
+}: {
+  photos: { _id: string; url: string }[];
+  onViewAll: () => void;
+}) {
+  return (
+    <OverviewPanel title="Photos" count={plural(photos.length, "image")} viewAll="View All Images" onViewAll={onViewAll}>
+      {photos.length === 0 ? (
+        <p className="text-sm text-slate-400">No photos yet.</p>
+      ) : (
+        <div className="grid grid-cols-3 gap-3">
+          {photos.slice(0, 6).map((p) => (
+            <Tile key={p._id} onClick={onViewAll} imageUrl={p.url} />
+          ))}
+        </div>
+      )}
+    </OverviewPanel>
   );
 }
 
