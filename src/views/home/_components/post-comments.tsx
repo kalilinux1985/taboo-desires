@@ -2,7 +2,7 @@ import { useState } from "react";
 import { usePaginatedQuery, useMutation } from "@/lib/backend/react.tsx";
 import { Authenticated, Unauthenticated } from "@/lib/backend/react.tsx";
 import Link from "next/link";
-import { ChevronRight, Heart, Medal, Reply, SendHorizontal, Trash2 } from "lucide-react";
+import { ChevronRight, Clock, Heart, Medal, Reply, SendHorizontal, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/backend/api.ts";
 import type { FunctionReturnType, Id } from "@/lib/backend/types.ts";
@@ -16,6 +16,7 @@ import { getErrorMessage } from "@/lib/listings.ts";
 import { cn } from "@/lib/utils.ts";
 import { useUpgradeGate } from "@/hooks/use-upgrade-gate.ts";
 import LikerAvatars from "./liker-avatars.tsx";
+import { shortAge } from "../_lib/feed.ts";
 
 type Comment = FunctionReturnType<typeof api.posts.listComments>["page"][number];
 
@@ -133,6 +134,9 @@ function CommentItem({
               <Heart className={cn("size-5", comment.likedByMe && "fill-violet-500 text-violet-500")} /> {comment.likeCount}
             </button>
             <LikerAvatars likers={comment.likers} total={comment.likeCount} size="sm" />
+            <span className="flex items-center gap-1 text-sm" title={new Date(comment._creationTime).toLocaleString()}>
+              <Clock className="size-4" /> {shortAge(comment._creationTime)}
+            </span>
             {isTop && comment.replyCount > 0 && (
               <button
                 type="button"

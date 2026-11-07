@@ -174,7 +174,7 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
             </button>
             <LikerAvatars likers={item.likers} total={item.likeCount} postId={item._id} />
           </div>
-          <span className="flex shrink-0 items-center gap-1.5">
+          <span className="flex shrink-0 items-center gap-1.5" title={new Date(item._creationTime).toLocaleString()}>
             <Clock className="size-5" /> {shortAge(item._creationTime, now)}
           </span>
         </div>
