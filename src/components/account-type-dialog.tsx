@@ -4,7 +4,7 @@ import { Check, ShoppingBag, Store } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/backend/api.ts";
 import type { AccountType } from "@/shared/accounts.ts";
-import { PROFILE_PHOTO_MAX } from "@/shared/accounts.ts";
+import { BUYER_PHOTO_MAX } from "@/shared/accounts.ts";
 import { Button } from "@/components/ui/button.tsx";
 import { Spinner } from "@/components/ui/spinner.tsx";
 import {
@@ -28,7 +28,7 @@ const OPTIONS = [
     perks: [
       "Post on the community board",
       "Message sellers",
-      `Up to ${PROFILE_PHOTO_MAX} profile photos`,
+      `Up to ${BUYER_PHOTO_MAX} profile photos`,
     ],
   },
   {
@@ -37,7 +37,7 @@ const OPTIONS = [
     title: "Seller",
     price: "Free to join",
     perks: [
-      `Up to ${PROFILE_PHOTO_MAX} profile photos`,
+      "Unlimited profile photos",
       "Go Pro to list items, reply to messages and post",
     ],
   },

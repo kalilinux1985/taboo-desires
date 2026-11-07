@@ -209,13 +209,16 @@ export function InstantSection({
 /** Overview: the member's profile photos. */
 export function PhotosSection({
   photos,
+  count,
   onViewAll,
 }: {
+  /** The newest few photos */
   photos: { _id: string; url: string }[];
+  count: number;
   onViewAll: () => void;
 }) {
   return (
-    <OverviewPanel title="Photos" count={plural(photos.length, "image")} viewAll="View All Images" onViewAll={onViewAll}>
+    <OverviewPanel title="Photos" count={plural(count, "image")} viewAll="View All Images" onViewAll={onViewAll}>
       {photos.length === 0 ? (
         <p className="text-sm text-slate-400">No photos yet.</p>
       ) : (

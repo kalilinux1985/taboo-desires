@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu.tsx";
 import ProfilePhotos from "./profile-photos.tsx";
+import { BUYER_PHOTO_MAX } from "@/shared/accounts.ts";
 import BuyerHeader from "./buyer-header.tsx";
 import BuyerOverviewCard from "./buyer-overview-card.tsx";
 import BuyerReviews from "./buyer-reviews.tsx";
@@ -96,8 +97,8 @@ export default function BuyerProfile({ profile }: { profile: Profile }) {
           />
           <SectionPreview
             title="Photos"
-            count={profile.photos.length}
-            unit={profile.photos.length === 1 ? "image" : "images"}
+            count={profile.counts.photos}
+            unit={profile.counts.photos === 1 ? "image" : "images"}
             actionLabel="View All Images"
             emptyLabel="No photos yet"
             onViewAll={() => showTab("photos")}
@@ -106,8 +107,8 @@ export default function BuyerProfile({ profile }: { profile: Profile }) {
           </SectionPreview>
         </TabsContent>
         <TabsContent value="photos">
-          {profile.isMe || profile.photos.length > 0 ? (
-            <ProfilePhotos photos={profile.photos} isMe={profile.isMe} />
+          {profile.isMe || profile.counts.photos > 0 ? (
+            <ProfilePhotos userId={profile._id} isMe={profile.isMe} total={profile.counts.photos} limit={BUYER_PHOTO_MAX} />
           ) : (
             <p className="rounded-lg bg-accent/40 px-4 py-4 text-sm text-accent-foreground">No photos yet</p>
           )}

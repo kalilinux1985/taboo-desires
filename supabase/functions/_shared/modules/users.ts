@@ -2,7 +2,7 @@ import { AppError } from "../core/errors.ts";
 import { mutation, query, type QueryCtx } from "../core/functions.ts";
 import type { Id } from "../core/schema.ts";
 import { sql } from "../core/sql.ts";
-import { v } from "../core/values.ts";
+import { paginationOptsValidator, v } from "../core/values.ts";
 import {
   getCurrentUserDoc,
   publicSellerName,
@@ -11,7 +11,7 @@ import {
 import { getPlan } from "../lib/subscription.ts";
 import { getCapabilities } from "../lib/access.ts";
 import { assertOwnFiles } from "../lib/files.ts";
-import { PROFILE_PHOTO_MAX } from "../domain/accounts.ts";
+import { BUYER_PHOTO_MAX, PROFILE_PHOTO_PREVIEW } from "../domain/accounts.ts";
 import { getStats, summarize } from "../lib/sellerStats.ts";
 import { invalidSellerDetail } from "../domain/sellerDetails.ts";
 import {
@@ -161,11 +161,9 @@ export const setAccountType = mutation({
   },
 });
 
-async function listProfilePhotos(ctx: QueryCtx, userId: Id<"users">) {
-  const rows = await ctx.db.select(
-    "profilePhotos",
-    sql`where user_id = ${userId}::uuid order by created_at, id limit ${PROFILE_PHOTO_MAX}`,
-  );
+type ProfilePhotoRow = { _id: Id<"profilePhotos">; storageId: Id<"_storage"> };
+
+async function withPhotoUrls(ctx: QueryCtx, rows: ProfilePhotoRow[]) {
   const urls = await Promise.all(
     rows.map((r) => ctx.storage.getUrl(r.storageId)),
   );
@@ -174,6 +172,32 @@ async function listProfilePhotos(ctx: QueryCtx, userId: Id<"users">) {
     return url ? [{ _id: r._id, url }] : [];
   });
 }
+
+/** The newest few profile photos, for the profile's Overview. */
+async function listProfilePhotos(ctx: QueryCtx, userId: Id<"users">) {
+  const rows = await ctx.db.select(
+    "profilePhotos",
+    sql`where user_id = ${userId}::uuid order by created_at desc, id desc limit ${PROFILE_PHOTO_PREVIEW}`,
+  );
+  return withPhotoUrls(ctx, rows);
+}
+
+/** All of a member's profile photos, newest first, a page at a time. */
+export const photosByUser = query({
+  args: { userId: v.id("users"), paginationOpts: paginationOptsValidator },
+  handler: async (ctx, { userId, paginationOpts }) => {
+    const result = await ctx.db.paginate(
+      "profilePhotos",
+      {
+        where: sql`user_id = ${userId}::uuid`,
+        order: [{ column: "created_at", cast: "timestamptz" }],
+        direction: "desc",
+      },
+      paginationOpts,
+    );
+    return { ...result, page: await withPhotoUrls(ctx, result.page) };
+  },
+});
 
 /** Public shop profile, safe to show to anyone (no email). */
 export const getProfile = query({
@@ -212,18 +236,20 @@ export const getProfile = query({
 });
 
 async function profileCounts(ctx: QueryCtx, userId: Id<"users">) {
-  ctx.db.touch("listings", "follows");
+  ctx.db.touch("listings", "follows", "profilePhotos");
   const [row] = await ctx.db.rows(sql`
     select
       (select count(*)::int from public.listings
         where seller_id = ${userId}::uuid and status = 'active' and paywall is null) as listings,
       (select count(*)::int from public.listings
         where seller_id = ${userId}::uuid and status = 'active' and paywall is not null) as instant,
-      (select count(*)::int from public.follows where follower_id = ${userId}::uuid) as following`);
+      (select count(*)::int from public.follows where follower_id = ${userId}::uuid) as following,
+      (select count(*)::int from public.profile_photos where user_id = ${userId}::uuid) as photos`);
   return {
     listings: Number(row.listings),
     instantContent: Number(row.instant),
     following: Number(row.following),
+    photos: Number(row.photos),
   };
 }
 
@@ -352,17 +378,20 @@ export const addProfilePhoto = mutation({
   handler: async (ctx, { storageId }) => {
     const user = await requireUser(ctx);
     assertOwnFiles([storageId], user._id, "public");
-    const count = Number(
-      await ctx.db.scalar(
-        sql`select count(*)::int from public.profile_photos where user_id = ${user._id}::uuid`,
-      ),
-    );
-    if (count >= PROFILE_PHOTO_MAX) {
-      ctx.storage.delete(storageId);
-      throw new AppError({
-        code: "FORBIDDEN",
-        message: `You can have up to ${PROFILE_PHOTO_MAX} profile photos`,
-      });
+    // Sellers (and admins) can add as many as they like; buyers keep a small limit
+    if (user.accountType !== "seller" && user.role !== "admin") {
+      const count = Number(
+        await ctx.db.scalar(
+          sql`select count(*)::int from public.profile_photos where user_id = ${user._id}::uuid`,
+        ),
+      );
+      if (count >= BUYER_PHOTO_MAX) {
+        ctx.storage.delete(storageId);
+        throw new AppError({
+          code: "FORBIDDEN",
+          message: `Buyers can have up to ${BUYER_PHOTO_MAX} profile photos`,
+        });
+      }
     }
     return await ctx.db.insert("profilePhotos", {
       userId: user._id,

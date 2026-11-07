@@ -1,6 +1,9 @@
 // Pure account-type rules, shared by the backend and the frontend.
 
-export const PROFILE_PHOTO_MAX = 5;
+/** Buyers can have this many profile photos; sellers have no limit. */
+export const BUYER_PHOTO_MAX = 5;
+/** How many of the newest profile photos the profile loads up front. */
+export const PROFILE_PHOTO_PREVIEW = 6;
 
 export type AccountType = "buyer" | "seller";
 

@@ -109,7 +109,7 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
             count={profile.counts.instantContent}
             onViewAll={() => showTab("instant")}
           />
-          <PhotosSection photos={profile.photos} onViewAll={() => showTab("photos")} />
+          <PhotosSection photos={profile.photos} count={profile.counts.photos} onViewAll={() => showTab("photos")} />
           <ActivitySection authorId={profile._id} />
         </TabsContent>
         <TabsContent value="shop">
@@ -123,9 +123,9 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
           </ProfilePanel>
         </TabsContent>
         <TabsContent value="photos">
-          <ProfilePanel title="Photos">
-            {profile.isMe || profile.photos.length > 0 ? (
-              <ProfilePhotos photos={profile.photos} isMe={profile.isMe} />
+          <ProfilePanel title="Photos" count={`${profile.counts.photos} ${profile.counts.photos === 1 ? "image" : "images"}`}>
+            {profile.isMe || profile.counts.photos > 0 ? (
+              <ProfilePhotos userId={profile._id} isMe={profile.isMe} total={profile.counts.photos} />
             ) : (
               <p className="text-sm text-slate-400">No photos yet</p>
             )}
