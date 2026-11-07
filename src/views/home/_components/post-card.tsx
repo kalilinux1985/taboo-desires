@@ -13,17 +13,19 @@ import {
 } from "@/components/ui/dropdown-menu.tsx";
 import ProfileAvatar from "@/components/profile-avatar.tsx";
 import VerifiedBadge from "@/components/verified-badge.tsx";
+import CountryFlag from "@/components/country-flag.tsx";
 import { useNow } from "@/hooks/use-now.ts";
 import { cn } from "@/lib/utils.ts";
 import { formatPrice, getErrorMessage } from "@/lib/listings.ts";
 import { activityVerb, shortAge, type FeedItem } from "../_lib/feed.ts";
 import PostComments from "./post-comments.tsx";
+import LikerAvatars from "./liker-avatars.tsx";
 
 function PostImages({ images }: { images: string[] }) {
   if (images.length === 1) {
     return (
-      <div className="w-full max-w-sm overflow-hidden rounded-lg border border-white/10 bg-muted">
-        <img src={images[0]} alt="" loading="lazy" className="max-h-[28rem] w-full object-cover" />
+      <div className="flex w-full max-w-md justify-center overflow-hidden rounded-md border border-white/15 bg-muted/60">
+        <img src={images[0]} alt="" loading="lazy" className="max-h-[32rem] w-auto max-w-full object-contain" />
       </div>
     );
   }
@@ -65,11 +67,12 @@ function ListingPreview({ listing }: { listing: NonNullable<FeedItem["listing"]>
   );
 }
 
-/** One activity entry: avatar, name, "Added a new photo > caption", media, counts and age. */
+/** One activity entry laid out like the reference: avatar, name and flag, "Added a new photo > caption",
+ * media, comment and like counts with liker faces, age, then the comment thread. */
 export default function PostCard({ item, online }: { item: FeedItem; online: boolean }) {
   const toggleLike = useMutation(api.posts.toggleLike);
   const remove = useMutation(api.posts.remove);
-  const [showComments, setShowComments] = useState(false);
+  const [showComments, setShowComments] = useState(true);
   const now = useNow(30_000);
   const verb = activityVerb(item);
   const profile = `/seller/${item.author._id}`;
@@ -83,12 +86,12 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
       .catch((e) => toast.error(getErrorMessage(e, "Could not delete")));
 
   return (
-    <article className="flex gap-3 border-b border-white/10 py-6 sm:gap-4">
+    <article className="flex gap-3 border-b border-white/10 py-6 sm:gap-5">
       <Link href={profile} className="relative h-fit shrink-0 cursor-pointer">
         <ProfileAvatar
           name={item.author.name}
           url={item.author.avatarUrl}
-          className="size-14 text-2xl ring-2 ring-violet-700/60 sm:size-20 sm:text-3xl"
+          className="size-16 border-[3px] border-violet-600 text-2xl sm:size-24 sm:text-4xl"
         />
         {online && (
           <span
@@ -98,30 +101,28 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
         )}
       </Link>
 
-      <div className="flex min-w-0 flex-1 flex-col gap-3">
+      <div className="flex min-w-0 flex-1 flex-col gap-4">
         <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <p className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-              <Link href={profile} className="cursor-pointer text-lg font-bold hover:underline">
+          <div className="flex min-w-0 flex-col gap-1">
+            <p className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5">
+              <Link href={profile} className="cursor-pointer text-xl font-bold hover:underline sm:text-2xl">
                 {item.author.name}
               </Link>
-              {item.author.verified && <VerifiedBadge />}
               {item.author.country && (
-                <span className="rounded-sm bg-secondary px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                  {item.author.country}
-                </span>
+                <CountryFlag country={item.author.country} className="h-4 w-6 rounded-[2px] object-cover sm:h-5 sm:w-7" />
               )}
+              {item.author.verified && <VerifiedBadge />}
             </p>
-            <p className="break-words text-foreground/80">
+            <p className="break-words text-base text-foreground/80 sm:text-xl">
               {verb.lead}{" "}
               <Link href={verbHref} className="cursor-pointer font-bold text-violet-400 hover:underline">
                 {verb.link}
               </Link>
-              {(item.body || item.listing) && <ChevronRight className="mx-1 inline size-4 text-muted-foreground" />}
+              {(item.body || item.listing) && <ChevronRight className="mx-1.5 inline size-5 text-muted-foreground" />}
               {item.listing && !item.body ? (
-                <span className="font-bold text-foreground">{item.listing.title}</span>
+                <span className="text-foreground/90">{item.listing.title}</span>
               ) : (
-                <span className="whitespace-pre-wrap">{item.body}</span>
+                <span className="whitespace-pre-wrap text-foreground/90">{item.body}</span>
               )}
             </p>
           </div>
@@ -147,32 +148,34 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
           <p className="text-sm text-muted-foreground">This listing is no longer available.</p>
         )}
 
-        <div className="flex items-center justify-between gap-4 text-muted-foreground">
-          <div className="flex items-center divide-x divide-white/10">
+        <div className="flex items-start justify-between gap-3 text-lg text-muted-foreground sm:text-xl">
+          <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
             <button
               type="button"
               onClick={() => setShowComments((s) => !s)}
+              aria-expanded={showComments}
               className={cn(
-                "flex cursor-pointer items-center gap-1.5 pr-4 transition-colors hover:text-foreground",
+                "flex cursor-pointer items-center gap-1.5 border-r border-white/15 pr-4 transition-colors hover:text-foreground",
                 showComments && "text-violet-400",
               )}
             >
-              {item.commentCount} <MessageCircle className="size-5" />
+              {item.commentCount} <MessageCircle className="size-6" />
             </button>
             <button
               type="button"
               onClick={like}
               aria-pressed={item.likedByMe}
               className={cn(
-                "flex cursor-pointer items-center gap-1.5 pl-4 transition-colors hover:text-foreground",
+                "flex cursor-pointer items-center gap-1.5 pl-1 pr-1 transition-colors hover:text-foreground",
                 item.likedByMe && "text-violet-400",
               )}
             >
-              <Heart className={cn("size-5", item.likedByMe && "fill-violet-500 text-violet-500")} /> {item.likeCount}
+              <Heart className={cn("size-6", item.likedByMe && "fill-violet-500 text-violet-500")} /> {item.likeCount}
             </button>
+            <LikerAvatars likers={item.likers} total={item.likeCount} postId={item._id} />
           </div>
-          <span className="flex items-center gap-1 text-sm">
-            <Clock className="size-4" /> {shortAge(item._creationTime, now)}
+          <span className="flex shrink-0 items-center gap-1.5">
+            <Clock className="size-5" /> {shortAge(item._creationTime, now)}
           </span>
         </div>
 

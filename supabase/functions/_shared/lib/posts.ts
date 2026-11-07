@@ -108,12 +108,70 @@ async function loadListingPreview(ctx: QueryCtx, listingId: Id<"listings">) {
 }
 
 /** Shape sent to the feed UI. Presence is fetched separately so heartbeats don't re-run the feed. */
+/** A member who liked a post or comment, shown as a small avatar. */
+export type Liker = { _id: Id<"users">; name: string; avatarUrl: string | null };
+
+/** How many liker avatars a post and a comment show before "More+". */
+export const POST_LIKERS_SHOWN = 9;
+export const COMMENT_LIKERS_SHOWN = 3;
+
+async function toLikers(ctx: QueryCtx, userIds: string[]): Promise<Liker[]> {
+  const authors = await Promise.all(userIds.map((id) => loadFeedAuthor(ctx, id as Id<"users">)));
+  return authors
+    .filter((a) => a.name !== "Deleted user")
+    .map((a) => ({ _id: a._id, name: a.name, avatarUrl: a.avatarUrl }));
+}
+
+/** The most recent people who liked a post, newest first. */
+export async function loadPostLikers(
+  ctx: QueryCtx,
+  postId: Id<"posts">,
+  limit: number,
+): Promise<Liker[]> {
+  ctx.db.touch("postLikes");
+  const rows = await ctx.db.rows(sql`
+    select user_id from public.post_likes
+     where post_id = ${postId}::uuid
+     order by created_at desc, id desc
+     limit ${limit}`);
+  return toLikers(ctx, rows.map((r) => String(r.user_id)));
+}
+
+/** The most recent likers of each comment, keyed by comment id. */
+export async function loadCommentLikers(
+  ctx: QueryCtx,
+  commentIds: string[],
+  perComment: number,
+): Promise<Map<string, Liker[]>> {
+  const byComment = new Map<string, Liker[]>();
+  if (commentIds.length === 0) return byComment;
+  ctx.db.touch("postCommentLikes");
+  const rows = await ctx.db.rows(sql`
+    select comment_id, user_id from (
+      select comment_id, user_id,
+             row_number() over (partition by comment_id order by created_at desc, id desc) as n
+        from public.post_comment_likes
+       where comment_id = any(${commentIds}::uuid[])
+    ) ranked
+     where n <= ${perComment}
+     order by comment_id, n`);
+  const ids = new Map<string, string[]>();
+  for (const r of rows) {
+    const key = String(r.comment_id);
+    ids.set(key, [...(ids.get(key) ?? []), String(r.user_id)]);
+  }
+  await Promise.all(
+    [...ids].map(async ([key, users]) => byComment.set(key, await toLikers(ctx, users))),
+  );
+  return byComment;
+}
+
 export async function toFeedItem(
   ctx: QueryCtx,
   post: Doc<"posts">,
   me: Doc<"users"> | null,
 ) {
-  const [author, imageUrls, listing, myLike] = await Promise.all([
+  const [author, imageUrls, listing, myLike, likers] = await Promise.all([
     loadFeedAuthor(ctx, post.authorId),
     Promise.all(post.imageIds.map((id) => ctx.storage.getUrl(id))),
     post.listingId ? loadListingPreview(ctx, post.listingId) : null,
@@ -123,6 +181,7 @@ export async function toFeedItem(
           sql`where post_id = ${post._id}::uuid and user_id = ${me._id}::uuid`,
         )
       : null,
+    post.likeCount > 0 ? loadPostLikers(ctx, post._id, POST_LIKERS_SHOWN) : [],
   ]);
   return {
     _id: post._id,
@@ -135,6 +194,7 @@ export async function toFeedItem(
     likeCount: post.likeCount,
     commentCount: post.commentCount,
     likedByMe: !!myLike,
+    likers,
     canDelete: !!me && (me._id === post.authorId || me.role === "admin"),
     author,
   };

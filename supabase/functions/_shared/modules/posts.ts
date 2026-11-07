@@ -13,8 +13,11 @@ import {
   POST_IMAGES_MAX,
   cleanBody,
   deletePostCascade,
+  COMMENT_LIKERS_SHOWN,
   insertListingPost,
+  loadCommentLikers,
   loadFeedAuthor,
+  loadPostLikers,
   toFeedItem,
 } from "../lib/posts.ts";
 
@@ -199,6 +202,11 @@ export const listComments = query({
          where user_id = ${me._id}::uuid and comment_id = any(${ids}::uuid[])`);
       for (const r of rows) liked.add(String(r.comment_id));
     }
+    const likers = await loadCommentLikers(
+      ctx,
+      result.page.filter((c) => (c.likeCount ?? 0) > 0).map((c) => c._id),
+      COMMENT_LIKERS_SHOWN,
+    );
     return {
       ...result,
       page: await Promise.all(
@@ -209,11 +217,22 @@ export const listComments = query({
           likeCount: c.likeCount ?? 0,
           replyCount: c.replyCount ?? 0,
           likedByMe: liked.has(c._id),
+          likers: likers.get(c._id) ?? [],
           author: await loadFeedAuthor(ctx, c.authorId),
           canDelete: !!me && (me._id === c.authorId || me.role === "admin"),
         })),
       ),
     };
+  },
+});
+
+/** Everyone who liked a post (newest first, up to 100), for "More+". */
+export const likers = query({
+  args: { postId: v.id("posts") },
+  handler: async (ctx, { postId }) => {
+    const post = await ctx.db.get("posts", postId);
+    if (!post) return [];
+    return loadPostLikers(ctx, postId, 100);
   },
 });
 

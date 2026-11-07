@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { Spinner } from "@/components/ui/spinner.tsx";
 import { ShopCard } from "@/components/shop/shop-grid.tsx";
-import ProfilePost from "./profile-post.tsx";
+import PostCard from "@/views/home/_components/post-card.tsx";
 import { HEADING_FONT, OUTLINE_ACTION, PANEL } from "../_lib/theme.ts";
 
 /** A titled panel: heading with a violet underline, optional count and action. */
@@ -142,7 +142,7 @@ export function InstantSection({
 }
 
 /** Overview: the member's own posts with likes and comments. */
-export function ActivitySection({ authorId, label }: { authorId: Id<"users">; label: string }) {
+export function ActivitySection({ authorId }: { authorId: Id<"users"> }) {
   const { results, status, loadMore } = usePaginatedQuery(
     api.posts.feed,
     { filter: "all", sort: "newest", authorId },
@@ -155,9 +155,9 @@ export function ActivitySection({ authorId, label }: { authorId: Id<"users">; la
       ) : results.length === 0 ? (
         <p className="text-sm text-slate-400">No posts yet.</p>
       ) : (
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col">
           {results.map((item) => (
-            <ProfilePost key={item._id} item={item} label={label} />
+            <PostCard key={item._id} item={item} online={false} />
           ))}
           {(status === "CanLoadMore" || status === "LoadingMore") && (
             <Button

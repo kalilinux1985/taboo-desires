@@ -70,7 +70,6 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
     setTab(next);
     document.getElementById("profile-tabs")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
-  const label = profile.isPro ? "Premium seller" : "Seller";
 
   return (
     <div className={cn(TEXT_FONT, "mx-auto grid max-w-6xl items-start gap-6 px-4 py-6 lg:grid-cols-[20rem_1fr] lg:gap-12")}>
@@ -109,7 +108,7 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
             count={profile.counts.instantContent}
             onViewAll={() => showTab("instant")}
           />
-          <ActivitySection authorId={profile._id} label={label} />
+          <ActivitySection authorId={profile._id} />
         </TabsContent>
         <TabsContent value="shop">
           <ProfilePanel title="Shop" count={`${profile.counts.listings} Listings`}>
