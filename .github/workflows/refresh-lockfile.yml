@@ -1,0 +1,38 @@
+# Regenerates pnpm-lock.yaml from package.json and commits it to the branch.
+# Run it from GitHub: Actions -> Refresh lockfile -> Run workflow.
+name: Refresh lockfile
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  lockfile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.30.3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Regenerate pnpm-lock.yaml
+        run: pnpm install --lockfile-only --no-frozen-lockfile
+
+      - name: Commit the lockfile if it changed
+        run: |
+          if git diff --quiet -- pnpm-lock.yaml; then
+            echo "pnpm-lock.yaml is already up to date"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pnpm-lock.yaml
+          git commit -m "Regenerate pnpm-lock.yaml"
+          git push
