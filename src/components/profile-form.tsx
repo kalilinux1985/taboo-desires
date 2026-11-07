@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label.tsx";
 import { Textarea } from "@/components/ui/textarea.tsx";
 import { Spinner } from "@/components/ui/spinner.tsx";
 import { getErrorMessage } from "@/lib/listings.ts";
-import AvatarPicker from "./avatar-picker.tsx";
 import AvatarDropzone from "./avatar-dropzone.tsx";
 import type { AvatarChange } from "@/hooks/use-avatar-upload.ts";
 
@@ -19,29 +18,22 @@ export type EditableProfile = {
   avatarUrl: string | null;
 };
 
-const FIELDS = [
-  {
-    key: "shopName",
-    label: "Username",
-    placeholder: "Velvet Rose",
-    max: 40,
-    hint: "This is your alias on Taboo Desires and protects your identity.",
-  },
-  { key: "location", label: "Location", placeholder: "Somewhere sunny", max: 60, hint: null },
-] as const;
+const USERNAME = {
+  key: "shopName",
+  label: "Username",
+  max: 40,
+  hint: "This is your alias on Taboo Desires and protects your identity.",
+} as const;
 
 /**
- * Profile picture, name, location and bio. Shared by the shop dialog and Settings.
- * The "buyer" layout mirrors allthingsworn: username, large image drop area, then bio.
+ * Username, profile image and bio, as on the Settings pages.
  */
 export default function ProfileForm({
   profile,
   onSaved,
-  layout = "seller",
 }: {
   profile: EditableProfile;
   onSaved?: () => void;
-  layout?: "seller" | "buyer";
 }) {
   const updateProfile = useMutation(api.users.updateProfile);
   const [saving, setSaving] = useState(false);
@@ -74,7 +66,7 @@ export default function ProfileForm({
     onChange: setAvatar,
     onUploadingChange: setAvatarUploading,
   };
-  const usernameField = FIELDS[0];
+  const usernameField = USERNAME;
   const bioField = (
     <div className="grid gap-2">
       <Label htmlFor="bio">Bio</Label>
@@ -82,17 +74,11 @@ export default function ProfileForm({
         id="bio"
         maxLength={300}
         rows={4}
-        placeholder={
-          layout === "buyer"
-            ? "Tell sellers a little about yourself and what you like."
-            : "Flirty, friendly, and always discreet. Customs welcome."
-        }
+        placeholder="Tell people a little about yourself."
         value={form.bio}
         onChange={(e) => setForm({ ...form, bio: e.target.value })}
       />
-      {layout === "buyer" && (
-        <p className="text-xs text-muted-foreground">Introduce yourself to sellers in a few words.</p>
-      )}
+      <p className="text-xs text-muted-foreground">Introduce yourself in a few words.</p>
     </div>
   );
   const saveRow = (
@@ -103,8 +89,7 @@ export default function ProfileForm({
     </div>
   );
 
-  if (layout === "buyer") {
-    return (
+  return (
       <div className="flex flex-col gap-6">
         <div className="grid gap-2">
           <Label htmlFor={usernameField.key} className="text-base font-semibold">
@@ -127,32 +112,6 @@ export default function ProfileForm({
         </div>
         {bioField}
         {saveRow}
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="grid gap-2">
-        <Label>Profile picture</Label>
-        <AvatarPicker {...pickerProps} />
-        <p className="text-xs text-muted-foreground">No nudity. Images that break this rule will be removed.</p>
-      </div>
-      {FIELDS.map((f) => (
-        <div key={f.key} className="grid gap-2">
-          <Label htmlFor={f.key}>{f.label}</Label>
-          <Input
-            id={f.key}
-            maxLength={f.max}
-            placeholder={f.placeholder}
-            value={form[f.key]}
-            onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
-          />
-          {f.hint && <p className="text-xs text-muted-foreground">{f.hint}</p>}
-        </div>
-      ))}
-      {bioField}
-      {saveRow}
     </div>
   );
 }

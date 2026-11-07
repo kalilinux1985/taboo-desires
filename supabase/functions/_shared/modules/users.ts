@@ -14,6 +14,13 @@ import { assertOwnFiles } from "../lib/files.ts";
 import { PROFILE_PHOTO_MAX } from "../domain/accounts.ts";
 import { getStats, summarize } from "../lib/sellerStats.ts";
 import { invalidSellerDetail } from "../domain/sellerDetails.ts";
+import {
+  OFFERINGS,
+  PAYMENT_METHODS,
+  invalidSetting,
+  withDefaults,
+  type SellerSettings,
+} from "../domain/sellerSettings.ts";
 import { invalidBuyerDetail } from "../domain/buyerDetails.ts";
 import { getActivity, getBadges } from "./activity.ts";
 
@@ -35,6 +42,7 @@ export const sellerDetailsValidator = v.object({
   drinks: opt,
   height: opt,
   relationshipStatus: opt,
+  pregnant: opt,
 });
 export const buyerDetailsValidator = v.object({
   gender: opt,
@@ -193,6 +201,9 @@ export const getProfile = query({
         user.accountType === "buyer" ? {} : (user.sellerDetails ?? {}),
       buyerDetails:
         user.accountType === "buyer" ? (user.buyerDetails ?? {}) : {},
+      // Shown in the profile's About section
+      paymentMethods: user.accountType === "buyer" ? [] : (user.settings?.paymentMethods ?? []),
+      offerings: user.accountType === "buyer" ? [] : (user.settings?.offerings ?? []),
       counts: await profileCounts(ctx, user._id),
       activity: await getActivity(ctx, user._id),
       badges: await getBadges(ctx, user),
@@ -230,6 +241,49 @@ export const updateSellerDetails = mutation({
     const problem = invalidSellerDetail(details);
     if (problem) throw new AppError({ code: "BAD_REQUEST", message: problem });
     await ctx.db.patch("users", user._id, { sellerDetails: details });
+    return null;
+  },
+});
+
+const settingsValidator = v.object({
+  profilePrivate: opt,
+  siteVisibility: opt,
+  emailNotifications: opt,
+  marketingEmails: opt,
+  webPush: opt,
+  messagesFrom: opt,
+  socialFeature: opt,
+  paymentMethods: v.optional(v.array(v.string(), PAYMENT_METHODS.length)),
+  offerings: v.optional(v.array(v.string(), OFFERINGS.length)),
+});
+
+/** The signed-in seller's settings, defaults filled in. */
+export const mySettings = query({
+  args: {},
+  handler: async (ctx) => {
+    const me = await getCurrentUserDoc(ctx);
+    return me ? withDefaults(me.settings) : null;
+  },
+});
+
+/** Saves the given settings; anything not sent keeps its current value. */
+export const updateSettings = mutation({
+  args: { settings: settingsValidator },
+  handler: async (ctx, { settings }) => {
+    const user = await requireUser(ctx);
+    if (user.accountType !== "seller" && user.role !== "admin") {
+      throw new AppError({ code: "FORBIDDEN", message: "These settings are for sellers" });
+    }
+    const problem = invalidSetting(settings);
+    if (problem) throw new AppError({ code: "BAD_REQUEST", message: problem });
+    const unique = (list?: string[]) => (list ? [...new Set(list)] : undefined);
+    const next: SellerSettings = { ...user.settings };
+    for (const [key, value] of Object.entries(settings)) {
+      if (value !== undefined) (next as Record<string, unknown>)[key] = value;
+    }
+    next.paymentMethods = unique(next.paymentMethods);
+    next.offerings = unique(next.offerings);
+    await ctx.db.patch("users", user._id, { settings: next });
     return null;
   },
 });

@@ -164,6 +164,7 @@ export const SELLER_DETAIL_FIELDS = [
       "Prefer not to say",
     ],
   },
+  { key: "pregnant", label: "Pregnant", options: ["Yes", "No"] },
 ] as const;
 
 export type SellerDetailKey = (typeof SELLER_DETAIL_FIELDS)[number]["key"];

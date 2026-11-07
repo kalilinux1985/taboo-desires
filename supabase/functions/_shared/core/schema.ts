@@ -16,6 +16,7 @@ import type {
   UnlockStatus,
 } from "../domain/enums.ts";
 import type { SellerDetails } from "../domain/sellerDetails.ts";
+import type { SellerSettings } from "../domain/sellerSettings.ts";
 import type { Subcategory } from "../domain/subcategories.ts";
 import type { BuyerDetails } from "../domain/buyerDetails.ts";
 
@@ -39,6 +40,8 @@ type Fields = {
     accountType?: "buyer" | "seller";
     verified: boolean;
     sellerDetails?: SellerDetails;
+    /** Seller settings: payment methods, offerings, notifications and visibility */
+    settings?: SellerSettings;
     buyerDetails?: BuyerDetails;
   };
   presence: { userId: Id<"users">; lastSeenAt: string };
@@ -224,6 +227,7 @@ export const TABLES: { [T in DbTable]: TableDef<T> } = {
       accountType: c("account_type"),
       verified: c("verified", "bool"),
       sellerDetails: c("seller_details", "json"),
+      settings: c("settings", "json"),
       buyerDetails: c("buyer_details", "json"),
     },
   },

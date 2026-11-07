@@ -20,6 +20,17 @@ function Detail({ label, value }: { label: string; value: string | number }) {
   );
 }
 
+/** A filled-in list (payment methods, what they offer), wrapped onto several lines. */
+function ListDetail({ label, items }: { label: string; items: string[] }) {
+  if (items.length === 0) return null;
+  return (
+    <div className="flex flex-col gap-1 py-1 text-sm">
+      <dt className="text-slate-400">{label}:</dt>
+      <dd className="text-slate-200">{items.join(", ")}</dd>
+    </div>
+  );
+}
+
 // Shown before "Show more"; country already appears on the profile card
 const FIRST = ["gender", "ageRange"];
 const SKIP = new Set(["country"]);
@@ -67,6 +78,8 @@ export default function ProfileAbout({ profile }: { profile: Profile }) {
             {more.map((f) => (
               <Detail key={f.key} label={f.label} value={f.value} />
             ))}
+            <ListDetail label="Payment Methods" items={profile.paymentMethods} />
+            <ListDetail label="What I Offer" items={profile.offerings} />
             <Detail label="Joined" value={format(profile.memberSince, "MMM yyyy")} />
             <Detail label="Profile Visits" value={profile.activity.profileVisits.toLocaleString("en-US")} />
           </div>

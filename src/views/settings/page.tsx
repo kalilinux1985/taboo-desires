@@ -10,10 +10,9 @@ import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { SignInButton } from "@/components/ui/signin.tsx";
 import RequireAuth from "@/components/require-auth.tsx";
 import ProfileForm from "@/components/profile-form.tsx";
-import SellerDetailsForm from "./_components/seller-details-form.tsx";
+import SellerSettingsForm from "./_components/seller-settings-form.tsx";
 import BuyerDetailsForm from "./_components/buyer-details-form.tsx";
 import DeleteAccount from "./_components/delete-account.tsx";
-import PlanCard from "./_components/plan-card.tsx";
 
 function Row({ label, value }: { label: string; value: ReactNode }) {
   return (
@@ -49,48 +48,57 @@ function SettingsInner({ kind }: { kind?: SettingsKind }) {
 
   const accountLabel = me.accountType === "seller" ? "Seller" : me.accountType === "buyer" ? "Buyer" : "Not chosen";
   const isSeller = kind === "seller";
+
+  // Sellers: profile, More About You, Login Credentials, Notifications & Visibility, delete
+  if (isSeller) {
+    return (
+      <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
+        <Card>
+          <CardContent className="pt-6">
+            <ProfileForm profile={profile} />
+          </CardContent>
+        </Card>
+        <SellerSettingsForm details={profile.sellerDetails} email={me.email ?? ""} />
+        {!me.isAdmin && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="font-display text-2xl">Delete Your Account</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col gap-3 rounded-lg border border-destructive/40 bg-destructive/5 p-4">
+                <p className="text-sm text-muted-foreground">
+                  Permanently deleting your account will remove all your data on Taboo Desires,
+                  including your listings, messages and posts. This can't be undone.
+                </p>
+                <DeleteAccount />
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[1fr_360px]">
       <Card>
-        {isSeller ? (
-          <CardHeader>
-            <CardTitle className="font-display text-2xl">Profile</CardTitle>
-            <CardDescription>This is what other members see.</CardDescription>
-          </CardHeader>
-        ) : (
-          <CardHeader className="border-b border-white/10 pb-4">
-            <CardTitle className="font-display text-2xl">Profile Information</CardTitle>
-          </CardHeader>
-        )}
+        <CardHeader className="border-b border-white/10 pb-4">
+          <CardTitle className="font-display text-2xl">Profile Information</CardTitle>
+        </CardHeader>
         <CardContent>
-          <ProfileForm profile={profile} layout={isSeller ? "seller" : "buyer"} />
+          <ProfileForm profile={profile} />
         </CardContent>
       </Card>
-      {isSeller ? (
-        <Card className="lg:col-start-1">
-          <CardHeader>
-            <CardTitle className="font-display text-2xl">More about you</CardTitle>
-            <CardDescription>
-              Optional. Shown on your shop so buyers can find you.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <SellerDetailsForm initial={profile.sellerDetails} />
-          </CardContent>
-        </Card>
-      ) : (
-        <Card className="lg:col-start-1">
-          <CardHeader>
-            <CardTitle className="font-display text-2xl">About you</CardTitle>
-            <CardDescription>Optional. Shown on your buyer profile.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <BuyerDetailsForm initial={profile.buyerDetails} />
-          </CardContent>
-        </Card>
-      )}
+      <Card className="lg:col-start-1">
+        <CardHeader>
+          <CardTitle className="font-display text-2xl">About you</CardTitle>
+          <CardDescription>Optional. Shown on your buyer profile.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <BuyerDetailsForm initial={profile.buyerDetails} />
+        </CardContent>
+      </Card>
       <div className="flex flex-col gap-6 lg:col-start-2 lg:row-span-2 lg:row-start-1">
-      {isSeller && <PlanCard />}
       <Card>
         <CardHeader>
           <CardTitle className="font-display text-2xl">Account</CardTitle>

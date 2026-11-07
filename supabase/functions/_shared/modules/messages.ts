@@ -1,5 +1,6 @@
 import { AppError } from "../core/errors.ts";
-import { mutation, query, type QueryCtx } from "../core/functions.ts";
+import { acceptsNewMessages } from "../domain/sellerSettings.ts";
+import { mutation, query, type MutationCtx, type QueryCtx } from "../core/functions.ts";
 import type { Doc, Id } from "../core/schema.ts";
 import { sql } from "../core/sql.ts";
 import { paginationOptsValidator, v } from "../core/values.ts";
@@ -97,6 +98,25 @@ async function summarize(
 }
 
 /** Starts (or continues) a conversation with the seller of a listing. */
+/** Sellers can turn off new conversations; buyers already talking to them can still write. */
+async function assertSellerAcceptsBuyer(
+  ctx: MutationCtx,
+  sellerId: Id<"users">,
+  buyerId: Id<"users">,
+) {
+  const seller = await ctx.db.get("users", sellerId);
+  if (acceptsNewMessages(seller?.settings)) return;
+  const talking = await ctx.db.first(
+    "conversations",
+    sql`where seller_id = ${sellerId}::uuid and buyer_id = ${buyerId}::uuid`,
+  );
+  if (!talking)
+    throw new AppError({
+      code: "FORBIDDEN",
+      message: "This seller isn't accepting new messages right now",
+    });
+}
+
 export const start = mutation({
   args: { listingId: v.id("listings"), body: v.string() },
   handler: async (ctx, { listingId, body }) => {
@@ -117,6 +137,7 @@ export const start = mutation({
       "conversations",
       sql`where listing_id = ${listingId}::uuid and buyer_id = ${user._id}::uuid`,
     );
+    if (!existing) await assertSellerAcceptsBuyer(ctx, listing.sellerId, user._id);
     const convo =
       existing ??
       (await ctx.db.get(
@@ -160,6 +181,7 @@ export const startWithSeller = mutation({
       "conversations",
       sql`where listing_id is null and buyer_id = ${user._id}::uuid and seller_id = ${sellerId}::uuid`,
     );
+    if (!existing) await assertSellerAcceptsBuyer(ctx, sellerId, user._id);
     const convo =
       existing ??
       (await ctx.db.get(
