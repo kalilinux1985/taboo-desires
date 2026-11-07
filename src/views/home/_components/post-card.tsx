@@ -72,7 +72,7 @@ function ListingPreview({ listing }: { listing: NonNullable<FeedItem["listing"]>
 export default function PostCard({ item, online }: { item: FeedItem; online: boolean }) {
   const toggleLike = useMutation(api.posts.toggleLike);
   const remove = useMutation(api.posts.remove);
-  const [showComments, setShowComments] = useState(true);
+  const [showComments, setShowComments] = useState(false);
   const now = useNow(30_000);
   const verb = activityVerb(item);
   const profile = `/seller/${item.author._id}`;
