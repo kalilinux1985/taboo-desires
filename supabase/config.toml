@@ -11,6 +11,6 @@ major_version = 17
 verify_jwt = false
 
 [functions.rapid-endpoint]
-# The live function, deployed by .github/workflows/deploy-backend.yml from a
-# bundle of functions/api. Its JWT check stays on, as it is in the dashboard.
+# The live function: supabase/functions/loader, which runs the latest
+# backend-dist/api.cjs from GitHub. Its JWT check stays on, as in the dashboard.
 verify_jwt = true

@@ -1,0 +1,50 @@
+# Rebuilds backend-dist/api.cjs whenever the backend code on main changes and
+# commits it. The live Edge Function (supabase/functions/loader) downloads that
+# file from GitHub and runs it, so this is all a backend update needs: no
+# Supabase tokens and no redeploying the function.
+name: Build backend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "supabase/functions/api/**"
+      - "supabase/functions/_shared/**"
+      - ".github/workflows/build-backend.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-backend
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Bundle the backend
+        run: |
+          mkdir -p backend-dist
+          npx --yes esbuild@0.28.2 supabase/functions/api/index.ts \
+            --bundle --format=cjs --platform=neutral --target=es2022 \
+            --external:'npm:*' --outfile=backend-dist/api.cjs --log-level=warning
+
+      - name: Commit the build if it changed
+        run: |
+          if git diff --quiet -- backend-dist; then
+            echo "Backend build is already up to date."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898729+github-actions[bot]@users.noreply.github.com"
+          git add backend-dist/api.cjs
+          git commit -m "Rebuild backend-dist/api.cjs"
+          git push
