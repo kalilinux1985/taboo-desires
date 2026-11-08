@@ -290,25 +290,6 @@ var TABLES = {
       amountCents: c("amount_cents", "int")
     }
   },
-  threads: {
-    sqlName: "threads",
-    columns: {
-      authorId: c("author_id", "uuid"),
-      topic: c("topic"),
-      title: c("title"),
-      body: c("body"),
-      replyCount: c("reply_count", "int"),
-      lastActivityAt: c("last_activity_at", "ts")
-    }
-  },
-  replies: {
-    sqlName: "replies",
-    columns: {
-      threadId: c("thread_id", "uuid"),
-      authorId: c("author_id", "uuid"),
-      body: c("body")
-    }
-  },
   posts: {
     sqlName: "posts",
     columns: {
@@ -1003,11 +984,6 @@ var deleteMyAccount = mutation({
                where user_id = ${id}::uuid group by post_id) l
        where p.id = l.post_id and p.author_id <> ${id}::uuid`);
     await ctx.db.rows(sql`
-      update public.threads t set reply_count = greatest(0, t.reply_count - r.n)
-        from (select thread_id, count(*)::int as n from public.replies
-               where author_id = ${id}::uuid group by thread_id) r
-       where t.id = r.thread_id and t.author_id <> ${id}::uuid`);
-    await ctx.db.rows(sql`
       update public.seller_stats s
          set review_count = greatest(0, s.review_count - r.n),
              rating_sum = greatest(0, s.rating_sum - r.total)
@@ -1261,7 +1237,7 @@ function capabilities(accountType, isPro, isAdmin) {
 var DENIED = {
   post: {
     buyer: "You can't post right now",
-    seller: "Upgrade to Pro to post on the community board",
+    seller: "Upgrade to Pro to post on the activity feed",
     none: "Choose an account type first"
   },
   message: {
@@ -1545,12 +1521,6 @@ var CONDITIONS = [
 var LISTING_STATUSES = ["active", "sold", "ended"];
 var SALE_TYPES = ["fixed", "auction"];
 var MEDIA_KINDS = ["image", "video"];
-var FORUM_TOPIC_IDS = [
-  "seller_tips",
-  "buyer_talk",
-  "introductions",
-  "off_topic"
-];
 
 // supabase/functions/_shared/lib/files.ts
 function assertOwnFiles(ids, userId, visibility, alreadyAttached = []) {
@@ -2787,195 +2757,6 @@ var feed = query({
   }
 });
 
-// supabase/functions/_shared/modules/forum.ts
-var forum_exports = {};
-__export(forum_exports, {
-  createThread: () => createThread,
-  deleteReply: () => deleteReply,
-  deleteThread: () => deleteThread,
-  getThread: () => getThread,
-  listReplies: () => listReplies,
-  listThreads: () => listThreads,
-  reply: () => reply
-});
-
-// supabase/functions/_shared/domain/forum.ts
-var TITLE_MIN = 3;
-var TITLE_MAX = 120;
-var POST_MAX = 5e3;
-var REPLY_MAX = 2e3;
-
-// supabase/functions/_shared/modules/forum.ts
-var forumTopicValidator = v.union(
-  ...FORUM_TOPIC_IDS.map((t) => v.literal(t))
-);
-async function loadAuthor(ctx, userId) {
-  const user = await ctx.db.get("users", userId);
-  if (!user) return { _id: userId, name: "Deleted user", accountType: null };
-  return {
-    _id: user._id,
-    name: publicSellerName(user),
-    accountType: user.accountType ?? null
-  };
-}
-function cleanText(raw2, max, label, min = 1) {
-  const text = raw2.trim();
-  if (text.length < min || text.length > max) {
-    throw new AppError({
-      code: "BAD_REQUEST",
-      message: `${label} must be ${min}-${max} characters`
-    });
-  }
-  return text;
-}
-function canModerate(user, authorId) {
-  return !!user && (user.role === "admin" || user._id === authorId);
-}
-var listThreads = query({
-  args: {
-    topic: v.optional(forumTopicValidator),
-    paginationOpts: paginationOptsValidator
-  },
-  handler: async (ctx, { topic, paginationOpts }) => {
-    const result = await ctx.db.paginate(
-      "threads",
-      {
-        where: topic ? sql`topic = ${topic}` : void 0,
-        order: [{ column: "last_activity_at", cast: "timestamptz" }],
-        direction: "desc"
-      },
-      paginationOpts
-    );
-    return {
-      ...result,
-      page: await Promise.all(
-        result.page.map(async (t) => ({
-          _id: t._id,
-          _creationTime: t._creationTime,
-          topic: t.topic,
-          title: t.title,
-          // Short preview keeps list payloads small
-          preview: t.body.slice(0, 180),
-          replyCount: t.replyCount,
-          lastActivityAt: t.lastActivityAt,
-          author: await loadAuthor(ctx, t.authorId)
-        }))
-      )
-    };
-  }
-});
-var getThread = query({
-  // Plain string so a malformed URL shows "not found" instead of throwing
-  args: { threadId: v.string() },
-  handler: async (ctx, args) => {
-    const thread = isUuid(args.threadId) ? await ctx.db.get("threads", args.threadId) : null;
-    if (!thread) return null;
-    const me = await getCurrentUserDoc(ctx);
-    return {
-      ...thread,
-      author: await loadAuthor(ctx, thread.authorId),
-      canDelete: canModerate(me, thread.authorId),
-      meId: me?._id ?? null,
-      isAdmin: me?.role === "admin"
-    };
-  }
-});
-var listReplies = query({
-  args: { threadId: v.id("threads"), paginationOpts: paginationOptsValidator },
-  handler: async (ctx, { threadId, paginationOpts }) => {
-    const result = await ctx.db.paginate(
-      "replies",
-      {
-        where: sql`thread_id = ${threadId}::uuid`,
-        order: [{ column: "created_at", cast: "timestamptz" }],
-        direction: "asc"
-      },
-      paginationOpts
-    );
-    return {
-      ...result,
-      page: await Promise.all(
-        result.page.map(async (r) => ({
-          ...r,
-          author: await loadAuthor(ctx, r.authorId)
-        }))
-      )
-    };
-  }
-});
-var createThread = mutation({
-  args: { topic: forumTopicValidator, title: v.string(), body: v.string() },
-  handler: async (ctx, args) => {
-    const user = await requireCapability(ctx, "post");
-    return await ctx.db.insert("threads", {
-      authorId: user._id,
-      topic: args.topic,
-      title: cleanText(args.title, TITLE_MAX, "Title", TITLE_MIN),
-      body: cleanText(args.body, POST_MAX, "Post"),
-      replyCount: 0,
-      lastActivityAt: new Date(ctx.now()).toISOString()
-    });
-  }
-});
-var reply = mutation({
-  args: { threadId: v.id("threads"), body: v.string() },
-  handler: async (ctx, { threadId, body }) => {
-    const user = await requireCapability(ctx, "post");
-    const thread = await ctx.db.get("threads", threadId);
-    if (!thread)
-      throw new AppError({
-        code: "NOT_FOUND",
-        message: "Discussion not found"
-      });
-    const replyId = await ctx.db.insert("replies", {
-      threadId,
-      authorId: user._id,
-      body: cleanText(body, REPLY_MAX, "Reply")
-    });
-    await ctx.db.patch("threads", threadId, {
-      replyCount: thread.replyCount + 1,
-      lastActivityAt: new Date(ctx.now()).toISOString()
-    });
-    return replyId;
-  }
-});
-var deleteReply = mutation({
-  args: { replyId: v.id("replies") },
-  handler: async (ctx, { replyId }) => {
-    const user = await requireUser(ctx);
-    const reply2 = await ctx.db.get("replies", replyId);
-    if (!reply2) return null;
-    if (!canModerate(user, reply2.authorId))
-      throw new AppError({
-        code: "FORBIDDEN",
-        message: "You can't delete this reply"
-      });
-    await ctx.db.delete("replies", replyId);
-    const thread = await ctx.db.get("threads", reply2.threadId);
-    if (thread) {
-      await ctx.db.patch("threads", thread._id, {
-        replyCount: Math.max(0, thread.replyCount - 1)
-      });
-    }
-    return null;
-  }
-});
-var deleteThread = mutation({
-  args: { threadId: v.id("threads") },
-  handler: async (ctx, { threadId }) => {
-    const user = await requireUser(ctx);
-    const thread = await ctx.db.get("threads", threadId);
-    if (!thread) return null;
-    if (!canModerate(user, thread.authorId))
-      throw new AppError({
-        code: "FORBIDDEN",
-        message: "You can't delete this discussion"
-      });
-    await ctx.db.delete("threads", threadId);
-    return null;
-  }
-});
-
 // supabase/functions/_shared/modules/messages.ts
 var messages_exports = {};
 __export(messages_exports, {
@@ -3364,7 +3145,6 @@ async function recentFor(ctx, userId) {
     "reviews",
     "postLikes",
     "postComments",
-    "replies",
     "users"
   );
   const me = sql`${userId}::uuid`;
@@ -3431,13 +3211,6 @@ async function recentFor(ctx, userId) {
         join public.posts p on p.id = pc.post_id
         join public.users a on a.id = pc.author_id
        where p.author_id = ${me} and pc.author_id <> ${me} and pc.created_at > ${since}
-      union all
-      select 'thread_reply', rp.created_at, a.id,
-             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'Someone'), t.title, t.id, null
-        from public.replies rp
-        join public.threads t on t.id = rp.thread_id
-        join public.users a on a.id = rp.author_id
-       where t.author_id = ${me} and rp.author_id <> ${me} and rp.created_at > ${since}
     ) n
     order by at desc
     limit ${LIMIT}::int`);
@@ -4829,7 +4602,6 @@ var registry = {
   customRequests: functionsOf(customRequests_exports),
   favorites: functionsOf(favorites_exports),
   follows: functionsOf(follows_exports),
-  forum: functionsOf(forum_exports),
   listings: functionsOf(listings_exports),
   messages: functionsOf(messages_exports),
   notifications: functionsOf(notifications_exports),
