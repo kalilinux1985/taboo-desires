@@ -33,7 +33,8 @@ import LockedMediaUploader, { type LockedItem } from "./locked-media-uploader.ts
 import { Switch } from "@/components/ui/switch.tsx";
 import { Crown, Lock } from "lucide-react";
 import { LOCKED_MEDIA_MAX } from "@/shared/plans.ts";
-import { subcategoriesOf, type Subcategory } from "@/shared/subcategories.ts";
+import { type Subcategory } from "@/shared/subcategories.ts";
+import { SELL_SECTIONS, findSellItem, sellItemFor } from "@/lib/sell-sections.ts";
 
 const CATEGORY_VALUES = CATEGORIES.map((c) => c.value) as [Category, ...Category[]];
 const CONDITION_VALUES = CONDITIONS.map((c) => c.value) as [Condition, ...Condition[]];
@@ -119,8 +120,12 @@ export default function ListingForm({
     if (on) form.setValue("saleType", "fixed");
   };
 
-  const category = useWatch({ control: form.control, name: "category" });
-  const typeOptions = category ? subcategoriesOf(category) : [];
+  // Section and item pickers (the shop menu); the item sets category and type
+  const [itemKey, setItemKey] = useState(
+    () => sellItemFor(defaultValues?.category, defaultValues?.subcategory, !!defaultLocked)?.key ?? "",
+  );
+  const [sectionKey, setSectionKey] = useState(() => itemKey.split(":")[0] ?? "");
+  const sectionItems = SELL_SECTIONS.find((s) => s.key === sectionKey)?.items ?? [];
 
   const submit = form.handleSubmit(async ({ price, durationHours, subcategory, ...values }) => {
     if ((isLocked ? lockedItems.length : photos.length) === 0) {
@@ -271,59 +276,68 @@ export default function ListingForm({
           <FormField
             control={form.control}
             name="category"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Category</FormLabel>
-                <Select
-                  value={field.value}
-                  onValueChange={(v) => {
-                    field.onChange(v);
-                    form.setValue("subcategory", "");
-                  }}
-                >
-                  <FormControl>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select a category" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {CATEGORIES.map((c) => (
-                      <SelectItem key={c.value} value={c.value}>
-                        {c.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          {typeOptions.length > 0 && (
-            <FormField
-              control={form.control}
-              name="subcategory"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Type</FormLabel>
-                  <Select value={field.value} onValueChange={field.onChange}>
+            render={() => (
+              <FormItem className="flex flex-col gap-4">
+                <div className="grid gap-2">
+                  <FormLabel>Category</FormLabel>
+                  <Select
+                    value={sectionKey}
+                    onValueChange={(v) => {
+                      setSectionKey(v);
+                      setItemKey("");
+                    }}
+                  >
                     <FormControl>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select a type (helps buyers find it)" />
+                        <SelectValue placeholder="Select a category" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {typeOptions.map((t) => (
-                        <SelectItem key={t.value} value={t.value}>
-                          {t.label}
+                      {SELL_SECTIONS.map((sec) => (
+                        <SelectItem key={sec.key} value={sec.key}>
+                          {sec.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          )}
+                </div>
+                {sectionKey && (
+                  <div className="grid gap-2">
+                    <FormLabel>Item</FormLabel>
+                    <Select
+                      value={itemKey}
+                      onValueChange={(v) => {
+                        const item = findSellItem(v);
+                        if (!item) return;
+                        setItemKey(v);
+                        form.setValue("category", item.category, { shouldValidate: true });
+                        form.setValue("subcategory", item.subcategory);
+                        // Instant Pics / Vids are sold as locked photos or videos
+                        if (item.instant && !isEdit && lockedAllowed && !isLocked) toggleLocked(true);
+                      }}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select what you're selling" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {sectionItems.map((it) => (
+                          <SelectItem key={it.key} value={it.key}>
+                            {it.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                {sectionKey === "mens" && (
+                  <p className="text-xs text-muted-foreground">
+                    Men&apos;s pages show listings from sellers whose gender in Settings is Male or Trans man.
+                  </p>
+                )}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <FormField
             control={form.control}
             name="condition"
