@@ -167,7 +167,7 @@ export default function ListingForm({
                 {!lockedAllowed && mine !== undefined && (
                   <>
                     {" "}
-                    <Link href="/pricing" className="cursor-pointer font-semibold text-violet-400 hover:underline">
+                    <Link href="/pricing" className="cursor-pointer font-semibold text-violet-600 hover:underline">
                       Upgrade to Pro
                     </Link>
                   </>
@@ -213,7 +213,7 @@ export default function ListingForm({
               {mine?.plan !== "pro" && (
                 <>
                   {" · "}
-                  <Link href="/pricing" className="cursor-pointer font-semibold text-violet-400 hover:underline">
+                  <Link href="/pricing" className="cursor-pointer font-semibold text-violet-600 hover:underline">
                     Pro gets {PLAN_LIMITS.pro.maxPhotos}
                   </Link>
                 </>

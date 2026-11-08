@@ -135,11 +135,11 @@ export function FilterGroups({
         const chosen = selection[group.key] ?? [];
         return (
           <AccordionItem key={group.key} value={group.key}>
-            <AccordionTrigger className="cursor-pointer py-3 font-bold hover:no-underline [&>svg]:text-violet-400">
+            <AccordionTrigger className="cursor-pointer py-3 font-bold hover:no-underline [&>svg]:text-violet-600">
               <span>
                 {group.label}
                 {chosen.length > 0 && (
-                  <span className="ml-2 rounded-full bg-violet-400 px-1.5 font-mono text-[11px] text-background">
+                  <span className="ml-2 rounded-full bg-violet-600 px-1.5 font-mono text-[11px] text-white">
                     {chosen.length}
                   </span>
                 )}

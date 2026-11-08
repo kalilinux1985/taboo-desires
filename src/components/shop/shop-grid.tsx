@@ -55,7 +55,7 @@ export function ShopCard({ listing }: { listing: ListingCardData }) {
         </span>
       </div>
       <div className="flex flex-1 flex-col gap-1.5 p-4 pr-20">
-        <p className="flex min-w-0 items-center gap-2 text-xs font-extrabold text-violet-400">
+        <p className="flex min-w-0 items-center gap-2 text-xs font-extrabold text-violet-600">
           <span className="truncate">{listing.sellerName}</span>
           {listing.sellerCountry && (
             <span className="shrink-0 rounded-sm border px-1 font-mono text-[10px] font-bold text-muted-foreground">
@@ -72,7 +72,7 @@ export function ShopCard({ listing }: { listing: ListingCardData }) {
       <div className="flex flex-wrap items-center gap-3 px-4 pb-4">
         <span className="text-2xl font-extrabold tabular-nums">
           {formatPrice(listing.priceCents)}
-          <span className="ml-1 font-mono text-[11px] text-violet-400">USD</span>
+          <span className="ml-1 font-mono text-[11px] text-violet-600">USD</span>
         </span>
         {liveAuction ? (
           <span className="flex items-center gap-1.5 rounded-full border border-rose-400 px-3 py-1 text-xs font-extrabold text-rose-400">

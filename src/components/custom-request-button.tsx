@@ -186,7 +186,7 @@ export default function CustomRequestButton({
               <DialogTitle>Custom request for {sellerName}</DialogTitle>
               <DialogDescription>
                 Describe exactly what you want. You can track replies in{" "}
-                <Link href="/customs" className="text-violet-400 underline-offset-2 hover:underline">
+                <Link href="/customs" className="text-violet-600 underline-offset-2 hover:underline">
                   Custom requests
                 </Link>
                 .

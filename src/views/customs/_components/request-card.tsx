@@ -105,7 +105,7 @@ export default function RequestCard({ request: r, role }: { request: CustomReque
               {r.lastOfferByMe ? "You" : "They"}: "{r.note}"
             </p>
           )}
-          {status && <p className="pt-1 text-xs text-violet-400">{status}</p>}
+          {status && <p className="pt-1 text-xs text-violet-600">{status}</p>}
         </div>
 
         {r.status === "pending" && (

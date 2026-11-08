@@ -115,7 +115,7 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
             </p>
             <p className="break-words text-base text-foreground/80 sm:text-xl">
               {verb.lead}{" "}
-              <Link href={verbHref} className="cursor-pointer font-bold text-violet-400 hover:underline">
+              <Link href={verbHref} className="cursor-pointer font-bold text-violet-600 hover:underline">
                 {verb.link}
               </Link>
               {(item.body || item.listing) && <ChevronRight className="mx-1.5 inline size-5 text-muted-foreground" />}
@@ -156,7 +156,7 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
               aria-expanded={showComments}
               className={cn(
                 "flex cursor-pointer items-center gap-1.5 border-r border-white/15 pr-4 transition-colors hover:text-foreground",
-                showComments && "text-violet-400",
+                showComments && "text-violet-600",
               )}
             >
               {item.commentCount} <MessageCircle className="size-6" />
@@ -167,10 +167,10 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
               aria-pressed={item.likedByMe}
               className={cn(
                 "flex cursor-pointer items-center gap-1.5 pl-1 pr-1 transition-colors hover:text-foreground",
-                item.likedByMe && "text-violet-400",
+                item.likedByMe && "text-violet-600",
               )}
             >
-              <Heart className={cn("size-6", item.likedByMe && "fill-violet-500 text-violet-500")} /> {item.likeCount}
+              <Heart className={cn("size-6", item.likedByMe && "fill-violet-500 text-violet-600")} /> {item.likeCount}
             </button>
             <LikerAvatars likers={item.likers} total={item.likeCount} postId={item._id} />
           </div>

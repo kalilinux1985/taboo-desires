@@ -89,7 +89,7 @@ export default function RepostDialog({
                   onClick={() => setPicked(l._id)}
                   className={cn(
                     "relative flex cursor-pointer flex-col gap-1 rounded-md p-1 text-left ring-2 ring-transparent transition",
-                    picked === l._id && "ring-violet-500",
+                    picked === l._id && "ring-violet-600",
                   )}
                 >
                   <div className="aspect-square overflow-hidden rounded-sm bg-muted">

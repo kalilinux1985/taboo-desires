@@ -23,7 +23,7 @@ export default function AvatarDropzone(props: AvatarPickerProps) {
       }}
       className={cn(
         "flex min-h-64 items-center justify-center rounded-lg border-2 border-dashed border-white/15 bg-background/50 p-4 transition-colors",
-        dragging && "border-violet-500 bg-violet-500/10",
+        dragging && "border-violet-600 bg-violet-600/10",
       )}
     >
       {previewUrl ? (
@@ -59,7 +59,7 @@ export default function AvatarDropzone(props: AvatarPickerProps) {
           disabled={uploading}
           className="flex cursor-pointer flex-col items-center gap-2 p-6 text-center text-muted-foreground"
         >
-          {uploading ? <Spinner /> : <ImagePlus className="size-10 text-violet-500" />}
+          {uploading ? <Spinner /> : <ImagePlus className="size-10 text-violet-600" />}
           <span className="text-sm font-medium text-foreground">Drop an image here or click to upload</span>
           <span className="text-xs">JPG, PNG or WebP up to 5MB</span>
         </button>

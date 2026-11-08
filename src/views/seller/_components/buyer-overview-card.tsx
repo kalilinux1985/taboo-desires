@@ -38,7 +38,7 @@ function BadgeList({ badges }: { badges: Badge[] }) {
           <ul className="flex flex-col gap-3">
             {badges.map((b) => (
               <li key={b.key} className="flex items-start gap-2">
-                <Award className="mt-0.5 size-4 shrink-0 text-violet-500" />
+                <Award className="mt-0.5 size-4 shrink-0 text-violet-600" />
                 <div>
                   <p className="text-sm font-semibold">{b.label}</p>
                   <p className="text-xs text-muted-foreground">{b.description}</p>
@@ -89,7 +89,7 @@ export default function BuyerOverviewCard(p: Props) {
             strong
             value={
               <>
-                {GenderIcon && <GenderIcon className="size-4 text-violet-500" />}
+                {GenderIcon && <GenderIcon className="size-4 text-violet-600" />}
                 {p.details.gender}
               </>
             }

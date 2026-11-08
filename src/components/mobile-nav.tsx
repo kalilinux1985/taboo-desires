@@ -70,7 +70,7 @@ function NavLink({
         active && "bg-primary/20 text-accent-foreground",
       )}
     >
-      <IconComponent className="size-5 shrink-0 text-violet-400" />
+      <IconComponent className="size-5 shrink-0 text-violet-600" />
       <span className="flex-1">{label}</span>
       {!!badge && (
         <span className="rounded-full bg-destructive px-2 text-xs font-bold text-white">
@@ -93,7 +93,7 @@ function ShopSection({
       <CollapsibleTrigger className="flex w-full cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-left text-lg transition-colors hover:bg-white/5">
         <ChevronRight className="size-4 shrink-0 text-muted-foreground/60" />
         <span>{section.label}</span>
-        <ChevronDown className="size-4 shrink-0 text-violet-400 transition-transform group-data-[state=open]/section:rotate-180" />
+        <ChevronDown className="size-4 shrink-0 text-violet-600 transition-transform group-data-[state=open]/section:rotate-180" />
       </CollapsibleTrigger>
       <CollapsibleContent className="data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down overflow-hidden">
         <ul className="mx-1 mb-2 mt-1 rounded-xl bg-background py-1.5">
@@ -127,7 +127,7 @@ function AccountHeader({ onNavigate }: { onNavigate: () => void }) {
     return (
       <div className="flex flex-col items-center gap-3 text-center">
         <p className="font-display text-2xl italic">
-          Taboo <span className="text-violet-400">Desires</span>
+          Taboo <span className="text-violet-600">Desires</span>
         </p>
         <Button asChild className="cursor-pointer">
           <Link href="/signin" onClick={onNavigate}>
@@ -191,7 +191,7 @@ function PremiumBanner({ onNavigate }: { onNavigate: () => void }) {
   const me = useQuery(api.users.menu, isAuthenticated ? {} : "skip");
   if (me?.isPro) {
     return (
-      <p className="flex items-center justify-center gap-2 py-3.5 text-sm font-extrabold uppercase tracking-[0.18em] text-violet-400">
+      <p className="flex items-center justify-center gap-2 py-3.5 text-sm font-extrabold uppercase tracking-[0.18em] text-violet-600">
         <Medal className="size-5 text-rose-400" /> Pro member
       </p>
     );

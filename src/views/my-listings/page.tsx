@@ -62,7 +62,7 @@ export default function MyListingsPage() {
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-10">
       <header className="flex flex-col gap-2 border-b pb-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-400">Seller tools</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-600">Seller tools</p>
         <h1 className="font-display text-4xl md:text-6xl">My listings</h1>
       </header>
       <RequireAuth message="Sign in to manage your listings.">

@@ -46,7 +46,7 @@ function BigPrice({ cents }: { cents: number }) {
   const dollars = Math.floor(cents / 100);
   const rest = String(cents % 100).padStart(2, "0");
   return (
-    <p className="flex items-baseline justify-center font-display text-violet-400">
+    <p className="flex items-baseline justify-center font-display text-violet-600">
       <span className="text-6xl font-bold tracking-tight">${dollars}</span>
       <span className="text-2xl font-bold">.{rest}</span>
     </p>
@@ -120,7 +120,7 @@ function CurrentPlan({ mine }: { mine: Mine | null | undefined }) {
     return (
       <div className="flex flex-col items-center gap-2 rounded-lg border border-primary/30 bg-primary/10 p-4 text-sm sm:flex-row sm:justify-between">
         <p className="flex items-center gap-2">
-          <Clock className="size-4 shrink-0 text-violet-400" />
+          <Clock className="size-4 shrink-0 text-violet-600" />
           {mine.plan === "pro" && mine.expiresAt ? "Your renewal request is being reviewed." : "Your Premium request is being reviewed."}
         </p>
         <Button
@@ -141,7 +141,7 @@ function CurrentPlan({ mine }: { mine: Mine | null | undefined }) {
   if (mine.plan === "pro" && mine.expiresAt && Date.parse(mine.expiresAt) > Date.now()) {
     return (
       <p className="flex items-center justify-center gap-2 rounded-lg border border-primary/30 bg-primary/10 p-4 text-center text-sm">
-        <CircleCheck className="size-4 text-violet-400" />
+        <CircleCheck className="size-4 text-violet-600" />
         You're Premium until {format(new Date(mine.expiresAt), "MMM d, yyyy")}. Pick a plan below to extend it.
       </p>
     );
@@ -200,17 +200,17 @@ export default function PricingPage() {
           <h1 className="flex flex-wrap items-center justify-center gap-x-3 font-display text-4xl text-balance md:text-6xl">
             <Medal className="size-10 text-rose-400 md:size-12" /> Become Premium &amp; start making money!
           </h1>
-          <p className="text-lg font-semibold text-violet-400">One sale can cover your whole plan.</p>
+          <p className="text-lg font-semibold text-violet-600">One sale can cover your whole plan.</p>
         </motion.header>
 
         <ul className="mx-auto flex w-full max-w-2xl flex-col items-center gap-2 rounded-lg border bg-card/60 px-5 py-5 text-center">
           {PERKS.map((p) => (
             <li key={p} className="flex items-center gap-2">
-              <CircleCheck className="size-4 shrink-0 text-violet-400" /> {p}
+              <CircleCheck className="size-4 shrink-0 text-violet-600" /> {p}
             </li>
           ))}
           <li className="flex items-center gap-2 font-bold">
-            <CircleCheck className="size-4 shrink-0 text-violet-400" /> Save up to 50% with longer plans!
+            <CircleCheck className="size-4 shrink-0 text-violet-600" /> Save up to 50% with longer plans!
           </li>
         </ul>
 
@@ -221,7 +221,7 @@ export default function PricingPage() {
           <ul className="grid gap-3 sm:grid-cols-2">
             {FEATURES.map((f) => (
               <li key={f} className="flex items-start gap-2 text-sm">
-                <Check className="mt-0.5 size-4 shrink-0 text-violet-500" /> {f}
+                <Check className="mt-0.5 size-4 shrink-0 text-violet-600" /> {f}
               </li>
             ))}
           </ul>

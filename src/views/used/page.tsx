@@ -64,7 +64,7 @@ export default function ShopCategoryPage({ page }: { page: ShopPage }) {
 
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 py-6 md:py-8">
         <p className="text-2xl font-extrabold">
-          Shop for <span className="text-violet-400">{page.shopFor}</span>
+          Shop for <span className="text-violet-600">{page.shopFor}</span>
         </p>
 
         <div className="flex gap-3">
@@ -120,7 +120,7 @@ export default function ShopCategoryPage({ page }: { page: ShopPage }) {
         >
           <SheetHeader className="border-b border-white/10">
             <SheetTitle className="flex items-center gap-2 text-lg">
-              <SlidersHorizontal className="size-5 text-violet-400" /> Filter
+              <SlidersHorizontal className="size-5 text-violet-600" /> Filter
             </SheetTitle>
             <SheetDescription>Narrow {page.shopFor.toLowerCase()} by price, wear time and seller.</SheetDescription>
           </SheetHeader>

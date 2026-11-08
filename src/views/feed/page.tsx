@@ -59,7 +59,7 @@ export default function FeedPage() {
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-10">
       <header className="flex flex-col gap-2 border-b pb-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-400">Your feed</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-600">Your feed</p>
         <h1 className="font-display text-4xl md:text-6xl">Following</h1>
         <p className="text-muted-foreground">The newest listings from sellers you follow.</p>
       </header>

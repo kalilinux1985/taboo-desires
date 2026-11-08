@@ -31,7 +31,7 @@ export function ProfilePanel({
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between [&>button]:w-full [&>button]:justify-center sm:[&>button]:w-auto">
         <h2 className={cn(HEADING_FONT, "flex items-baseline gap-3 text-3xl")}>
           <span className="border-b-2 border-violet-600 pb-0.5">{title}</span>
-          {count && <span className="text-lg text-violet-500">{count}</span>}
+          {count && <span className="text-lg text-violet-600">{count}</span>}
         </h2>
         {action}
       </div>
@@ -64,14 +64,14 @@ function OverviewPanel({
       <div className="flex flex-col gap-3">
         <h2 className={cn(HEADING_FONT, "flex flex-wrap items-baseline gap-x-2.5 text-3xl font-bold")}>
           {title}
-          <span className="text-2xl font-normal text-violet-400">{count}</span>
+          <span className="text-2xl font-normal text-violet-600">{count}</span>
         </h2>
         <span className="h-0.5 w-16 bg-violet-600" />
       </div>
       <button
         type="button"
         onClick={onViewAll}
-        className="w-full cursor-pointer rounded-[5px] border border-violet-600 py-1.5 text-xs font-bold text-violet-400 transition-colors hover:bg-violet-600 hover:text-white"
+        className="w-full cursor-pointer rounded-[5px] border border-violet-600 py-1.5 text-xs font-bold text-violet-600 transition-colors hover:bg-violet-600 hover:text-white"
       >
         {viewAll}
       </button>
@@ -98,7 +98,7 @@ function Tile({
 }) {
   const body = (
     <>
-      <span className="flex aspect-square w-full items-center justify-center overflow-hidden rounded-sm bg-[#0d1426] text-violet-500">
+      <span className="flex aspect-square w-full items-center justify-center overflow-hidden rounded-sm bg-[#0f172a] text-violet-600">
         {imageUrl ? (
           <img src={imageUrl} alt="" loading="lazy" className="size-full object-cover transition-transform duration-300 group-hover:scale-105" />
         ) : (
@@ -255,7 +255,7 @@ export function ActivitySection({ authorId }: { authorId: Id<"users"> }) {
               variant="ghost"
               onClick={() => loadMore(3)}
               disabled={status === "LoadingMore"}
-              className="cursor-pointer self-center text-violet-400"
+              className="cursor-pointer self-center text-violet-600"
             >
               {status === "LoadingMore" && <Spinner />} Show more activity
             </Button>

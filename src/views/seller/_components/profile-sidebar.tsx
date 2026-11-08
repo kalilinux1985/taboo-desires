@@ -60,7 +60,7 @@ export default function ProfileSidebar({
           <button
             type="button"
             onClick={onShowPhotos}
-            className="absolute bottom-3 right-3 flex cursor-pointer items-center gap-2 rounded-sm border border-white/10 bg-[#0a1020]/90 px-3 py-1.5 text-base font-bold text-violet-400 shadow-lg backdrop-blur-sm transition-colors hover:bg-violet-600 hover:text-white"
+            className="absolute bottom-3 right-3 flex cursor-pointer items-center gap-2 rounded-sm border border-white/10 bg-[#0a1123]/90 px-3 py-1.5 text-base font-bold text-violet-600 shadow-lg backdrop-blur-sm transition-colors hover:bg-violet-600 hover:text-white"
           >
             <ImageIcon className="size-5" /> {photos} {photos === 1 ? "Photo" : "Photos"}
           </button>
@@ -69,13 +69,13 @@ export default function ProfileSidebar({
 
       <div className={cn(PANEL, "flex flex-col gap-3 p-4")}>
         <div>
-          <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.18em] text-violet-500">
+          <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.18em] text-violet-600">
             <Award className="size-3.5" /> {profile.accountType === "buyer" ? "Buyer" : "Seller"}
           </p>
           <h1 className="truncate text-3xl font-bold tracking-wide text-slate-200">{profile.name}</h1>
           <p className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1 text-sm text-slate-400">
             <span className="flex items-center gap-1" aria-label={rating ? `Rated ${rating.toFixed(1)}` : "No ratings yet"}>
-              <Star className={cn("size-4 text-violet-500", rating && "fill-violet-500")} />
+              <Star className={cn("size-4 text-violet-600", rating && "fill-violet-500")} />
               {rating ? rating.toFixed(1) : null}
             </span>
             {country && (
@@ -89,7 +89,7 @@ export default function ProfileSidebar({
 
         <div className="flex flex-wrap items-center gap-2">
           {profile.isMe ? (
-            <Button asChild size="sm" variant="ghost" className="h-8 flex-1 cursor-pointer rounded-sm border border-violet-600 text-xs font-bold uppercase text-violet-400 hover:bg-violet-600 hover:text-white">
+            <Button asChild size="sm" variant="ghost" className="h-8 flex-1 cursor-pointer rounded-sm border border-violet-600 text-xs font-bold uppercase text-violet-600 hover:bg-violet-600 hover:text-white">
               <Link href={settingsPathFor(profile.accountType)}>
                 <Pencil /> Edit profile
               </Link>
@@ -99,7 +99,7 @@ export default function ProfileSidebar({
               <MessageSellerButton
                 sellerId={profile._id}
                 sellerName={profile.name}
-                className="h-8 flex-1 cursor-pointer rounded-sm bg-violet-600 text-xs font-bold uppercase text-white hover:bg-violet-500"
+                className="h-8 flex-1 cursor-pointer rounded-sm bg-violet-600 text-xs font-bold uppercase text-white hover:bg-violet-600"
               />
               <FollowButton sellerId={profile._id} />
             </>
@@ -110,7 +110,7 @@ export default function ProfileSidebar({
                 size="icon"
                 variant="ghost"
                 aria-label="More options"
-                className="size-8 cursor-pointer rounded-sm border border-violet-600 text-violet-400"
+                className="size-8 cursor-pointer rounded-sm border border-violet-600 text-violet-600"
               >
                 <EllipsisVertical />
               </Button>
@@ -130,17 +130,17 @@ export default function ProfileSidebar({
           <button
             type="button"
             onClick={onShowShop}
-            className="flex cursor-pointer items-center gap-1.5 rounded-full bg-[#1b2235] px-3 py-1.5 text-sm font-bold text-slate-200 hover:bg-violet-600/30"
+            className="flex cursor-pointer items-center gap-1.5 rounded-full bg-[#10182d] px-3 py-1.5 text-sm font-bold text-slate-200 hover:bg-violet-600/30"
           >
-            <ShoppingBag className="size-4 text-violet-500" /> {profile.counts.listings} Listing
+            <ShoppingBag className="size-4 text-violet-600" /> {profile.counts.listings} Listing
             {profile.counts.listings === 1 ? "" : "s"}
           </button>
           <button
             type="button"
             onClick={onShowInstant}
-            className="flex cursor-pointer items-center gap-1.5 rounded-full bg-[#1b2235] px-3 py-1.5 text-sm font-bold text-slate-200 hover:bg-violet-600/30"
+            className="flex cursor-pointer items-center gap-1.5 rounded-full bg-[#10182d] px-3 py-1.5 text-sm font-bold text-slate-200 hover:bg-violet-600/30"
           >
-            <Images className="size-4 text-violet-500" /> {profile.counts.instantContent} Instant Content
+            <Images className="size-4 text-violet-600" /> {profile.counts.instantContent} Instant Content
           </button>
         </div>
       </div>

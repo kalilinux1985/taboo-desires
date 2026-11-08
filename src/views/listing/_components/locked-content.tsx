@@ -34,7 +34,7 @@ export function UnlockedMedia({ media }: { media: NonNullable<Locked["media"]> }
   return (
     <section className="flex flex-col gap-3">
       <h2 className="flex items-center gap-2 font-display text-2xl">
-        <Unlock className="size-5 text-violet-500" /> Unlocked content
+        <Unlock className="size-5 text-violet-600" /> Unlocked content
       </h2>
       <div className="grid gap-3 sm:grid-cols-2">
         {media.map((m) =>
@@ -85,12 +85,12 @@ export function BuyLockedPanel({
   return (
     <div className="flex flex-col gap-3 rounded-md border border-primary/40 bg-accent/30 p-4">
       <div className="flex items-center gap-2 font-semibold">
-        <Lock className="size-4 text-violet-500" /> Locked content
+        <Lock className="size-4 text-violet-600" /> Locked content
       </div>
       <Counts locked={locked} />
       {status === "pending" ? (
         <p className="flex items-start gap-2 text-sm">
-          <Clock className="mt-0.5 size-4 shrink-0 text-violet-500" />
+          <Clock className="mt-0.5 size-4 shrink-0 text-violet-600" />
           Waiting for {sellerName} to confirm your payment. Message them to arrange it. The content
           unlocks here as soon as they approve.
         </p>

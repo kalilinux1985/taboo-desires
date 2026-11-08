@@ -89,7 +89,7 @@ export default function AccountTypeDialog() {
                 )}
               >
                 <div className="flex items-center justify-between">
-                  <span className="flex size-10 items-center justify-center rounded-full text-violet-500">
+                  <span className="flex size-10 items-center justify-center rounded-full text-violet-600">
                     <o.icon className="size-5" />
                   </span>
                   <span
@@ -103,12 +103,12 @@ export default function AccountTypeDialog() {
                 </div>
                 <div>
                   <p className="font-display text-2xl">{o.title}</p>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-violet-400">{o.price}</p>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-violet-600">{o.price}</p>
                 </div>
                 <ul className="space-y-1.5 text-sm text-muted-foreground">
                   {o.perks.map((p) => (
                     <li key={p} className="flex gap-2">
-                      <Check className="mt-0.5 size-3.5 shrink-0 text-violet-500" /> {p}
+                      <Check className="mt-0.5 size-3.5 shrink-0 text-violet-600" /> {p}
                     </li>
                   ))}
                 </ul>

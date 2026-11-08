@@ -36,28 +36,28 @@ function FilterPanel({
         className="flex w-full cursor-pointer items-center justify-between rounded-sm border bg-card px-4 py-3 font-bold lg:hidden"
       >
         <span className="flex items-center gap-2">
-          <SlidersHorizontal className="size-4 text-violet-400" /> Filters
+          <SlidersHorizontal className="size-4 text-violet-600" /> Filters
           {active > 0 && (
-            <span className="rounded-full bg-violet-400 px-2 font-mono text-xs text-background">
+            <span className="rounded-full bg-violet-600 px-2 font-mono text-xs text-white">
               {active}
             </span>
           )}
         </span>
         <ChevronDown
-          className={cn("size-4 text-violet-400 transition-transform", mobileOpen && "rotate-180")}
+          className={cn("size-4 text-violet-600 transition-transform", mobileOpen && "rotate-180")}
         />
       </button>
 
       <div className={cn("pt-3 lg:block lg:pt-0", !mobileOpen && "hidden")}>
         <div className="flex items-center justify-between pb-1">
           <p className="flex items-center gap-2 text-sm font-extrabold uppercase tracking-[0.16em]">
-            <SlidersHorizontal className="size-4 text-violet-400" /> Filter
+            <SlidersHorizontal className="size-4 text-violet-600" /> Filter
           </p>
           {active > 0 && (
             <button
               type="button"
               onClick={onClear}
-              className="cursor-pointer text-xs font-bold text-violet-400 hover:underline"
+              className="cursor-pointer text-xs font-bold text-violet-600 hover:underline"
             >
               Clear all
             </button>
@@ -113,7 +113,7 @@ function CtaPanel({
     <div
       className={cn(
         "relative flex min-w-0 flex-col gap-5 overflow-hidden px-6 py-8 sm:px-10 sm:py-10",
-        tone === "sell" ? "bg-primary" : "border bg-[#070b16]",
+        tone === "sell" ? "bg-primary" : "border bg-[#050b1b]",
       )}
     >
       {tone === "buy" && (
@@ -130,7 +130,7 @@ function CtaPanel({
           <h2
             className={cn(
               "font-display text-3xl italic leading-tight",
-              tone === "sell" ? "text-white" : "text-violet-400",
+              tone === "sell" ? "text-white" : "text-violet-600",
             )}
           >
             {title}
@@ -144,7 +144,7 @@ function CtaPanel({
             <Check
               className={cn(
                 "mt-0.5 size-4 shrink-0",
-                tone === "sell" ? "text-accent-foreground" : "text-violet-400",
+                tone === "sell" ? "text-accent-foreground" : "text-violet-600",
               )}
               strokeWidth={3}
             />
@@ -181,7 +181,7 @@ export default function ShopLanding() {
           </p>
           <h1 className="mt-1.5 font-display text-4xl leading-tight text-balance md:text-5xl">
             Shop for{" "}
-            <em className="text-violet-400">
+            <em className="text-violet-600">
               Used {category ? category.label : "Intimates"}
             </em>
           </h1>

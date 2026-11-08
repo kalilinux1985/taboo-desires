@@ -23,7 +23,7 @@ export function Logo({ className }: { className?: string }) {
       href="/"
       className={cn("font-display text-2xl italic leading-none", className)}
     >
-      Taboo <span className="text-violet-400">Desires</span>
+      Taboo <span className="text-violet-600">Desires</span>
     </Link>
   );
 }
@@ -114,7 +114,7 @@ function NavLink({ href, label }: { href: string; label: string }) {
 
 function Header() {
   return (
-    <header className="sticky top-0 z-40 border-b bg-background/85 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b bg-sidebar/95 text-sidebar-foreground backdrop-blur">
       {/* Phones: menu button left, name centered, Messages and bell right */}
       <div className="mx-auto grid h-14 max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 md:flex md:justify-between md:gap-4">
         <div className="flex items-center gap-6">

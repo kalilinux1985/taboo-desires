@@ -70,7 +70,7 @@ function Gallery({
         {current && <img src={current.url} alt={title} className="size-full object-cover" />}
         {locked && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/30 text-white">
-            <span className="flex size-14 items-center justify-center rounded-full text-violet-500 drop-shadow-md">
+            <span className="flex size-14 items-center justify-center rounded-full text-violet-600 drop-shadow-md">
               <Lock className="size-6" />
             </span>
             <span className="font-display text-2xl">Locked content</span>

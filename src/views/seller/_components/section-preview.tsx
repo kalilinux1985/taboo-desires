@@ -22,8 +22,8 @@ export default function SectionPreview({
 }) {
   return (
     <section className="flex flex-col gap-4 border-b border-white/10 pb-8">
-      <h2 className="w-fit border-b-2 border-violet-500 pb-1.5 text-2xl font-bold">
-        {title} <span className="font-normal text-violet-400">{count} {unit}</span>
+      <h2 className="w-fit border-b-2 border-violet-600 pb-1.5 text-2xl font-bold">
+        {title} <span className="font-normal text-violet-600">{count} {unit}</span>
       </h2>
       <Button variant="ghost" className={OUTLINE_VIOLET} onClick={onViewAll}>
         {actionLabel}

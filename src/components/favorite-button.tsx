@@ -63,7 +63,7 @@ export default function FavoriteButton({
         className,
       )}
     >
-      <Heart className={cn("size-4", saved && "fill-violet-500 text-violet-500")} />
+      <Heart className={cn("size-4", saved && "fill-violet-500 text-violet-600")} />
       {withLabel && (saved ? "Saved" : "Save")}
     </button>
   );

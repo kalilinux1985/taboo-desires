@@ -133,9 +133,9 @@ export default function SettingsPage({ kind }: { kind?: SettingsKind }) {
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-10">
       <header className="flex flex-col gap-2 border-b pb-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-400">{eyebrow}</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-600">{eyebrow}</p>
         <h1 className="font-display text-4xl md:text-6xl">Settings</h1>
-        <span className="h-1 w-16 rounded-full bg-violet-500" />
+        <span className="h-1 w-16 rounded-full bg-violet-600" />
       </header>
       <RequireAuth message="Sign in to manage your settings.">
         <SettingsInner kind={kind} />

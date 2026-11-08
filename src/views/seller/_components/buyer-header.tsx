@@ -39,7 +39,7 @@ export default function BuyerHeader(p: Props) {
       </div>
       <div className="flex flex-col gap-4 p-5">
         <div className="flex flex-col gap-1">
-          <span className="flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-violet-400">
+          <span className="flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-violet-600">
             Buyer <Lock className="size-3" />
           </span>
           <h1 className="flex min-w-0 items-center gap-2 text-3xl font-bold">
@@ -47,11 +47,11 @@ export default function BuyerHeader(p: Props) {
             {p.verified && <VerifiedBadge className="text-xl" />}
           </h1>
           <p className="flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground">
-            <Star className="size-4 fill-violet-500 text-violet-500" />
+            <Star className="size-4 fill-violet-500 text-violet-600" />
             <span>-</span>
             {p.country && (
               <span className="flex items-center gap-1">
-                <MapPin className="size-3.5 text-violet-500" /> {p.country}
+                <MapPin className="size-3.5 text-violet-600" /> {p.country}
               </span>
             )}
           </p>

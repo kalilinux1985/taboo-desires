@@ -69,7 +69,7 @@ function CommentForm({
         type="submit"
         aria-label="Send"
         disabled={!body.trim() || sending}
-        className="absolute right-2 top-1/2 flex size-7 -translate-y-1/2 cursor-pointer items-center justify-center text-violet-500 disabled:opacity-40"
+        className="absolute right-2 top-1/2 flex size-7 -translate-y-1/2 cursor-pointer items-center justify-center text-violet-600 disabled:opacity-40"
       >
         {sending ? <Spinner /> : <SendHorizontal className="size-4" />}
       </button>
@@ -117,7 +117,7 @@ function CommentItem({
                 type="button"
                 aria-label={`Reply to ${comment.author.name}`}
                 onClick={() => setReplying((r) => !r)}
-                className={cn("cursor-pointer hover:text-foreground", replying && "text-violet-400")}
+                className={cn("cursor-pointer hover:text-foreground", replying && "text-violet-600")}
               >
                 <Reply className="size-5" />
               </button>
@@ -129,9 +129,9 @@ function CommentItem({
               onClick={() =>
                 toggleLike({ commentId: comment._id }).catch((e) => toast.error(getErrorMessage(e, "Sign in to like comments")))
               }
-              className={cn("flex cursor-pointer items-center gap-1.5 hover:text-foreground", comment.likedByMe && "text-violet-400")}
+              className={cn("flex cursor-pointer items-center gap-1.5 hover:text-foreground", comment.likedByMe && "text-violet-600")}
             >
-              <Heart className={cn("size-5", comment.likedByMe && "fill-violet-500 text-violet-500")} /> {comment.likeCount}
+              <Heart className={cn("size-5", comment.likedByMe && "fill-violet-500 text-violet-600")} /> {comment.likeCount}
             </button>
             <LikerAvatars likers={comment.likers} total={comment.likeCount} size="sm" />
             <span className="flex items-center gap-1 text-sm" title={new Date(comment._creationTime).toLocaleString()}>
@@ -141,7 +141,7 @@ function CommentItem({
               <button
                 type="button"
                 onClick={() => setShowReplies((s) => !s)}
-                className="flex cursor-pointer items-center gap-0.5 text-sm text-violet-400 hover:underline"
+                className="flex cursor-pointer items-center gap-0.5 text-sm text-violet-600 hover:underline"
               >
                 {showReplies ? "Hide replies" : `${comment.replyCount} ${comment.replyCount === 1 ? "reply" : "replies"}`}
                 <ChevronRight className={cn("size-4 transition-transform", showReplies && "rotate-90")} />
@@ -206,7 +206,7 @@ function Replies({ postId, parentId }: { postId: Id<"posts">; parentId: Id<"post
 /** Shown instead of the comment box to sellers without Premium. */
 function PremiumNotice() {
   return (
-    <p className="rounded-md border border-violet-500/40 bg-violet-500/10 px-5 py-4 text-center text-base text-violet-100 sm:text-xl">
+    <p className="rounded-md border border-violet-600/40 bg-violet-600/10 px-5 py-4 text-center text-base text-violet-100 sm:text-xl">
       Adding comments to the activity feed is a Premium Seller feature.{" "}
       <Link href="/pricing?for=post" className="inline-flex cursor-pointer items-center gap-1 font-bold text-violet-300 hover:underline">
         <Medal className="size-5 text-rose-400" /> Go Premium &gt;
@@ -262,7 +262,7 @@ export default function PostComments({
         )
       )}
       {status === "CanLoadMore" && (
-        <Button variant="ghost" size="sm" onClick={() => loadMore(10)} className="cursor-pointer self-start text-violet-400">
+        <Button variant="ghost" size="sm" onClick={() => loadMore(10)} className="cursor-pointer self-start text-violet-600">
           Show more comments
         </Button>
       )}

@@ -196,7 +196,7 @@ function Form({
             <Hint>
               {f.hint}
               {"comingSoon" in f && f.comingSoon && (
-                <span className="ml-1 font-semibold text-violet-400">Coming soon.</span>
+                <span className="ml-1 font-semibold text-violet-600">Coming soon.</span>
               )}
             </Hint>
           </div>

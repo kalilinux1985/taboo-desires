@@ -35,7 +35,7 @@ function FollowToggle({ sellerId }: { sellerId: Id<"users"> }) {
       disabled={busy || following === undefined}
       className="cursor-pointer"
     >
-      {busy ? <Spinner /> : <Heart className={cn(following && "fill-violet-500 text-violet-500")} />}
+      {busy ? <Spinner /> : <Heart className={cn(following && "fill-violet-500 text-violet-600")} />}
       {following ? "Following" : "Follow"}
     </Button>
   );

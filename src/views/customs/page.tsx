@@ -125,7 +125,7 @@ export default function CustomsPage() {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-8 px-4 py-10">
       <header className="flex flex-col gap-2 border-b pb-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-400">Made just for you</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-600">Made just for you</p>
         <h1 className="font-display text-4xl md:text-6xl">Custom requests</h1>
       </header>
       <RequireAuth message="Sign in to see your custom requests.">

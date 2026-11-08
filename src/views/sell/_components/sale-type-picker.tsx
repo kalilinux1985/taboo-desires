@@ -66,7 +66,7 @@ export default function SaleTypePicker({
     {auctionLocked && !disabled && (
       <p className="text-xs text-muted-foreground">
         Auctions are a Pro feature.{" "}
-        <Link href="/pricing" className="cursor-pointer font-semibold text-violet-400 underline-offset-4 hover:underline">
+        <Link href="/pricing" className="cursor-pointer font-semibold text-violet-600 underline-offset-4 hover:underline">
           Upgrade to Pro
         </Link>
       </p>

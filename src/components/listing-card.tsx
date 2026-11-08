@@ -57,7 +57,7 @@ export function ListingCard({ listing }: { listing: ListingCardData }) {
           className="absolute right-2 top-2"
         />
         {listing.isLocked && listing.status === "active" && (
-          <span className="absolute right-12 top-2 flex size-8 items-center justify-center rounded-full text-violet-500 drop-shadow-md">
+          <span className="absolute right-12 top-2 flex size-8 items-center justify-center rounded-full text-violet-600 drop-shadow-md">
             <Lock className="size-4" />
           </span>
         )}

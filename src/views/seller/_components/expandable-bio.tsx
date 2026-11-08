@@ -40,7 +40,7 @@ export default function ExpandableBio({ text, className }: { text: string; class
           aria-expanded={open}
           aria-controls="profile-bio"
           onClick={() => setOpen((o) => !o)}
-          className="cursor-pointer rounded-[5px] border border-violet-600 px-3 py-1 text-xs font-bold text-violet-400 transition-colors hover:bg-violet-600 hover:text-white"
+          className="cursor-pointer rounded-[5px] border border-violet-600 px-3 py-1 text-xs font-bold text-violet-600 transition-colors hover:bg-violet-600 hover:text-white"
         >
           {open ? "− See Less" : "+ See More"}
         </button>

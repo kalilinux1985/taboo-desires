@@ -104,7 +104,7 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
         <div className={cn(PANEL, "flex flex-col gap-4 p-3 sm:p-5")}>
           {/* Phones: tabs in a left column (Overview + Shop, Instant Content, Photos + Reviews)
               and Create Listing in a right column. Medium screens and up: one row. */}
-          <div className="flex gap-2 rounded-sm border border-white/[0.06] bg-[#050a16] p-3 md:items-center md:gap-3">
+          <div className="flex gap-2 rounded-sm border border-white/[0.06] bg-[#050b1b] p-3 md:items-center md:gap-3">
             <TabsList className="grid min-w-0 flex-1 grid-cols-2 gap-2 bg-transparent p-0 group-data-[orientation=horizontal]/tabs:h-auto md:flex md:flex-wrap md:justify-start md:gap-3">
               <TabsTrigger value="overview" className={TAB_PILL}>Overview</TabsTrigger>
               <TabsTrigger value="shop" className={TAB_PILL}>Shop</TabsTrigger>

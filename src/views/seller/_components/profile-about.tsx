@@ -70,7 +70,7 @@ export default function ProfileAbout({ profile }: { profile: Profile }) {
           className="flex cursor-pointer items-center gap-1 py-1 text-sm text-slate-400 hover:text-slate-200"
         >
           {open ? "Hide" : "Show more"}
-          <ChevronDown className={cn("size-4 text-violet-500 transition-transform", open && "rotate-180")} />
+          <ChevronDown className={cn("size-4 text-violet-600 transition-transform", open && "rotate-180")} />
         </button>
         {open && (
           <div className="mt-1 border-t border-white/[0.06] pt-2">

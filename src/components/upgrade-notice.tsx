@@ -21,7 +21,7 @@ export default function UpgradeNotice({
       )}
     >
       <p className="flex items-center gap-3 text-sm">
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-full text-violet-500">
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-full text-violet-600">
           <Lock className="size-4" />
         </span>
         {message}
