@@ -8,6 +8,7 @@ import type { api } from "@/lib/backend/api.ts";
 import { cn } from "@/lib/utils.ts";
 import { SELLER_DETAIL_FIELDS } from "@/shared/sellerDetails.ts";
 import { ProfilePanel } from "./profile-sections.tsx";
+import ExpandableBio from "./expandable-bio.tsx";
 
 type Profile = NonNullable<FunctionReturnType<typeof api.users.getProfile>>;
 
@@ -56,9 +57,7 @@ export default function ProfileAbout({ profile }: { profile: Profile }) {
         {profile.stats.followerCount} Followers · {profile.counts.following} Following
       </p>
       {profile.bio && (
-        <p className="whitespace-pre-line break-words border-t border-white/[0.06] pt-4 text-slate-300">
-          {profile.bio}
-        </p>
+        <ExpandableBio text={profile.bio} className="border-t border-white/[0.06] pt-4" />
       )}
       <dl className="border-t border-white/[0.06] pt-3">
         {first.map((f) => (
