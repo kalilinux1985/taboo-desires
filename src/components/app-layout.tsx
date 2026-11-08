@@ -93,7 +93,6 @@ const NAV = [
   { to: "/browse", label: "Browse" },
   { to: "/following", label: "Following" },
   { to: "/auctions", label: "Auctions" },
-  { to: "/community", label: "Community" },
   { to: "/pricing", label: "Go Pro" },
 ];
 

@@ -6,7 +6,6 @@ import type {
   Category,
   Condition,
   CustomStatus,
-  ForumTopicId,
   ListingStatus,
   MediaKind,
   Party,
@@ -146,15 +145,6 @@ type Fields = {
     bidderId?: Id<"users">;
     amountCents: number;
   };
-  threads: {
-    authorId: Id<"users">;
-    topic: ForumTopicId;
-    title: string;
-    body: string;
-    replyCount: number;
-    lastActivityAt: string;
-  };
-  replies: { threadId: Id<"threads">; authorId: Id<"users">; body: string };
   posts: {
     authorId: Id<"users">;
     kind: PostKind;
@@ -381,25 +371,6 @@ export const TABLES: { [T in DbTable]: TableDef<T> } = {
       auctionId: c("auction_id", "uuid"),
       bidderId: c("bidder_id", "uuid"),
       amountCents: c("amount_cents", "int"),
-    },
-  },
-  threads: {
-    sqlName: "threads",
-    columns: {
-      authorId: c("author_id", "uuid"),
-      topic: c("topic"),
-      title: c("title"),
-      body: c("body"),
-      replyCount: c("reply_count", "int"),
-      lastActivityAt: c("last_activity_at", "ts"),
-    },
-  },
-  replies: {
-    sqlName: "replies",
-    columns: {
-      threadId: c("thread_id", "uuid"),
-      authorId: c("author_id", "uuid"),
-      body: c("body"),
     },
   },
   posts: {

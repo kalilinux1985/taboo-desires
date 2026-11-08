@@ -8,7 +8,7 @@ export const PROFILE_PHOTO_PREVIEW = 6;
 export type AccountType = "buyer" | "seller";
 
 export type Capabilities = {
-  /** Start discussions and reply on the community board */
+  /** Post, comment and like on the activity feed */
   post: boolean;
   /** Send private messages (start or reply) */
   message: boolean;
@@ -41,7 +41,7 @@ const DENIED: Record<
 > = {
   post: {
     buyer: "You can't post right now",
-    seller: "Upgrade to Pro to post on the community board",
+    seller: "Upgrade to Pro to post on the activity feed",
     none: "Choose an account type first",
   },
   message: {

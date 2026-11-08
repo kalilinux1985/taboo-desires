@@ -7,7 +7,6 @@ import * as auctions from "./modules/auctions.ts";
 import * as customRequests from "./modules/customRequests.ts";
 import * as favorites from "./modules/favorites.ts";
 import * as follows from "./modules/follows.ts";
-import * as forum from "./modules/forum.ts";
 import * as listings from "./modules/listings.ts";
 import * as messages from "./modules/messages.ts";
 import * as notifications from "./modules/notifications.ts";
@@ -47,7 +46,6 @@ export const registry = {
   customRequests: functionsOf(customRequests),
   favorites: functionsOf(favorites),
   follows: functionsOf(follows),
-  forum: functionsOf(forum),
   listings: functionsOf(listings),
   messages: functionsOf(messages),
   notifications: functionsOf(notifications),

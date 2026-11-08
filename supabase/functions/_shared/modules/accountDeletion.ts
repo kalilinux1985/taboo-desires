@@ -12,7 +12,7 @@ import { requireUser } from "../lib/auth.ts";
  * ratings and follower counts) are corrected first, then the user row is
  * deleted and foreign keys cascade to everything they owned: listings (with
  * auctions, unlocks, favorites, feed posts), posts, comments, likes,
- * conversations and messages, threads and replies, reviews, follows, custom
+ * conversations and messages, reviews, follows, custom
  * requests, subscriptions, verification, stats and presence. Their bids stay
  * on auctions anonymously. Uploaded files are deleted after commit.
  */
@@ -78,11 +78,6 @@ export const deleteMyAccount = mutation({
         from (select post_id, count(*)::int as n from public.post_likes
                where user_id = ${id}::uuid group by post_id) l
        where p.id = l.post_id and p.author_id <> ${id}::uuid`);
-    await ctx.db.rows(sql`
-      update public.threads t set reply_count = greatest(0, t.reply_count - r.n)
-        from (select thread_id, count(*)::int as n from public.replies
-               where author_id = ${id}::uuid group by thread_id) r
-       where t.id = r.thread_id and t.author_id <> ${id}::uuid`);
     await ctx.db.rows(sql`
       update public.seller_stats s
          set review_count = greatest(0, s.review_count - r.n),

@@ -23,7 +23,7 @@ const LOST = [
   "Your profile, profile picture, and photo gallery",
   "All of your listings, auctions, and premium photo sets",
   "Your messages and conversations",
-  "Your community posts and replies",
+  "Your feed posts, comments, and likes",
   "Reviews you wrote and received, follows, and favorites",
   "Your Pro plan and verified badge",
 ];

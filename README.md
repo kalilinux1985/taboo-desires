@@ -30,7 +30,7 @@ The app runs entirely on Supabase: database, file storage, backend function and 
 | Tables, indexes, constraints                                                                       | `supabase/migrations/20261031000000_init_schema.sql`                             |
 | Storage buckets, auction-closing cron job                                                          | `supabase/migrations/20261031000100_platform.sql`                                |
 | Every query and mutation (same names as before, e.g. `listings.get`)                               | `supabase/functions/_shared/modules/*.ts`                                        |
-| Rules shared with the UI (plans, bidding, accounts, forum, profile fields)                         | `supabase/functions/_shared/domain/*.ts` (imported in the app as `@/shared/...`) |
+| Rules shared with the UI (plans, bidding, accounts, profile fields)                                | `supabase/functions/_shared/domain/*.ts` (imported in the app as `@/shared/...`) |
 | HTTP entry point (`/functions/v1/api`)                                                             | `supabase/functions/api/index.ts`                                                |
 | React hooks (`useQuery`, `useMutation`, `usePaginatedQuery`, `useBackendAuth`, `Authenticated`...) | `src/lib/backend/react.tsx`                                                      |
 | Typed function references (`api.listings.get`) and row types (`Doc`, `Id`)                         | `src/lib/backend/api.ts`, `src/lib/backend/types.ts`                             |

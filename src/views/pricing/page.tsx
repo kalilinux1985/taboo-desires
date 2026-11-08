@@ -31,7 +31,7 @@ const PERKS = [
 const FEATURES = [
   "List items for sale",
   "Send and reply to messages",
-  "Post and comment on the activity feed and community board",
+  "Post and comment on the activity feed",
   `Up to ${PLAN_LIMITS.pro.maxPhotos} photos per listing`,
   "Run auctions",
   `Paywalled photo and video listings (up to ${LOCKED_MEDIA_MAX} files)`,

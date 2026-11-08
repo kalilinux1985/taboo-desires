@@ -32,7 +32,7 @@ function BecomeSeller() {
     <div className="flex flex-col gap-4">
       <UpgradeNotice message={deniedMessage("list", "buyer")} showUpgrade={false} />
       <p className="text-sm text-muted-foreground">
-        Seller accounts are free. Pro unlocks listings, replying to messages, and community posts.
+        Seller accounts are free. Pro unlocks listings, replying to messages, and feed posts.
         Sellers can't switch back to a buyer account.
       </p>
       <Button onClick={switchToSeller} className="w-fit cursor-pointer">

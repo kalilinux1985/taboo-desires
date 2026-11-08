@@ -18,7 +18,7 @@ export default function Index() {
           <Skeleton className="h-96 w-full" />
         </div>
       </AuthLoading>
-      {/* Signed-in members land on the community activity feed */}
+      {/* Signed-in members land on the activity feed */}
       <Authenticated>
         <ActivityFeed />
       </Authenticated>

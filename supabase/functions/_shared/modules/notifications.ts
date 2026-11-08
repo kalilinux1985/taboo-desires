@@ -1,6 +1,6 @@
 // Notifications are built from activity the app already records (follows,
-// bids, auction results, custom requests, unlock requests, reviews, likes,
-// comments and forum replies), so nothing extra is written when they happen.
+// bids, auction results, custom requests, unlock requests, reviews, likes
+// and comments), so nothing extra is written when they happen.
 // The only stored state is when the user last opened them.
 
 import { mutation, query, type QueryCtx } from "../core/functions.ts";
@@ -18,8 +18,7 @@ export type NotificationKind =
   | "unlock_granted"
   | "review"
   | "post_like"
-  | "post_comment"
-  | "thread_reply";
+  | "post_comment";
 
 const WINDOW_DAYS = 30;
 const LIMIT = 50;
@@ -34,7 +33,6 @@ async function recentFor(ctx: QueryCtx, userId: Id<"users">) {
     "reviews",
     "postLikes",
     "postComments",
-    "replies",
     "users",
   );
   const me = sql`${userId}::uuid`;
@@ -101,13 +99,6 @@ async function recentFor(ctx: QueryCtx, userId: Id<"users">) {
         join public.posts p on p.id = pc.post_id
         join public.users a on a.id = pc.author_id
        where p.author_id = ${me} and pc.author_id <> ${me} and pc.created_at > ${since}
-      union all
-      select 'thread_reply', rp.created_at, a.id,
-             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'Someone'), t.title, t.id, null
-        from public.replies rp
-        join public.threads t on t.id = rp.thread_id
-        join public.users a on a.id = rp.author_id
-       where t.author_id = ${me} and rp.author_id <> ${me} and rp.created_at > ${since}
     ) n
     order by at desc
     limit ${LIMIT}::int`);

@@ -1,8 +1,14 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "types": ["node"],
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "types": [
+      "node"
+    ],
     "module": "ESNext",
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
@@ -15,12 +21,23 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "strict": true,
-    "plugins": [{ "name": "next" }],
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
     "paths": {
-      "@/backend/*": ["./supabase/functions/_shared/*"],
-      "@/shared/*": ["./supabase/functions/_shared/domain/*"],
-      "@/*": ["./src/*"]
-    }
+      "@/backend/*": [
+        "./supabase/functions/_shared/*"
+      ],
+      "@/shared/*": [
+        "./supabase/functions/_shared/domain/*"
+      ],
+      "@/*": [
+        "./src/*"
+      ]
+    },
+    "esModuleInterop": true
   },
   "include": [
     "next-env.d.ts",
@@ -29,5 +46,8 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "supabase/functions/api"]
+  "exclude": [
+    "node_modules",
+    "supabase/functions/api"
+  ]
 }

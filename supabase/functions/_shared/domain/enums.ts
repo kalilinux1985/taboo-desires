@@ -42,14 +42,6 @@ export type SubscriptionStatus =
 export type CustomStatus = "pending" | "accepted" | "declined" | "cancelled";
 export type Party = "buyer" | "seller";
 
-export const FORUM_TOPIC_IDS = [
-  "seller_tips",
-  "buyer_talk",
-  "introductions",
-  "off_topic",
-] as const;
-export type ForumTopicId = (typeof FORUM_TOPIC_IDS)[number];
-
 // status = text only, photo = has images, listing = new or reposted listing
 export const POST_KINDS = ["status", "photo", "listing"] as const;
 export type PostKind = (typeof POST_KINDS)[number];

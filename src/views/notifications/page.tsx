@@ -64,8 +64,6 @@ function describe(n: Notification): { icon: Icon; text: string; href: string } {
       return { icon: Heart, text: `${who} liked your post`, href: "/" };
     case "post_comment":
       return { icon: MessageSquare, text: `${who} commented on your post`, href: "/" };
-    case "thread_reply":
-      return { icon: MessageSquare, text: `${who} replied to “${n.title}”`, href: `/community/${n.targetId}` };
   }
 }
 

@@ -55,7 +55,7 @@ function FeedSkeleton() {
   );
 }
 
-/** Signed-in home: community activity feed modeled on the reference "Activity" page. */
+/** Signed-in home: activity feed modeled on the reference "Activity" page. */
 export default function ActivityFeed() {
   const access = useAccess();
   const { sendToPlans } = useUpgradeGate();

@@ -26,7 +26,7 @@ const OPTIONS = [
     title: "Buyer",
     price: "Free",
     perks: [
-      "Post on the community board",
+      "Post and comment on the activity feed",
       "Message sellers",
       `Up to ${BUYER_PHOTO_MAX} profile photos`,
     ],
