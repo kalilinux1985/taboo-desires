@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Award, EllipsisVertical, Images, Link2, Pencil, ShoppingBag, Star, UserRound } from "lucide-react";
+import { Award, EllipsisVertical, ImageIcon, Images, Link2, Pencil, ShoppingBag, Star, UserRound } from "lucide-react";
 import type { FunctionReturnType } from "@/lib/backend/types.ts";
 import type { api } from "@/lib/backend/api.ts";
 import { settingsPathFor } from "@/lib/settings.ts";
@@ -31,11 +31,14 @@ export default function ProfileSidebar({
   profile,
   onShowShop,
   onShowInstant,
+  onShowPhotos,
 }: {
   profile: Profile;
   onShowShop: () => void;
   onShowInstant: () => void;
+  onShowPhotos: () => void;
 }) {
+  const photos = profile.counts.photos;
   const rating = profile.stats.rating;
   const country = profile.sellerDetails.country;
   return (
@@ -52,6 +55,15 @@ export default function ProfileSidebar({
           <span className="absolute right-0 top-0 rounded-bl-md bg-emerald-500 px-2.5 py-0.5 text-xs font-bold text-white">
             Online
           </span>
+        )}
+        {(photos > 0 || profile.isMe) && (
+          <button
+            type="button"
+            onClick={onShowPhotos}
+            className="absolute bottom-3 right-3 flex cursor-pointer items-center gap-2 rounded-sm border border-white/10 bg-[#0a1020]/90 px-3 py-1.5 text-base font-bold text-violet-400 shadow-lg backdrop-blur-sm transition-colors hover:bg-violet-600 hover:text-white"
+          >
+            <ImageIcon className="size-5" /> {photos} {photos === 1 ? "Photo" : "Photos"}
+          </button>
         )}
       </div>
 

@@ -77,7 +77,8 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
       <ProfileSidebar
         profile={profile}
         onShowShop={() => showTab("shop")}
-        onShowInstant={() => showTab("instant")}
+        onShowPhotos={() => showTab("photos")}
+          onShowInstant={() => showTab("instant")}
       />
 
       <Tabs
