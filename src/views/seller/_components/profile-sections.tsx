@@ -12,22 +12,30 @@ import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { Spinner } from "@/components/ui/spinner.tsx";
 import { ShopCard } from "@/components/shop/shop-grid.tsx";
 import PostCard from "@/views/home/_components/post-card.tsx";
-import { HEADING_FONT, PANEL } from "../_lib/theme.ts";
+import { HEADING_FONT, PANEL, TABS_PANEL } from "../_lib/theme.ts";
+
+/** Panel classes; a panel that carries the profile tabs (top) uses the tabs panel colors. */
+const panelClass = (top: ReactNode) =>
+  top ? cn(TABS_PANEL, "flex flex-col gap-5") : cn(PANEL, "flex flex-col gap-5 p-5 sm:p-6");
 
 /** A titled panel: heading with a violet underline, optional count and action. */
 export function ProfilePanel({
   title,
   count,
   action,
+  top,
   children,
 }: {
   title: string;
   count?: string;
   action?: ReactNode;
+  /** Shown above the heading inside the panel (the profile tabs) */
+  top?: ReactNode;
   children: ReactNode;
 }) {
   return (
-    <section className={cn(PANEL, "flex flex-col gap-5 p-5 sm:p-6")}>
+    <section className={panelClass(top)}>
+      {top}
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between [&>button]:w-full [&>button]:justify-center sm:[&>button]:w-auto">
         <h2 className={cn(HEADING_FONT, "flex items-baseline gap-3 text-3xl")}>
           <span className="border-b-2 border-violet-600 pb-0.5">{title}</span>
@@ -51,16 +59,19 @@ function OverviewPanel({
   count,
   viewAll,
   onViewAll,
+  top,
   children,
 }: {
   title: string;
   count: string;
   viewAll: string;
   onViewAll: () => void;
+  top?: ReactNode;
   children: ReactNode;
 }) {
   return (
-    <section className={cn(PANEL, "flex flex-col gap-5 p-5 sm:p-6")}>
+    <section className={panelClass(top)}>
+      {top}
       <div className="flex flex-col gap-3">
         <h2 className={cn(HEADING_FONT, "flex flex-wrap items-baseline gap-x-2.5 text-3xl font-bold")}>
           {title}
@@ -125,10 +136,13 @@ export function ShopSection({
   sellerId,
   count,
   onViewAll,
+  top,
 }: {
   sellerId: Id<"users">;
   count: number;
   onViewAll: () => void;
+  /** The profile tabs, shown above the Shop heading */
+  top?: ReactNode;
 }) {
   const { results, status } = usePaginatedQuery(
     api.listings.bySeller,
@@ -136,7 +150,7 @@ export function ShopSection({
     { initialNumItems: 2 },
   );
   return (
-    <OverviewPanel title="Shop" count={plural(count, "Listing")} viewAll="View All Listings" onViewAll={onViewAll}>
+    <OverviewPanel title="Shop" count={plural(count, "Listing")} viewAll="View All Listings" onViewAll={onViewAll} top={top}>
       {status === "LoadingFirstPage" ? (
         <div className="grid gap-6 sm:grid-cols-2">
           <Skeleton className="h-72" />
