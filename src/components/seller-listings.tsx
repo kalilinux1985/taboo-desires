@@ -10,7 +10,10 @@ import { ListingGrid } from "@/components/listing-card.tsx";
 
 export type ListingKind = "items" | "instant";
 
-/** A seller's listings grouped by status. Owners also see unsold auctions. */
+/**
+ * A seller's listings grouped by status. Owners also see unsold auctions.
+ * Instant content has no status tabs and only shows what is for sale.
+ */
 export default function SellerListings({
   sellerId,
   isMe,
@@ -21,6 +24,7 @@ export default function SellerListings({
   kind?: ListingKind;
 }) {
   const [status, setStatus] = useState<Doc<"listings">["status"]>("active");
+  const showStatusTabs = kind !== "instant";
   const query = usePaginatedQuery(
     api.listings.bySeller,
     { sellerId, status, kind },
@@ -28,18 +32,20 @@ export default function SellerListings({
   );
   return (
     <div className="flex flex-col gap-6">
-      <Tabs
-        value={status}
-        onValueChange={(v) => setStatus(v === "sold" || v === "ended" ? v : "active")}
-      >
-        <TabsList>
-          <TabsTrigger value="active" className="cursor-pointer">For sale</TabsTrigger>
-          <TabsTrigger value="sold" className="cursor-pointer">Sold</TabsTrigger>
-          {isMe && (
-            <TabsTrigger value="ended" className="cursor-pointer">Unsold</TabsTrigger>
-          )}
-        </TabsList>
-      </Tabs>
+      {showStatusTabs && (
+        <Tabs
+          value={status}
+          onValueChange={(v) => setStatus(v === "sold" || v === "ended" ? v : "active")}
+        >
+          <TabsList>
+            <TabsTrigger value="active" className="cursor-pointer">For sale</TabsTrigger>
+            <TabsTrigger value="sold" className="cursor-pointer">Sold</TabsTrigger>
+            {isMe && (
+              <TabsTrigger value="ended" className="cursor-pointer">Unsold</TabsTrigger>
+            )}
+          </TabsList>
+        </Tabs>
+      )}
       <ListingGrid
         query={query}
         emptyTitle={
