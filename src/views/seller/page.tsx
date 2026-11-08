@@ -32,7 +32,7 @@ import {
   ProfilePanel,
   ShopSection,
 } from "./_components/profile-sections.tsx";
-import { PANEL, TAB_PILL, TEXT_FONT } from "./_lib/theme.ts";
+import { TAB_PILL, TABS_BAR, TABS_PANEL, TEXT_FONT } from "./_lib/theme.ts";
 import { useRecordProfileVisit } from "@/hooks/use-activity.ts";
 
 const TABS = ["overview", "shop", "instant", "photos", "reviews"] as const;
@@ -101,11 +101,11 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
         onValueChange={(v) => isTab(v) && setTab(v)}
         className="min-w-0 scroll-mt-20 gap-6"
       >
-        <div className={cn(PANEL, "flex flex-col gap-4 p-3 sm:p-5")}>
+        <div className={TABS_PANEL}>
           {/* Phones: tabs in a left column (Overview + Shop, Instant Content, Photos + Reviews)
               and Create Listing in a right column. Medium screens and up: one row. */}
-          <div className="flex gap-2 rounded-sm border border-white/[0.06] bg-[#050b1b] p-3 md:items-center md:gap-3">
-            <TabsList className="grid min-w-0 flex-1 grid-cols-2 gap-2 bg-transparent p-0 group-data-[orientation=horizontal]/tabs:h-auto md:flex md:flex-wrap md:justify-start md:gap-3">
+          <div className={TABS_BAR}>
+            <TabsList className="grid min-w-0 flex-1 grid-cols-2 gap-2 bg-transparent p-0 group-data-[orientation=horizontal]/tabs:h-auto md:flex md:flex-wrap md:justify-start md:gap-[15px]">
               <TabsTrigger value="overview" className={TAB_PILL}>Overview</TabsTrigger>
               <TabsTrigger value="shop" className={TAB_PILL}>Shop</TabsTrigger>
               <TabsTrigger value="instant" className={cn(TAB_PILL, "col-span-2")}>Instant Content</TabsTrigger>
