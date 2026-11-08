@@ -71,7 +71,7 @@ function OverviewPanel({
       <button
         type="button"
         onClick={onViewAll}
-        className="w-full cursor-pointer rounded-full border-2 border-violet-600 py-2 text-sm font-bold text-violet-400 transition-colors hover:bg-violet-600 hover:text-white"
+        className="w-full cursor-pointer rounded-[5px] border border-violet-600 py-1.5 text-xs font-bold text-violet-400 transition-colors hover:bg-violet-600 hover:text-white"
       >
         {viewAll}
       </button>
