@@ -22,6 +22,7 @@ import ProfilePhotos from "./_components/profile-photos.tsx";
 import SellerReviews from "./_components/seller-reviews.tsx";
 import BuyerProfile from "./_components/buyer-profile.tsx";
 import ProfileSidebar from "./_components/profile-sidebar.tsx";
+import ProfileCompactHeader from "./_components/profile-compact-header.tsx";
 import ProfileAbout from "./_components/profile-about.tsx";
 import CreateListingButton from "./_components/quick-listing.tsx";
 import {
@@ -72,14 +73,27 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
     document.getElementById("profile-tabs")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  // Overview keeps the full profile card; the other tabs use a slim header above the tabs
+  const overview = tab === "overview";
+
   return (
-    <div className={cn(TEXT_FONT, "mx-auto grid max-w-6xl items-start gap-6 px-4 py-6 lg:grid-cols-[20rem_1fr] lg:gap-12")}>
-      <ProfileSidebar
-        profile={profile}
-        onShowShop={() => showTab("shop")}
-        onShowPhotos={() => showTab("photos")}
+    <div
+      className={cn(
+        TEXT_FONT,
+        "mx-auto grid items-start gap-6 px-4 py-6",
+        overview ? "max-w-6xl lg:grid-cols-[20rem_1fr] lg:gap-12" : "max-w-4xl",
+      )}
+    >
+      {overview ? (
+        <ProfileSidebar
+          profile={profile}
+          onShowShop={() => showTab("shop")}
+          onShowPhotos={() => showTab("photos")}
           onShowInstant={() => showTab("instant")}
-      />
+        />
+      ) : (
+        <ProfileCompactHeader profile={profile} />
+      )}
 
       <Tabs
         id="profile-tabs"
