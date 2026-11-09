@@ -51,11 +51,11 @@
 }
 
 /* Navy dark theme sampled from the seller-profile design:
-   #0f172a page, #080d20 header, #0a1123 panels, #050b1b inset boxes,
-   #10182d inputs and inactive pills, #7c3aed violet accents */
+   #334155 (slate-700) page and text fields, #080d20 header, #0a1123 panels, #050b1b inset boxes,
+   #10182d secondary surfaces, #7c3aed violet accents */
 :root {
   --radius: 0.625rem;
-  --background: #0f172a;
+  --background: #334155; /* slate-700 */
   --foreground: #f2f6ff;
   --card: #0a1123;
   --card-foreground: #f2f6ff;

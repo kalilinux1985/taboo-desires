@@ -147,15 +147,15 @@ function HeaderSearch() {
     setOpen(false);
   };
   const field = (autoFocus: boolean) => (
-    <form onSubmit={submit} role="search" className="flex h-[41px] w-full items-center gap-2.5 rounded-[3px] bg-slate-900 px-3">
-      <Search className="size-5 shrink-0 text-slate-500" strokeWidth={1.5} />
+    <form onSubmit={submit} role="search" className="flex h-[41px] w-full items-center gap-2.5 rounded-[3px] bg-slate-700 px-3">
+      <Search className="size-5 shrink-0 text-slate-400" strokeWidth={1.5} />
       <input
         value={text}
         onChange={(e) => setText(e.target.value)}
         autoFocus={autoFocus}
         aria-label="Search users and listings"
         placeholder="Search Users / Listings..."
-        className="min-w-0 flex-1 bg-transparent font-serif text-[13px] text-slate-200 outline-none placeholder:text-slate-500 xl:text-[14px]"
+        className="min-w-0 flex-1 bg-transparent font-serif text-[13px] text-slate-200 outline-none placeholder:text-slate-400 xl:text-[14px]"
       />
     </form>
   );

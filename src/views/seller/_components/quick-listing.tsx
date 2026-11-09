@@ -35,7 +35,7 @@ import { profileFontVars } from "../_lib/fonts.ts";
 
 const MAX_BYTES = 10 * 1024 * 1024;
 const MAX_PHOTOS = 4;
-const FIELD = "h-9 rounded-sm border-white/[0.06] bg-[#0f172a] text-sm placeholder:text-slate-500";
+const FIELD = "h-9 rounded-sm border-white/[0.06] bg-slate-700 text-sm placeholder:text-slate-400";
 
 type Photo = { id: Id<"_storage">; url: string };
 
