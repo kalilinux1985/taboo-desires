@@ -107,21 +107,21 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
     }
   };
 
-  const action = "flex cursor-pointer items-center gap-1.5 transition-colors hover:text-slate-200";
+  const action = "flex cursor-pointer items-center gap-1.5 transition-colors hover:text-[#f2f6ff]";
   const text = item.body || (item.kind !== "status" ? `${verb.lead} ${verb.link}${item.listing ? `: ${item.listing.title}` : ""}` : "");
 
   return (
-    <article className="flex gap-3 border-b border-white/[0.06] py-4 sm:gap-4">
+    <article className="flex gap-3 border-b border-[#101626] py-4 sm:gap-4">
       <Link href={profile} className="relative h-fit shrink-0 cursor-pointer">
         <ProfileAvatar
           name={item.author.name}
           url={item.author.avatarUrl}
-          className="size-12 border border-white/10 bg-slate-800 text-xl text-slate-200 sm:size-14 sm:text-2xl"
+          className="size-12 border border-[#101626] bg-[#a8a9ae] text-xl text-[#2a2a2e] sm:size-14 sm:text-2xl"
         />
         {online && (
           <span
             aria-label="Online"
-            className="absolute bottom-0 right-0 size-3.5 rounded-full border-2 border-background bg-emerald-600"
+            className="absolute bottom-0 right-0 size-3.5 rounded-full border-2 border-[#040a18] bg-emerald-600"
           />
         )}
       </Link>
@@ -129,7 +129,7 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         <header className="flex items-center gap-2">
           <p className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-0.5">
-            <Link href={profile} className="cursor-pointer truncate text-[15px] font-bold text-slate-100 hover:underline">
+            <Link href={profile} className="cursor-pointer truncate text-[15px] font-bold text-[#696b78] hover:underline">
               {item.author.name}
             </Link>
             {item.author.country && (
@@ -141,7 +141,7 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
           {item.canDelete && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="Post options" className="size-7 shrink-0 cursor-pointer text-slate-500">
+                <Button variant="ghost" size="icon" aria-label="Post options" className="size-7 shrink-0 cursor-pointer text-[#61646d]">
                   <MoreHorizontal />
                 </Button>
               </DropdownMenuTrigger>
@@ -155,7 +155,7 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
         </header>
 
         {text && (
-          <p className="whitespace-pre-wrap break-words rounded-2xl bg-slate-900 px-3.5 py-2.5 text-[15px] leading-snug text-slate-300 shadow-[inset_0_2px_6px_rgba(0,0,0,0.5)]">
+          <p className="whitespace-pre-wrap break-words rounded-2xl bg-[#0f172a] px-3.5 py-2.5 text-[15px] leading-snug text-[#a8abb4] shadow-[inset_0_2px_6px_rgba(0,0,0,0.5)]">
             {text}
           </p>
         )}
@@ -163,17 +163,17 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
         {item.images.length > 0 && <PostImages images={item.images} />}
         {item.listing && <ListingPreview listing={item.listing} />}
         {item.kind === "listing" && !item.listing && (
-          <p className="text-sm text-slate-500">This listing is no longer available.</p>
+          <p className="text-sm text-[#61646d]">This listing is no longer available.</p>
         )}
 
-        <div className="mt-1 flex items-center gap-3 text-sm text-slate-400">
+        <div className="mt-1 flex items-center gap-3 text-sm text-[#9a9ca5]">
           <button
             type="button"
             onClick={() => setShowComments((s) => !s)}
             aria-expanded={showComments}
             aria-label={showComments ? "Hide comments" : "Show comments"}
             title="Comments"
-            className={cn(action, "border-r border-white/15 pr-3", showComments && "text-slate-200")}
+            className={cn(action, "border-r border-[#1b2236] pr-3", showComments && "text-[#f2f6ff]")}
           >
             {item.commentCount}
             <MessageCircle className={cn("size-4 text-violet-600", showComments && "fill-violet-600")} />
@@ -192,7 +192,7 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
           <span className="flex min-w-0 items-center gap-1 text-xs [&>a]:size-5">
             <LikerAvatars likers={item.likers} total={item.likeCount} postId={item._id} size="sm" />
           </span>
-          <div className="ml-auto flex shrink-0 items-center gap-3 text-xs text-slate-500">
+          <div className="ml-auto flex shrink-0 items-center gap-3 text-xs text-[#61646d]">
             <button type="button" onClick={share} aria-label="Share" title="Share" className={action}>
               <Forward className="size-4 text-violet-600" />
             </button>

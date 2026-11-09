@@ -22,12 +22,12 @@ function SmallAvatar({ name, url }: { name: string; url: string | null }) {
     <ProfileAvatar
       name={name}
       url={url}
-      className="size-9 border border-white/10 bg-slate-800 text-base text-slate-200 sm:size-10"
+      className="size-9 border border-[#101626] bg-[#a8a9ae] text-base text-[#2a2a2e] sm:size-10"
     />
   );
 }
 
-const LINK_ACTION = "flex cursor-pointer items-center gap-1.5 transition-colors hover:text-slate-200";
+const LINK_ACTION = "flex cursor-pointer items-center gap-1.5 transition-colors hover:text-[#f2f6ff]";
 
 function CommentForm({
   postId,
@@ -73,7 +73,7 @@ function CommentForm({
         placeholder={placeholder}
         aria-label={placeholder}
         onChange={(e) => setBody(e.target.value)}
-        className="h-9 w-full rounded-full border border-white/[0.04] bg-slate-900 pl-4 pr-10 text-[13px] shadow-[inset_0_2px_6px_rgba(0,0,0,0.65)] text-slate-200 outline-none placeholder:text-slate-600 focus:border-violet-600/50"
+        className="h-9 w-full rounded-full border border-[#090f1f] bg-[#0f172a] pl-4 pr-10 text-[13px] shadow-[inset_0_2px_6px_rgba(0,0,0,0.65)] text-[#f2f6ff] outline-none placeholder:text-[#3a4151] focus:border-violet-600/50"
       />
       <button
         type="submit"
@@ -105,19 +105,19 @@ function CommentItem({
   const profile = `/seller/${comment.author._id}`;
 
   return (
-    <li className="flex gap-3 border-t border-white/[0.06] py-3">
+    <li className="flex gap-3 border-t border-[#101626] py-3">
       <Link href={profile} className="h-fit shrink-0 cursor-pointer">
         <SmallAvatar name={comment.author.name} url={comment.author.avatarUrl} />
       </Link>
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         <div className="flex items-start gap-2">
-          <p className="min-w-0 flex-1 whitespace-pre-wrap break-words text-[15px] leading-snug text-slate-300">
-            <Link href={profile} className="mr-1.5 cursor-pointer font-bold text-slate-100 hover:underline">
+          <p className="min-w-0 flex-1 whitespace-pre-wrap break-words text-[15px] leading-snug text-[#f2f6ff]">
+            <Link href={profile} className="mr-1.5 cursor-pointer font-bold text-[#f6f8ff] hover:underline">
               {comment.author.name}
             </Link>
             {comment.body}
           </p>
-          <span className="flex shrink-0 items-center gap-2 pt-0.5 text-[11px] text-slate-500">
+          <span className="flex shrink-0 items-center gap-2 pt-0.5 text-[11px] text-[#cbd1df]">
             <span title={new Date(comment._creationTime).toLocaleString()}>{shortAge(comment._creationTime)}</span>
             {comment.canDelete && (
               <button
@@ -132,7 +132,7 @@ function CommentItem({
           </span>
         </div>
 
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-slate-400">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-[#9a9ca5]">
           <Authenticated>
             <button
               type="button"
@@ -164,7 +164,7 @@ function CommentItem({
               aria-expanded={showReplies}
               aria-label={`${showReplies ? "Hide" : "Show"} ${comment.replyCount} ${comment.replyCount === 1 ? "reply" : "replies"}`}
               title={showReplies ? "Hide replies" : "Show replies"}
-              className={cn(LINK_ACTION, showReplies && "text-slate-200")}
+              className={cn(LINK_ACTION, showReplies && "text-[#f2f6ff]")}
             >
               <MessagesSquare className="size-3.5 text-violet-600" />
               {comment.replyCount}
@@ -204,7 +204,7 @@ function Replies({ postId, parentId }: { postId: Id<"posts">; parentId: Id<"post
         <CommentItem key={r._id} postId={postId} comment={r} threadId={parentId} />
       ))}
       {status === "CanLoadMore" && (
-        <button type="button" onClick={() => loadMore(10)} className={cn(LINK_ACTION, "self-start text-[13px] text-slate-400")}>
+        <button type="button" onClick={() => loadMore(10)} className={cn(LINK_ACTION, "self-start text-[13px] text-[#9a9ca5]")}>
           More replies
         </button>
       )}
@@ -247,7 +247,7 @@ function CommentList({ postId }: { postId: Id<"posts"> }) {
         ))}
       </ul>
       {status === "CanLoadMore" && (
-        <button type="button" onClick={() => loadMore(10)} className={cn(LINK_ACTION, "self-start border-t border-white/[0.06] pt-3 pl-12 text-[13px] text-slate-400")}>
+        <button type="button" onClick={() => loadMore(10)} className={cn(LINK_ACTION, "self-start border-t border-[#101626] pt-3 pl-12 text-[13px] text-[#9a9ca5]")}>
           View more comments
         </button>
       )}
@@ -268,7 +268,7 @@ export default function PostComments({
   const { needsUpgrade } = useUpgradeGate();
   return (
     <div className={cn("flex flex-col", className)}>
-      <div className="border-t border-white/[0.06] py-3">
+      <div className="border-t border-[#101626] py-3">
         <Authenticated>
           {needsUpgrade("post") ? (
             <PremiumNotice />
@@ -280,7 +280,7 @@ export default function PostComments({
           )}
         </Authenticated>
         <Unauthenticated>
-          <p className="text-[13px] text-slate-500">
+          <p className="text-[13px] text-[#61646d]">
             <Link href="/signin" className="cursor-pointer text-violet-600 hover:underline">
               Sign in
             </Link>{" "}
