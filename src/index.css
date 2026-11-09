@@ -102,3 +102,42 @@
     cursor: pointer;
   }
 }
+
+/* Locked surfaces: the page, every text field and comment boxes are always
+   slate-700 (#334155), whatever classes a component sets and whatever state
+   the field is in (focus, disabled, invalid, browser autofill). */
+@layer base {
+  html,
+  body {
+    background-color: #334155 !important;
+  }
+
+  textarea,
+  input:not(
+      [type="checkbox"],
+      [type="radio"],
+      [type="file"],
+      [type="range"],
+      [type="color"],
+      [type="hidden"],
+      [type="submit"],
+      [type="button"],
+      [type="reset"],
+      [type="image"]
+    ),
+  .comment-surface {
+    background-color: #334155 !important;
+  }
+
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px #334155 inset !important;
+    -webkit-text-fill-color: var(--foreground);
+    caret-color: var(--foreground);
+  }
+}
+
