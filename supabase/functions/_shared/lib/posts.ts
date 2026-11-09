@@ -3,6 +3,7 @@ import type { QueryCtx } from "../core/functions.ts";
 import type { Doc, Id } from "../core/schema.ts";
 import { sql } from "../core/sql.ts";
 import { publicSellerName } from "./auth.ts";
+import { getPlan } from "./subscription.ts";
 
 export const POST_BODY_MAX = 1000;
 export const COMMENT_MAX = 500;
@@ -61,6 +62,8 @@ export type FeedAuthor = {
   accountType: "buyer" | "seller" | null;
   country: string | null;
   verified: boolean;
+  /** Seller with an active Pro plan ("Premium Seller") */
+  isPro: boolean;
 };
 
 export async function loadFeedAuthor(
@@ -76,6 +79,7 @@ export async function loadFeedAuthor(
       accountType: null,
       country: null,
       verified: false,
+      isPro: false,
     };
   }
   const details =
@@ -89,6 +93,7 @@ export async function loadFeedAuthor(
     accountType: user.accountType ?? null,
     country: details?.country ?? null,
     verified: !!user.verified,
+    isPro: user.accountType === "seller" && (await getPlan(ctx, user._id)) === "pro",
   };
 }
 

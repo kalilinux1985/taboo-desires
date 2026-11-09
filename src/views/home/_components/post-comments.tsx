@@ -1,24 +1,27 @@
 import { useState } from "react";
-import { usePaginatedQuery, useMutation } from "@/lib/backend/react.tsx";
+import { useBackendAuth, usePaginatedQuery, useMutation, useQuery } from "@/lib/backend/react.tsx";
 import { Authenticated, Unauthenticated } from "@/lib/backend/react.tsx";
 import Link from "next/link";
-import { ChevronRight, Clock, Heart, Medal, Reply, SendHorizontal, Trash2 } from "lucide-react";
+import { Medal, Send, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/backend/api.ts";
 import type { FunctionReturnType, Id } from "@/lib/backend/types.ts";
-import { Button } from "@/components/ui/button.tsx";
-import { Input } from "@/components/ui/input.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { Spinner } from "@/components/ui/spinner.tsx";
-import { SignInButton } from "@/components/ui/signin.tsx";
 import ProfileAvatar from "@/components/profile-avatar.tsx";
 import { getErrorMessage } from "@/lib/listings.ts";
 import { cn } from "@/lib/utils.ts";
 import { useUpgradeGate } from "@/hooks/use-upgrade-gate.ts";
-import LikerAvatars from "./liker-avatars.tsx";
 import { shortAge } from "../_lib/feed.ts";
 
 type Comment = FunctionReturnType<typeof api.posts.listComments>["page"][number];
+
+/** Small square avatar used next to comments and the comment box. */
+function SmallAvatar({ name, url }: { name: string; url: string | null }) {
+  return <ProfileAvatar name={name} url={url} className="size-[31px] rounded-[2px] bg-[#8b8b90] text-sm text-white" />;
+}
+
+const LINK_ACTION = "cursor-pointer transition-colors hover:text-slate-200";
 
 function CommentForm({
   postId,
@@ -56,22 +59,23 @@ function CommentForm({
     }
   };
   return (
-    <form onSubmit={submit} className="relative flex-1">
-      <Input
+    <form onSubmit={submit} className="relative min-w-0 flex-1">
+      <input
         value={body}
         maxLength={500}
         autoFocus={autoFocus}
         placeholder={placeholder}
+        aria-label={placeholder}
         onChange={(e) => setBody(e.target.value)}
-        className="h-11 border-white/10 bg-background/60 pr-10"
+        className="h-9 w-full rounded-[3px] border border-white/[0.04] bg-slate-900 pl-4 pr-10 text-[13px] text-slate-200 outline-none placeholder:text-slate-600 focus:border-violet-600/50"
       />
       <button
         type="submit"
         aria-label="Send"
         disabled={!body.trim() || sending}
-        className="absolute right-2 top-1/2 flex size-7 -translate-y-1/2 cursor-pointer items-center justify-center text-violet-600 disabled:opacity-40"
+        className="absolute right-2 top-1/2 flex size-7 -translate-y-1/2 cursor-pointer items-center justify-center text-violet-600 disabled:opacity-60"
       >
-        {sending ? <Spinner /> : <SendHorizontal className="size-4" />}
+        {sending ? <Spinner /> : <Send className="size-4 fill-violet-600" />}
       </button>
     </form>
   );
@@ -95,75 +99,64 @@ function CommentItem({
   const profile = `/seller/${comment.author._id}`;
 
   return (
-    <li className="flex flex-col gap-3 border-b border-white/10 py-4 last:border-b-0">
-      <div className="flex items-start gap-3 sm:gap-5">
-        <Link href={profile} className="shrink-0 cursor-pointer">
-          <ProfileAvatar
-            name={comment.author.name}
-            url={comment.author.avatarUrl}
-            className="size-12 border-2 border-white/15 text-xl sm:size-16 sm:text-2xl"
-          />
-        </Link>
-        <div className="flex min-w-0 flex-1 flex-col gap-2 pt-1">
-          <p className="whitespace-pre-wrap break-words text-base text-foreground/90 sm:text-xl">
-            <Link href={profile} className="mr-1.5 cursor-pointer font-bold text-foreground hover:underline">
+    <li className="flex gap-1.5">
+      <Link href={profile} className="h-fit shrink-0 cursor-pointer">
+        <SmallAvatar name={comment.author.name} url={comment.author.avatarUrl} />
+      </Link>
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
+        <div className="flex min-h-[84px] flex-col gap-1 rounded-[3px] border border-white/[0.04] bg-slate-900 px-4 py-2.5">
+          <div className="flex items-start justify-between gap-3">
+            <Link href={profile} className="cursor-pointer truncate text-[13px] text-slate-200 hover:underline">
               {comment.author.name}
             </Link>
-            {comment.body}
-          </p>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-muted-foreground sm:text-lg">
-            <Authenticated>
-              <button
-                type="button"
-                aria-label={`Reply to ${comment.author.name}`}
-                onClick={() => setReplying((r) => !r)}
-                className={cn("cursor-pointer hover:text-foreground", replying && "text-violet-600")}
-              >
-                <Reply className="size-5" />
-              </button>
-            </Authenticated>
+            <span className="flex shrink-0 items-center gap-2 text-[10px] text-slate-400">
+              <span title={new Date(comment._creationTime).toLocaleString()}>{shortAge(comment._creationTime)}</span>
+              {comment.canDelete && (
+                <button
+                  type="button"
+                  aria-label="Delete comment"
+                  onClick={() => remove({ commentId: comment._id }).catch((e) => toast.error(getErrorMessage(e, "Could not delete")))}
+                  className="cursor-pointer text-slate-500 hover:text-rose-400"
+                >
+                  <Trash2 className="size-3" />
+                </button>
+              )}
+            </span>
+          </div>
+          <p className="whitespace-pre-wrap break-words text-[13px] leading-5 text-slate-300">{comment.body}</p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-x-7 gap-y-1 pl-0.5 text-[13px] text-slate-400">
+          <button
+            type="button"
+            aria-pressed={comment.likedByMe}
+            onClick={() =>
+              toggleLike({ commentId: comment._id }).catch((e) => toast.error(getErrorMessage(e, "Sign in to like comments")))
+            }
+            className={cn(LINK_ACTION, comment.likedByMe && "text-violet-600")}
+          >
+            {comment.likedByMe ? "Liked" : "Like"}
+            {comment.likeCount > 0 && ` (${comment.likeCount})`}
+          </button>
+          <Authenticated>
             <button
               type="button"
-              aria-pressed={comment.likedByMe}
-              aria-label={comment.likedByMe ? "Unlike comment" : "Like comment"}
-              onClick={() =>
-                toggleLike({ commentId: comment._id }).catch((e) => toast.error(getErrorMessage(e, "Sign in to like comments")))
-              }
-              className={cn("flex cursor-pointer items-center gap-1.5 hover:text-foreground", comment.likedByMe && "text-violet-600")}
+              onClick={() => setReplying((r) => !r)}
+              className={cn(LINK_ACTION, replying && "text-violet-600")}
             >
-              <Heart className={cn("size-5", comment.likedByMe && "fill-violet-500 text-violet-600")} /> {comment.likeCount}
+              Reply
             </button>
-            <LikerAvatars likers={comment.likers} total={comment.likeCount} size="sm" />
-            <span className="flex items-center gap-1 text-sm" title={new Date(comment._creationTime).toLocaleString()}>
-              <Clock className="size-4" /> {shortAge(comment._creationTime)}
-            </span>
-            {isTop && comment.replyCount > 0 && (
-              <button
-                type="button"
-                onClick={() => setShowReplies((s) => !s)}
-                className="flex cursor-pointer items-center gap-0.5 text-sm text-violet-600 hover:underline"
-              >
-                {showReplies ? "Hide replies" : `${comment.replyCount} ${comment.replyCount === 1 ? "reply" : "replies"}`}
-                <ChevronRight className={cn("size-4 transition-transform", showReplies && "rotate-90")} />
-              </button>
-            )}
-          </div>
+          </Authenticated>
+          {isTop && comment.replyCount > 0 && (
+            <button type="button" onClick={() => setShowReplies((s) => !s)} className={LINK_ACTION}>
+              {showReplies
+                ? "Hide replies"
+                : `View ${comment.replyCount} ${comment.replyCount === 1 ? "reply" : "replies"}`}
+            </button>
+          )}
         </div>
-        {comment.canDelete && (
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Delete comment"
-            className="size-7 cursor-pointer text-muted-foreground"
-            onClick={() => remove({ commentId: comment._id }).catch((e) => toast.error(getErrorMessage(e, "Could not delete")))}
-          >
-            <Trash2 className="size-3.5" />
-          </Button>
-        )}
-      </div>
 
-      {replying && (
-        <div className="ml-15 flex sm:ml-21">
+        {replying && (
           <CommentForm
             postId={postId}
             parentId={threadId}
@@ -175,9 +168,9 @@ function CommentItem({
               setShowReplies(true);
             }}
           />
-        </div>
-      )}
-      {isTop && showReplies && <Replies postId={postId} parentId={comment._id} />}
+        )}
+        {isTop && showReplies && <Replies postId={postId} parentId={comment._id} />}
+      </div>
     </li>
   );
 }
@@ -188,16 +181,16 @@ function Replies({ postId, parentId }: { postId: Id<"posts">; parentId: Id<"post
     { postId, parentId },
     { initialNumItems: 10 },
   );
-  if (status === "LoadingFirstPage") return <Skeleton className="ml-15 h-10 sm:ml-21" />;
+  if (status === "LoadingFirstPage") return <Skeleton className="h-16" />;
   return (
-    <ul className="ml-15 flex flex-col border-l border-white/10 pl-3 sm:ml-21">
+    <ul className="flex flex-col gap-3">
       {results.map((r) => (
         <CommentItem key={r._id} postId={postId} comment={r} threadId={parentId} />
       ))}
       {status === "CanLoadMore" && (
-        <Button variant="ghost" size="sm" onClick={() => loadMore(10)} className="cursor-pointer self-start">
+        <button type="button" onClick={() => loadMore(10)} className={cn(LINK_ACTION, "self-start text-[13px] text-slate-400")}>
           More replies
-        </Button>
+        </button>
       )}
     </ul>
   );
@@ -206,66 +199,78 @@ function Replies({ postId, parentId }: { postId: Id<"posts">; parentId: Id<"post
 /** Shown instead of the comment box to sellers without Premium. */
 function PremiumNotice() {
   return (
-    <p className="rounded-md border border-violet-600/40 bg-violet-600/10 px-5 py-4 text-center text-base text-violet-100 sm:text-xl">
+    <p className="rounded-[3px] border border-violet-600/40 bg-violet-600/10 px-4 py-3 text-center text-[13px] text-violet-100">
       Adding comments to the activity feed is a Premium Seller feature.{" "}
       <Link href="/pricing?for=post" className="inline-flex cursor-pointer items-center gap-1 font-bold text-violet-300 hover:underline">
-        <Medal className="size-5 text-rose-400" /> Go Premium &gt;
+        <Medal className="size-4 text-rose-400" /> Go Premium &gt;
       </Link>
     </p>
   );
 }
 
-/** Comment box (or the Premium notice) in a grey band, then the comments with likes and replies. */
-export default function PostComments({
-  postId,
-  className,
-}: {
-  postId: Id<"posts">;
-  className?: string;
-}) {
-  const { needsUpgrade } = useUpgradeGate();
+/** The signed-in member's avatar beside the comment box. */
+function MyAvatar() {
+  const { isAuthenticated } = useBackendAuth();
+  const me = useQuery(api.users.menu, isAuthenticated ? {} : "skip");
+  return <SmallAvatar name={me?.name ?? "?"} url={me?.avatarUrl ?? null} />;
+}
+
+function CommentList({ postId }: { postId: Id<"posts"> }) {
   const { results, status, loadMore } = usePaginatedQuery(
     api.posts.listComments,
     { postId },
-    { initialNumItems: 5 },
+    { initialNumItems: 3 },
   );
-
+  if (status === "LoadingFirstPage") return <Skeleton className="h-20 w-full" />;
+  if (results.length === 0) return null;
   return (
-    <div className={cn("flex flex-col", className)}>
-      <div className="border-y border-white/10 bg-white/[0.04] p-4 sm:p-5">
-        <Authenticated>
-          {needsUpgrade("post") ? (
-            <PremiumNotice />
-          ) : (
-            <div className="flex">
-              <CommentForm postId={postId} />
-            </div>
-          )}
-        </Authenticated>
-        <Unauthenticated>
-          <div className="flex items-center justify-between gap-2 text-sm text-muted-foreground">
-            Sign in to comment.
-            <SignInButton size="sm" />
-          </div>
-        </Unauthenticated>
-      </div>
-
-      {status === "LoadingFirstPage" ? (
-        <Skeleton className="mt-4 h-16 w-full" />
-      ) : (
-        results.length > 0 && (
-          <ul className="flex flex-col">
-            {results.map((c) => (
-              <CommentItem key={c._id} postId={postId} comment={c} threadId={c._id} />
-            ))}
-          </ul>
-        )
-      )}
+    <>
+      <ul className="flex flex-col gap-3">
+        {results.map((c) => (
+          <CommentItem key={c._id} postId={postId} comment={c} threadId={c._id} />
+        ))}
+      </ul>
       {status === "CanLoadMore" && (
-        <Button variant="ghost" size="sm" onClick={() => loadMore(10)} className="cursor-pointer self-start text-violet-600">
-          Show more comments
-        </Button>
+        <button type="button" onClick={() => loadMore(10)} className={cn(LINK_ACTION, "self-start pl-9 text-[13px] text-slate-400")}>
+          View more comments
+        </button>
       )}
+    </>
+  );
+}
+
+/** Comment box (or the Premium notice), then the comments when showList is on. */
+export default function PostComments({
+  postId,
+  showList = true,
+  className,
+}: {
+  postId: Id<"posts">;
+  showList?: boolean;
+  className?: string;
+}) {
+  const { needsUpgrade } = useUpgradeGate();
+  return (
+    <div className={cn("flex flex-col gap-4", className)}>
+      <Authenticated>
+        {needsUpgrade("post") ? (
+          <PremiumNotice />
+        ) : (
+          <div className="flex items-center gap-1.5">
+            <MyAvatar />
+            <CommentForm postId={postId} />
+          </div>
+        )}
+      </Authenticated>
+      <Unauthenticated>
+        <p className="text-[13px] text-slate-500">
+          <Link href="/signin" className="cursor-pointer text-violet-600 hover:underline">
+            Sign in
+          </Link>{" "}
+          to comment.
+        </p>
+      </Unauthenticated>
+      {showList && <CommentList postId={postId} />}
     </div>
   );
 }

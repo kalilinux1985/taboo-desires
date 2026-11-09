@@ -28,7 +28,6 @@ import CreateListingButton from "./_components/quick-listing.tsx";
 import {
   ActivitySection,
   InstantSection,
-  PhotosSection,
   ProfilePanel,
   ShopSection,
 } from "./_components/profile-sections.tsx";
@@ -101,12 +100,15 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
       )}
     >
       {overview ? (
-        <ProfileSidebar
-          profile={profile}
-          onShowShop={() => showTab("shop")}
-          onShowPhotos={() => showTab("photos")}
-          onShowInstant={() => showTab("instant")}
-        />
+        <div className="flex min-w-0 flex-col gap-6">
+          <ProfileSidebar
+            profile={profile}
+            onShowShop={() => showTab("shop")}
+            onShowPhotos={() => showTab("photos")}
+            onShowInstant={() => showTab("instant")}
+          />
+          <ProfileAbout profile={profile} />
+        </div>
       ) : (
         <ProfileCompactHeader profile={profile} />
       )}
@@ -117,8 +119,8 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
         onValueChange={(v) => isTab(v) && setTab(v)}
         className="min-w-0 scroll-mt-20 gap-6"
       >
-        <TabsContent value="overview" className="flex flex-col gap-6">
-          <ProfileAbout profile={profile} />
+        {/* Overview: Shop (with the tabs on top), Instant Content, Latest Activity */}
+        <TabsContent value="overview" className="flex flex-col gap-4">
           <ShopSection
             sellerId={profile._id}
             count={profile.counts.listings}
@@ -130,7 +132,6 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
             count={profile.counts.instantContent}
             onViewAll={() => showTab("instant")}
           />
-          <PhotosSection photos={profile.photos} count={profile.counts.photos} onViewAll={() => showTab("photos")} />
           <ActivitySection authorId={profile._id} />
         </TabsContent>
         <TabsContent value="shop">

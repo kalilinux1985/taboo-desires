@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useMutation } from "@/lib/backend/react.tsx";
-import { ChevronRight, Clock, Heart, Lock, MessageCircle, MoreHorizontal, Trash2 } from "lucide-react";
+import { Forward, Lock, MessageCircle, MoreHorizontal, ThumbsUp, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/backend/api.ts";
 import { Button } from "@/components/ui/button.tsx";
@@ -13,26 +13,27 @@ import {
 } from "@/components/ui/dropdown-menu.tsx";
 import ProfileAvatar from "@/components/profile-avatar.tsx";
 import VerifiedBadge from "@/components/verified-badge.tsx";
-import CountryFlag from "@/components/country-flag.tsx";
 import { useNow } from "@/hooks/use-now.ts";
 import { cn } from "@/lib/utils.ts";
 import { formatPrice, getErrorMessage } from "@/lib/listings.ts";
 import { activityVerb, shortAge, type FeedItem } from "../_lib/feed.ts";
 import PostComments from "./post-comments.tsx";
-import LikerAvatars from "./liker-avatars.tsx";
+
+/** Serif used by the activity cards (falls back to Georgia outside the profile pages). */
+export const POST_FONT = "[font-family:var(--font-profile-text),ui-serif,Georgia,serif]";
 
 function PostImages({ images }: { images: string[] }) {
   if (images.length === 1) {
     return (
-      <div className="flex w-full max-w-md justify-center overflow-hidden rounded-md border border-white/15 bg-muted/60">
-        <img src={images[0]} alt="" loading="lazy" className="max-h-[32rem] w-auto max-w-full object-contain" />
+      <div className="w-full max-w-[210px] overflow-hidden rounded-[2px] bg-[#8b8b90]">
+        <img src={images[0]} alt="" loading="lazy" className="max-h-[22rem] w-full object-cover" />
       </div>
     );
   }
   return (
-    <div className="grid max-w-md grid-cols-2 gap-2">
+    <div className="grid max-w-[426px] grid-cols-2 gap-1.5">
       {images.map((url) => (
-        <div key={url} className="aspect-square overflow-hidden rounded-lg border border-white/10 bg-muted">
+        <div key={url} className="aspect-square overflow-hidden rounded-[2px] bg-[#8b8b90]">
           <img src={url} alt="" loading="lazy" className="size-full object-cover" />
         </div>
       ))}
@@ -44,7 +45,7 @@ function ListingPreview({ listing }: { listing: NonNullable<FeedItem["listing"]>
   return (
     <Link
       href={`/listing/${listing._id}`}
-      className="group relative block w-full max-w-sm cursor-pointer overflow-hidden rounded-lg border border-white/10 bg-muted"
+      className="group relative block w-full max-w-[210px] cursor-pointer overflow-hidden rounded-[2px] bg-[#8b8b90]"
     >
       {listing.imageUrl && (
         <img
@@ -54,12 +55,12 @@ function ListingPreview({ listing }: { listing: NonNullable<FeedItem["listing"]>
           className="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
       )}
-      <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-gradient-to-t from-black/85 to-transparent px-3 pb-2 pt-8 text-white">
-        <span className="flex min-w-0 items-center gap-1 truncate text-sm font-semibold">
-          {listing.isLocked && <Lock className="size-3.5 shrink-0 text-violet-300" />}
+      <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-gradient-to-t from-black/85 to-transparent px-2.5 pb-2 pt-8 text-white">
+        <span className="flex min-w-0 items-center gap-1 truncate text-xs">
+          {listing.isLocked && <Lock className="size-3 shrink-0 text-violet-300" />}
           <span className="truncate">{listing.title}</span>
         </span>
-        <span className="shrink-0 font-mono text-sm font-bold">
+        <span className="shrink-0 text-xs font-bold">
           {listing.status === "active" ? formatPrice(listing.priceCents) : listing.status === "sold" ? "Sold" : "Ended"}
         </span>
       </div>
@@ -67,16 +68,26 @@ function ListingPreview({ listing }: { listing: NonNullable<FeedItem["listing"]>
   );
 }
 
-/** One activity entry laid out like the reference: avatar, name and flag, "Added a new photo > caption",
- * media, comment and like counts with liker faces, age, then the comment thread. */
+/** Label above the name: "Premium Seller", "Seller" or "Buyer". */
+function roleLabel(author: FeedItem["author"]) {
+  if (author.accountType === "seller") return author.isPro ? "Premium Seller" : "Seller";
+  if (author.accountType === "buyer") return "Buyer";
+  return null;
+}
+
+/**
+ * One activity post in a dark inset box: square avatar with the member's role
+ * and name, the text and media, Like / Comments / Share, then the comment box
+ * and comments. Used by the home feed and the seller profile.
+ */
 export default function PostCard({ item, online }: { item: FeedItem; online: boolean }) {
   const toggleLike = useMutation(api.posts.toggleLike);
   const remove = useMutation(api.posts.remove);
-  const [showComments, setShowComments] = useState(false);
+  const [showComments, setShowComments] = useState(item.commentCount > 0);
   const now = useNow(30_000);
   const verb = activityVerb(item);
   const profile = `/seller/${item.author._id}`;
-  const verbHref = item.listing ? `/listing/${item.listing._id}` : profile;
+  const label = roleLabel(item.author);
 
   const like = () =>
     toggleLike({ postId: item._id }).catch((e) => toast.error(getErrorMessage(e, "Sign in to like posts")));
@@ -84,103 +95,109 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
     remove({ postId: item._id })
       .then(() => toast.success("Post deleted"))
       .catch((e) => toast.error(getErrorMessage(e, "Could not delete")));
+  const share = async () => {
+    const url = `${window.location.origin}${item.listing ? `/listing/${item.listing._id}` : profile}`;
+    try {
+      if (navigator.share) await navigator.share({ url, title: item.author.name });
+      else {
+        await navigator.clipboard.writeText(url);
+        toast.success("Link copied");
+      }
+    } catch {
+      // Share sheet dismissed
+    }
+  };
+
+  const action = "flex cursor-pointer items-center gap-1.5 transition-colors hover:text-slate-200";
 
   return (
-    <article className="flex gap-3 border-b border-white/10 py-6 sm:gap-5">
-      <Link href={profile} className="relative h-fit shrink-0 cursor-pointer">
-        <ProfileAvatar
-          name={item.author.name}
-          url={item.author.avatarUrl}
-          className="size-16 border-[3px] border-violet-600 text-2xl sm:size-24 sm:text-4xl"
-        />
-        {online && (
-          <span
-            aria-label="Online"
-            className="absolute bottom-1 right-1 size-3.5 rounded-full border-2 border-background bg-emerald-500"
+    <article
+      className={cn(
+        POST_FONT,
+        "flex flex-col gap-4 rounded-[3px] border border-white/[0.05] bg-[#040a18] p-4 shadow-[0_8px_20px_-10px_rgba(0,0,0,0.6)]",
+      )}
+    >
+      <header className="flex items-start gap-2">
+        <Link href={profile} className="relative shrink-0 cursor-pointer">
+          <ProfileAvatar
+            name={item.author.name}
+            url={item.author.avatarUrl}
+            className="size-[42px] rounded-[2px] bg-[#8b8b90] text-xl text-white"
           />
-        )}
-      </Link>
-
-      <div className="flex min-w-0 flex-1 flex-col gap-4">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex min-w-0 flex-col gap-1">
-            <p className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5">
-              <Link href={profile} className="cursor-pointer text-xl font-bold hover:underline sm:text-2xl">
-                {item.author.name}
-              </Link>
-              {item.author.country && (
-                <CountryFlag country={item.author.country} className="h-4 w-6 rounded-[2px] object-cover sm:h-5 sm:w-7" />
-              )}
-              {item.author.verified && <VerifiedBadge />}
-            </p>
-            <p className="break-words text-base text-foreground/80 sm:text-xl">
-              {verb.lead}{" "}
-              <Link href={verbHref} className="cursor-pointer font-bold text-violet-600 hover:underline">
-                {verb.link}
-              </Link>
-              {(item.body || item.listing) && <ChevronRight className="mx-1.5 inline size-5 text-muted-foreground" />}
-              {item.listing && !item.body ? (
-                <span className="text-foreground/90">{item.listing.title}</span>
-              ) : (
-                <span className="whitespace-pre-wrap text-foreground/90">{item.body}</span>
-              )}
-            </p>
-          </div>
-          {item.canDelete && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="Post options" className="size-8 shrink-0 cursor-pointer">
-                  <MoreHorizontal />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onSelect={del} className="cursor-pointer text-destructive focus:text-destructive">
-                  <Trash2 /> Delete post
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+          {online && (
+            <span
+              aria-label="Online"
+              className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full border-2 border-[#040a18] bg-emerald-500"
+            />
           )}
+        </Link>
+        <div className="flex min-w-0 flex-1 flex-col">
+          {label && <span className="text-[10px] uppercase leading-4 text-violet-600">{label}</span>}
+          <p className="flex min-w-0 flex-wrap items-center gap-x-2 leading-5">
+            <Link href={profile} className="cursor-pointer truncate text-base text-slate-400 hover:text-slate-200">
+              {item.author.name}
+            </Link>
+            {item.author.verified && <VerifiedBadge />}
+            <span className="text-[11px] text-slate-500" title={new Date(item._creationTime).toLocaleString()}>
+              • {shortAge(item._creationTime, now)}
+            </span>
+          </p>
         </div>
-
-        {item.images.length > 0 && <PostImages images={item.images} />}
-        {item.listing && <ListingPreview listing={item.listing} />}
-        {item.kind === "listing" && !item.listing && (
-          <p className="text-sm text-muted-foreground">This listing is no longer available.</p>
+        {item.canDelete && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" aria-label="Post options" className="size-7 shrink-0 cursor-pointer text-slate-500">
+                <MoreHorizontal />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onSelect={del} className="cursor-pointer text-destructive focus:text-destructive">
+                <Trash2 /> Delete post
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
+      </header>
 
-        <div className="flex items-start justify-between gap-3 text-lg text-muted-foreground sm:text-xl">
-          <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
-            <button
-              type="button"
-              onClick={() => setShowComments((s) => !s)}
-              aria-expanded={showComments}
-              className={cn(
-                "flex cursor-pointer items-center gap-1.5 border-r border-white/15 pr-4 transition-colors hover:text-foreground",
-                showComments && "text-violet-600",
-              )}
-            >
-              {item.commentCount} <MessageCircle className="size-6" />
-            </button>
-            <button
-              type="button"
-              onClick={like}
-              aria-pressed={item.likedByMe}
-              className={cn(
-                "flex cursor-pointer items-center gap-1.5 pl-1 pr-1 transition-colors hover:text-foreground",
-                item.likedByMe && "text-violet-600",
-              )}
-            >
-              <Heart className={cn("size-6", item.likedByMe && "fill-violet-500 text-violet-600")} /> {item.likeCount}
-            </button>
-            <LikerAvatars likers={item.likers} total={item.likeCount} postId={item._id} />
-          </div>
-          <span className="flex shrink-0 items-center gap-1.5" title={new Date(item._creationTime).toLocaleString()}>
-            <Clock className="size-5" /> {shortAge(item._creationTime, now)}
-          </span>
-        </div>
+      {item.body ? (
+        <p className="whitespace-pre-wrap break-words text-base leading-[1.4] text-slate-400">{item.body}</p>
+      ) : (
+        item.kind !== "status" && (
+          <p className="text-sm text-slate-500">
+            {verb.lead} {verb.link}
+            {item.listing && <span className="text-slate-400">: {item.listing.title}</span>}
+          </p>
+        )
+      )}
 
-        {showComments && <PostComments postId={item._id} />}
+      {item.images.length > 0 && <PostImages images={item.images} />}
+      {item.listing && <ListingPreview listing={item.listing} />}
+      {item.kind === "listing" && !item.listing && (
+        <p className="text-sm text-slate-500">This listing is no longer available.</p>
+      )}
+
+      <div className="flex items-center gap-6 text-[13px] text-slate-400">
+        <button type="button" onClick={like} aria-pressed={item.likedByMe} className={action}>
+          <ThumbsUp className="size-3.5 fill-violet-600 text-violet-600" />
+          {item.likedByMe ? "Liked" : "Like"}
+          {item.likeCount > 0 && <span className="text-slate-500">({item.likeCount})</span>}
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowComments((s) => !s)}
+          aria-expanded={showComments}
+          className={cn(action, showComments && "text-slate-300")}
+        >
+          <MessageCircle className="size-3.5 fill-violet-600 text-violet-600" />
+          Comments
+          {item.commentCount > 0 && <span className="text-slate-500">({item.commentCount})</span>}
+        </button>
+        <button type="button" onClick={share} className={cn(action, "ml-auto")}>
+          <Forward className="size-3.5 fill-violet-600 text-violet-600" /> Share
+        </button>
       </div>
+
+      <PostComments postId={item._id} showList={showComments} />
     </article>
   );
 }

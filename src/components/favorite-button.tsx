@@ -1,6 +1,6 @@
 import { useState, type MouseEvent } from "react";
 import { useBackendAuth, useMutation, useQuery } from "@/lib/backend/react.tsx";
-import { Heart } from "lucide-react";
+import { BookmarkCheck, BookmarkPlus, Heart } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/backend/api.ts";
 import type { Id } from "@/lib/backend/types.ts";
@@ -14,11 +14,14 @@ export default function FavoriteButton({
   sellerId,
   className,
   withLabel = false,
+  variant = "heart",
 }: {
   listingId: Id<"listings">;
   sellerId: Id<"users">;
   className?: string;
   withLabel?: boolean;
+  /** "bookmark": a plain violet bookmark icon (seller profile cards) */
+  variant?: "heart" | "bookmark";
 }) {
   const { isAuthenticated } = useBackendAuth();
   const { signin } = useAuth();
@@ -49,6 +52,22 @@ export default function FavoriteButton({
   };
 
   if (me?._id === sellerId) return null;
+
+  if (variant === "bookmark") {
+    const Icon = saved ? BookmarkCheck : BookmarkPlus;
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={busy}
+        aria-pressed={!!saved}
+        aria-label={saved ? "Remove from favorites" : "Save to favorites"}
+        className={cn("cursor-pointer text-violet-600 transition-colors hover:text-violet-400 disabled:opacity-60", className)}
+      >
+        <Icon className={cn("size-[18px]", saved && "fill-violet-600/30")} strokeWidth={1.5} />
+      </button>
+    );
+  }
 
   return (
     <button

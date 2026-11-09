@@ -232,7 +232,7 @@ function FeedList({
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col gap-4 pt-4">
       {results.map((item) => (
         <PostCard key={item._id} item={item} online={onlineSet.has(item.author._id)} />
       ))}
