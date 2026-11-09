@@ -11,7 +11,7 @@ export function Stars({ rating, className }: { rating: number; className?: strin
       {STARS.map((s) => (
         <Star
           key={s}
-          className={cn("size-4", s <= filled ? "fill-violet-500 text-violet-600" : "text-muted-foreground/40")}
+          className={cn("size-4", s <= filled ? "text-violet-600" : "text-muted-foreground/40")}
         />
       ))}
     </span>
@@ -33,7 +33,7 @@ export function StarInput({ value, onChange }: { value: number; onChange: (v: nu
           className="cursor-pointer rounded-sm p-0.5 transition-transform hover:scale-110"
         >
           <Star
-            className={cn("size-7", s <= value ? "fill-violet-500 text-violet-600" : "text-muted-foreground/40")}
+            className={cn("size-7", s <= value ? "text-violet-600" : "text-muted-foreground/40")}
           />
         </button>
       ))}

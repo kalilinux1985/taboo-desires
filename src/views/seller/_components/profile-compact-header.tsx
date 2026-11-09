@@ -52,7 +52,7 @@ export default function ProfileCompactHeader({ profile }: { profile: Profile }) 
           className="flex items-center gap-1.5 text-sm text-slate-300"
           aria-label={rating ? `Rated ${rating.toFixed(1)} from ${reviewCount} reviews` : "No ratings yet"}
         >
-          <Star className={cn("size-4 text-violet-600", rating && "fill-violet-500")} />
+          <Star className="size-4 text-violet-600" />
           {rating ? (
             <>
               {rating.toFixed(1)} <span className="text-slate-400">({reviewCount})</span>

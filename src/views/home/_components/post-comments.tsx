@@ -80,7 +80,7 @@ function CommentForm({
         disabled={!body.trim() || sending}
         className="absolute right-2 top-1/2 flex size-7 -translate-y-1/2 cursor-pointer items-center justify-center text-violet-600 disabled:opacity-60"
       >
-        {sending ? <Spinner /> : <Send className="size-4 fill-violet-600" />}
+        {sending ? <Spinner /> : <Send className="size-4" />}
       </button>
     </form>
   );
@@ -153,8 +153,8 @@ function CommentItem({
             title={comment.likedByMe ? "Unlike" : "Like"}
             className={LINK_ACTION}
           >
-            <Heart className={cn("size-3.5 text-violet-600", comment.likedByMe && "fill-violet-600")} />
-            {comment.likeCount}
+            <Heart className="size-3.5 text-violet-600" strokeWidth={comment.likedByMe ? 3 : 2} />
+            <span className={cn(comment.likedByMe && "text-violet-600")}>{comment.likeCount}</span>
           </button>
           {isTop && comment.replyCount > 0 && (
             <button

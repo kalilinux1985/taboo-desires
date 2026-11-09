@@ -64,7 +64,7 @@ export default function FavoriteButton({
         aria-label={saved ? "Remove from favorites" : "Save to favorites"}
         className={cn("cursor-pointer text-violet-600 transition-colors hover:text-violet-400 disabled:opacity-60", className)}
       >
-        <Icon className={cn("size-[18px]", saved && "fill-violet-600/30")} strokeWidth={1.5} />
+        <Icon className="size-[18px]" strokeWidth={1.5} />
       </button>
     );
   }
@@ -82,7 +82,7 @@ export default function FavoriteButton({
         className,
       )}
     >
-      <Heart className={cn("size-4", saved && "fill-violet-500 text-violet-600")} />
+      <Heart className={cn("size-4", saved && "text-violet-600")} strokeWidth={saved ? 3 : 2} />
       {withLabel && (saved ? "Saved" : "Save")}
     </button>
   );

@@ -75,7 +75,7 @@ export default function ProfileSidebar({
           <h1 className="truncate text-3xl font-bold tracking-wide text-slate-200">{profile.name}</h1>
           <p className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1 text-sm text-slate-400">
             <span className="flex items-center gap-1" aria-label={rating ? `Rated ${rating.toFixed(1)}` : "No ratings yet"}>
-              <Star className={cn("size-4 text-violet-600", rating && "fill-violet-500")} />
+              <Star className="size-4 text-violet-600" />
               {rating ? rating.toFixed(1) : null}
             </span>
             {country && (

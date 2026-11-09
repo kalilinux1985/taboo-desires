@@ -176,7 +176,7 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
             className={cn(action, "border-r border-[#1b2236] pr-3", showComments && "text-[#f2f6ff]")}
           >
             {item.commentCount}
-            <MessageCircle className={cn("size-4 text-violet-600", showComments && "fill-violet-600")} />
+            <MessageCircle className="size-4 text-violet-600" />
           </button>
           <button
             type="button"
@@ -186,8 +186,8 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
             title={item.likedByMe ? "Unlike" : "Like"}
             className={action}
           >
-            <Heart className={cn("size-4 text-violet-600", item.likedByMe && "fill-violet-600")} />
-            {item.likeCount}
+            <Heart className="size-4 text-violet-600" strokeWidth={item.likedByMe ? 3 : 2} />
+            <span className={cn(item.likedByMe && "text-violet-600")}>{item.likeCount}</span>
           </button>
           <span className="flex min-w-0 items-center gap-1 text-xs [&>a]:size-5">
             <LikerAvatars likers={item.likers} total={item.likeCount} postId={item._id} size="sm" />

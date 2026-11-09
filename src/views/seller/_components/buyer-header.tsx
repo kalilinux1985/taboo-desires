@@ -47,7 +47,7 @@ export default function BuyerHeader(p: Props) {
             {p.verified && <VerifiedBadge className="text-xl" />}
           </h1>
           <p className="flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground">
-            <Star className="size-4 fill-violet-500 text-violet-600" />
+            <Star className="size-4 text-violet-600" />
             <span>-</span>
             {p.country && (
               <span className="flex items-center gap-1">
