@@ -177,20 +177,27 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
       )}
 
       <div className="flex items-center gap-6 text-[13px] text-slate-400">
-        <button type="button" onClick={like} aria-pressed={item.likedByMe} className={action}>
-          <ThumbsUp className="size-3.5 fill-violet-600 text-violet-600" />
-          {item.likedByMe ? "Liked" : "Like"}
-          {item.likeCount > 0 && <span className="text-slate-500">({item.likeCount})</span>}
+        <button
+          type="button"
+          onClick={like}
+          aria-pressed={item.likedByMe}
+          aria-label={item.likedByMe ? "Unlike post" : "Like post"}
+          title={item.likedByMe ? "Unlike" : "Like"}
+          className={action}
+        >
+          <ThumbsUp className={cn("size-4 text-violet-600", item.likedByMe && "fill-violet-600")} />
+          {item.likeCount > 0 && item.likeCount}
         </button>
         <button
           type="button"
           onClick={() => setShowComments((s) => !s)}
           aria-expanded={showComments}
+          aria-label={showComments ? "Hide comments" : "Show comments"}
+          title="Comments"
           className={cn(action, showComments && "text-slate-300")}
         >
-          <MessageCircle className="size-3.5 fill-violet-600 text-violet-600" />
-          Comments
-          {item.commentCount > 0 && <span className="text-slate-500">({item.commentCount})</span>}
+          <MessageCircle className={cn("size-4 text-violet-600", showComments && "fill-violet-600")} />
+          {item.commentCount > 0 && item.commentCount}
         </button>
         <button type="button" onClick={share} className={cn(action, "ml-auto")}>
           <Forward className="size-3.5 fill-violet-600 text-violet-600" /> Share

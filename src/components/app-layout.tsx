@@ -125,7 +125,7 @@ function ShopMenu({ label, short, section }: (typeof MENUS)[number]) {
         {links.map((l) => {
           const href = "page" in l ? shopPageHref(l.page) : l.href;
           return (
-            <DropdownMenuItem key={href} asChild className="cursor-pointer text-[13px] text-slate-300 focus:bg-violet-600 focus:text-white">
+            <DropdownMenuItem key={href} asChild className="cursor-pointer text-[13px] text-slate-300 transition-colors hover:bg-transparent hover:text-violet-600 focus:bg-transparent focus:text-violet-600">
               <Link href={href}>{l.label}</Link>
             </DropdownMenuItem>
           );

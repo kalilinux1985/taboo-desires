@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useBackendAuth, usePaginatedQuery, useMutation, useQuery } from "@/lib/backend/react.tsx";
 import { Authenticated, Unauthenticated } from "@/lib/backend/react.tsx";
 import Link from "next/link";
-import { Medal, Send, Trash2 } from "lucide-react";
+import { Medal, MessagesSquare, Reply, Send, ThumbsUp, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/backend/api.ts";
 import type { FunctionReturnType, Id } from "@/lib/backend/types.ts";
@@ -21,7 +21,7 @@ function SmallAvatar({ name, url }: { name: string; url: string | null }) {
   return <ProfileAvatar name={name} url={url} className="size-[31px] rounded-[2px] bg-[#8b8b90] text-sm text-white" />;
 }
 
-const LINK_ACTION = "cursor-pointer transition-colors hover:text-slate-200";
+const LINK_ACTION = "flex cursor-pointer items-center gap-1.5 transition-colors hover:text-slate-200";
 
 function CommentForm({
   postId,
@@ -67,7 +67,7 @@ function CommentForm({
         placeholder={placeholder}
         aria-label={placeholder}
         onChange={(e) => setBody(e.target.value)}
-        className="h-9 w-full rounded-[3px] border border-white/[0.04] bg-slate-900 pl-4 pr-10 text-[13px] text-slate-200 outline-none placeholder:text-slate-600 focus:border-violet-600/50"
+        className="h-9 w-full rounded-[3px] border border-white/[0.04] bg-slate-900 pl-4 pr-10 text-[13px] shadow-[inset_0_2px_6px_rgba(0,0,0,0.65)] text-slate-200 outline-none placeholder:text-slate-600 focus:border-violet-600/50"
       />
       <button
         type="submit"
@@ -104,7 +104,7 @@ function CommentItem({
         <SmallAvatar name={comment.author.name} url={comment.author.avatarUrl} />
       </Link>
       <div className="flex min-w-0 flex-1 flex-col gap-2">
-        <div className="flex min-h-[84px] flex-col gap-1 rounded-[3px] border border-white/[0.04] bg-slate-900 px-4 py-2.5">
+        <div className="flex min-h-[84px] flex-col gap-1 rounded-[3px] border border-white/[0.04] bg-slate-900 px-4 py-2.5 shadow-[inset_0_2px_6px_rgba(0,0,0,0.65)]">
           <div className="flex items-start justify-between gap-3">
             <Link href={profile} className="cursor-pointer truncate text-[13px] text-slate-200 hover:underline">
               {comment.author.name}
@@ -133,25 +133,35 @@ function CommentItem({
             onClick={() =>
               toggleLike({ commentId: comment._id }).catch((e) => toast.error(getErrorMessage(e, "Sign in to like comments")))
             }
+            aria-label={comment.likedByMe ? "Unlike comment" : "Like comment"}
+            title={comment.likedByMe ? "Unlike" : "Like"}
             className={cn(LINK_ACTION, comment.likedByMe && "text-violet-600")}
           >
-            {comment.likedByMe ? "Liked" : "Like"}
-            {comment.likeCount > 0 && ` (${comment.likeCount})`}
+            <ThumbsUp className={cn("size-3.5", comment.likedByMe && "fill-violet-600")} />
+            {comment.likeCount > 0 && comment.likeCount}
           </button>
           <Authenticated>
             <button
               type="button"
               onClick={() => setReplying((r) => !r)}
+              aria-label={`Reply to ${comment.author.name}`}
+              title="Reply"
               className={cn(LINK_ACTION, replying && "text-violet-600")}
             >
-              Reply
+              <Reply className="size-4" />
             </button>
           </Authenticated>
           {isTop && comment.replyCount > 0 && (
-            <button type="button" onClick={() => setShowReplies((s) => !s)} className={LINK_ACTION}>
-              {showReplies
-                ? "Hide replies"
-                : `View ${comment.replyCount} ${comment.replyCount === 1 ? "reply" : "replies"}`}
+            <button
+              type="button"
+              onClick={() => setShowReplies((s) => !s)}
+              aria-expanded={showReplies}
+              aria-label={`${showReplies ? "Hide" : "Show"} ${comment.replyCount} ${comment.replyCount === 1 ? "reply" : "replies"}`}
+              title={showReplies ? "Hide replies" : "Show replies"}
+              className={cn(LINK_ACTION, showReplies && "text-violet-600")}
+            >
+              <MessagesSquare className="size-3.5" />
+              {comment.replyCount}
             </button>
           )}
         </div>
