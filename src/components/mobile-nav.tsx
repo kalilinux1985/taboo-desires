@@ -244,7 +244,7 @@ function SearchBox({ onNavigate }: { onNavigate: () => void }) {
 }
 
 /**
- * Hamburger button (phones only) that slides the site menu in from the left:
+ * Hamburger button (phones only) that fades and slides the site menu in from the left:
  * account, premium upsell, main links, shop sections, search and sign out.
  */
 export default function MobileNav() {
@@ -265,7 +265,7 @@ export default function MobileNav() {
           variant="ghost"
           size="icon"
           aria-label="Open menu"
-          className="-ml-2 cursor-pointer md:hidden"
+          className="-ml-2 cursor-pointer text-violet-600 hover:text-violet-500 md:hidden"
         >
           <Menu className="size-6" />
         </Button>
@@ -273,7 +273,7 @@ export default function MobileNav() {
       <SheetContent
         side="left"
         showCloseButton={false}
-        className="flex w-[88vw] max-w-sm flex-col gap-0 overflow-y-auto border-white/10 bg-card p-0 pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]"
+        className="flex w-[88vw] max-w-sm flex-col gap-0 overflow-y-auto border-white/10 bg-gray-950/98 p-0 data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]"
       >
         <SheetTitle className="sr-only">Site menu</SheetTitle>
         <SheetDescription className="sr-only">

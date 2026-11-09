@@ -1,13 +1,18 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Authenticated, AuthLoading, Unauthenticated, useQuery } from "@/lib/backend/react.tsx";
-import { Heart, MessageCircle, Plus } from "lucide-react";
+import { ChevronDown, MessageSquareText, Search, UserRound } from "lucide-react";
 import { api } from "@/lib/backend/api.ts";
-import { Button } from "@/components/ui/button.tsx";
-import { SignInButton } from "@/components/ui/signin.tsx";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu.tsx";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { cn } from "@/lib/utils.ts";
 import AgeGate from "./age-gate.tsx";
@@ -16,6 +21,7 @@ import UserMenu from "./user-menu.tsx";
 import MobileNav from "./mobile-nav.tsx";
 import NotificationBell from "./notification-bell.tsx";
 import { usePresenceHeartbeat } from "@/hooks/use-activity.ts";
+import { SHOP_SECTIONS, shopPageHref } from "@/lib/shop-pages.ts";
 
 export function Logo({ className }: { className?: string }) {
   return (
@@ -28,106 +34,166 @@ export function Logo({ className }: { className?: string }) {
   );
 }
 
+// Top bar of the design: round logo, search box, five shop dropdowns, then
+// square Messages / Notifications / account buttons. Tablets and up get the
+// full bar; phones get the menu button, the logo and the two icon buttons.
+
+/** Square dark button used for the header icons. */
+export const HEADER_ICON_BUTTON =
+  "relative flex size-[41px] shrink-0 cursor-pointer items-center justify-center rounded-[3px] bg-slate-900 text-violet-600 transition-colors hover:bg-slate-800 hover:text-violet-500";
+
+const COUNT_BADGE =
+  "absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 font-sans text-[10px] font-bold text-white";
+
+/** Round logo mark (links home). */
+export function LogoMark({ className }: { className?: string }) {
+  return (
+    <Link
+      href="/"
+      aria-label="Taboo Desires home"
+      className={cn(
+        "flex size-[42px] shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 via-violet-700 to-purple-900 font-display text-lg italic leading-none text-violet-100 shadow-[0_0_0_1px_rgba(167,139,250,0.25)]",
+        className,
+      )}
+    >
+      TD
+    </Link>
+  );
+}
+
 function InboxLink() {
   const unread = useQuery(api.messages.unreadCount, {});
   return (
-    <Button asChild size="sm" variant="ghost" className="relative cursor-pointer">
-      <Link href="/messages" aria-label="Messages">
-        <MessageCircle className="size-5 md:size-4" /> <span className="hidden lg:inline">Messages</span>
-        {!!unread && (
-          <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-white">
-            {unread > 9 ? "9+" : unread}
-          </span>
-        )}
-      </Link>
-    </Button>
+    <Link href="/messages" aria-label="Messages" className={HEADER_ICON_BUTTON}>
+      <MessageSquareText className="size-5" strokeWidth={1.75} />
+      {!!unread && <span className={COUNT_BADGE}>{unread > 9 ? "9+" : unread}</span>}
+    </Link>
   );
 }
 
 function SignedInActions() {
   usePresenceHeartbeat();
-  const me = useQuery(api.users.menu, {});
-  const isBuyer = me?.accountType === "buyer";
-  // Phones show only Messages and the bell; the rest lives in the slide-out menu
   return (
-    <div className="flex items-center gap-1 md:gap-2">
-      {!isBuyer && (
-        <Button asChild size="sm" className="hidden cursor-pointer md:inline-flex">
-          <Link href="/sell">
-            <Plus /> <span className="hidden lg:inline">Sell an item</span>
-          </Link>
-        </Button>
-      )}
+    <div className="flex items-center gap-2">
       <InboxLink />
-      <NotificationBell />
-      <Button asChild size="sm" variant="ghost" className="hidden cursor-pointer md:inline-flex">
-        <Link href="/favorites" aria-label="Favorites">
-          <Heart /> <span className="hidden lg:inline">Favorites</span>
-        </Link>
-      </Button>
-      <div className="hidden pl-1 md:block">
+      <NotificationBell className={HEADER_ICON_BUTTON} />
+      <div className="hidden md:block">
         <UserMenu />
       </div>
     </div>
   );
 }
 
-/** Signed-out phones get the same two icons; both lead to sign in. */
+/** Signed out: the same buttons, all leading to sign in. */
 function SignedOutActions() {
   return (
-    <>
-      <div className="flex items-center gap-1 md:hidden">
-        <Button asChild size="icon" variant="ghost" className="cursor-pointer">
-          <Link href="/signin?returnTo=%2Fmessages" aria-label="Messages">
-            <MessageCircle className="size-5" />
-          </Link>
-        </Button>
-        <NotificationBell href="/signin?returnTo=%2Fnotifications" />
-      </div>
-      <SignInButton size="sm" className="hidden md:inline-flex" />
-    </>
+    <div className="flex items-center gap-2">
+      <Link href="/signin?returnTo=%2Fmessages" aria-label="Messages" className={HEADER_ICON_BUTTON}>
+        <MessageSquareText className="size-5" strokeWidth={1.75} />
+      </Link>
+      <NotificationBell href="/signin?returnTo=%2Fnotifications" className={HEADER_ICON_BUTTON} />
+      <Link href="/signin" aria-label="Sign in" className={cn(HEADER_ICON_BUTTON, "hidden md:flex")}>
+        <UserRound className="size-5" strokeWidth={1.75} />
+      </Link>
+    </div>
   );
 }
 
-const NAV = [
-  { to: "/browse", label: "Browse" },
-  { to: "/following", label: "Following" },
-  { to: "/auctions", label: "Auctions" },
-  { to: "/pricing", label: "Go Pro" },
-];
+/** The five shop dropdowns: label in the bar, with its short form for tablets. */
+const MENUS = [
+  { label: "Used Underwear", short: "Underwear", section: "Used Underwear" },
+  { label: "Used Shoes", short: "Shoes", section: "Used Shoes" },
+  { label: "Used Hosiery", short: "Hosiery", section: "Used Hosiery" },
+  { label: "Used Clothing", short: "Clothing", section: "Used Clothing" },
+  { label: "Used Extras", short: "Extras", section: "Naughty Extras" },
+] as const;
 
-function NavLink({ href, label }: { href: string; label: string }) {
-  const pathname = usePathname();
-  const isActive = pathname === href || pathname.startsWith(`${href}/`);
+function ShopMenu({ label, short, section }: (typeof MENUS)[number]) {
+  const links = SHOP_SECTIONS.find((s) => s.label === section)?.links ?? [];
   return (
-    <Link
-      href={href}
-      className={cn(
-        "hidden text-sm font-medium uppercase tracking-wider md:inline",
-        isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground",
-      )}
-    >
-      {label}
-    </Link>
+    <DropdownMenu modal={false}>
+      <DropdownMenuTrigger className="flex cursor-pointer items-center gap-1 whitespace-nowrap font-serif text-[13px] uppercase text-slate-300 outline-none transition-colors hover:text-white focus-visible:text-white data-[state=open]:text-white xl:text-[15px]">
+        <span className="xl:hidden">{short}</span>
+        <span className="hidden xl:inline">{label}</span>
+        <ChevronDown className="size-3.5 text-slate-300" strokeWidth={1.75} />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="start"
+        sideOffset={14}
+        className="min-w-56 rounded-[3px] border-white/[0.06] bg-gray-950/98 font-serif"
+      >
+        {links.map((l) => {
+          const href = "page" in l ? shopPageHref(l.page) : l.href;
+          return (
+            <DropdownMenuItem key={href} asChild className="cursor-pointer text-[13px] text-slate-300 focus:bg-violet-600 focus:text-white">
+              <Link href={href}>{l.label}</Link>
+            </DropdownMenuItem>
+          );
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+/** Search box: a field on large screens, an icon that opens one on tablets. */
+function HeaderSearch() {
+  const router = useRouter();
+  const [text, setText] = useState("");
+  const [open, setOpen] = useState(false);
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    const q = text.trim();
+    router.push(q ? `/browse?q=${encodeURIComponent(q)}` : "/browse");
+    setOpen(false);
+  };
+  const field = (autoFocus: boolean) => (
+    <form onSubmit={submit} role="search" className="flex h-[41px] w-full items-center gap-2.5 rounded-[3px] bg-slate-900 px-3">
+      <Search className="size-5 shrink-0 text-slate-500" strokeWidth={1.5} />
+      <input
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        autoFocus={autoFocus}
+        aria-label="Search users and listings"
+        placeholder="Search Users / Listings..."
+        className="min-w-0 flex-1 bg-transparent font-serif text-[13px] text-slate-200 outline-none placeholder:text-slate-500 xl:text-[14px]"
+      />
+    </form>
+  );
+  return (
+    <>
+      <div className="hidden w-[229px] shrink-0 xl:block">{field(false)}</div>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger aria-label="Search" className={cn(HEADER_ICON_BUTTON, "xl:hidden")}>
+          <Search className="size-5" strokeWidth={1.75} />
+        </PopoverTrigger>
+        <PopoverContent align="start" sideOffset={10} className="w-72 rounded-[3px] border-white/[0.06] bg-gray-950/98 p-2">
+          {field(true)}
+        </PopoverContent>
+      </Popover>
+    </>
   );
 }
 
 function Header() {
   return (
-    <header className="sticky top-0 z-40 border-b bg-sidebar/95 text-sidebar-foreground backdrop-blur">
-      {/* Phones: menu button left, name centered, Messages and bell right */}
-      <div className="mx-auto grid h-14 max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 md:flex md:justify-between md:gap-4">
-        <div className="flex items-center gap-6">
+    <header className="sticky top-0 z-40 bg-gray-950/98 backdrop-blur">
+      <div className="mx-auto flex h-[60px] max-w-[1205px] items-center justify-between gap-4 px-4 xl:px-0">
+        {/* Phones: menu button and logo on the left */}
+        <div className="flex items-center gap-3 md:gap-[19px]">
           <MobileNav />
-          <Logo className="hidden md:inline" />
-          {NAV.map((n) => (
-            <NavLink key={n.to} href={n.to} label={n.label} />
-          ))}
+          <LogoMark />
+          <div className="hidden md:block">
+            <HeaderSearch />
+          </div>
         </div>
-        <Logo className="text-center md:hidden" />
+        <nav aria-label="Shop" className="hidden flex-1 items-center justify-center gap-5 md:flex lg:gap-7 xl:justify-start xl:gap-[34px] xl:pl-3">
+          {MENUS.map((m) => (
+            <ShopMenu key={m.label} {...m} />
+          ))}
+        </nav>
         <div className="flex justify-end">
           <AuthLoading>
-            <Skeleton className="h-8 w-20 md:w-28" />
+            <Skeleton className="h-[41px] w-[90px] md:w-[139px]" />
           </AuthLoading>
           <Unauthenticated>
             <SignedOutActions />
