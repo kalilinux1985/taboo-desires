@@ -23,9 +23,8 @@ function SmallAvatar({ name, url }: { name: string; url: string | null }) {
   );
 }
 
-/** Raised slate box of the design: soft inner shade at the top and a drop shadow below. */
-const COMMENT_BOX =
-  "rounded-[4px] border-b border-white/[0.03] bg-[#0f172a] shadow-[inset_0_7px_8px_-5px_rgba(0,0,0,0.45),0_4px_8px_-1px_rgba(0,0,0,0.6)]";
+/** Slate box of the design with an inner shadow (no drop shadow). */
+const COMMENT_BOX = "rounded-[4px] bg-[#0f172a] shadow-[inset_0_2px_6px_rgba(0,0,0,0.6)]";
 
 const LINK_ACTION = "flex cursor-pointer items-center gap-1.5 transition-colors hover:text-[#f2f6ff]";
 
@@ -73,7 +72,7 @@ function CommentForm({
         placeholder={placeholder}
         aria-label={placeholder}
         onChange={(e) => setBody(e.target.value)}
-        className={cn(COMMENT_BOX, "h-9 w-full border-x-0 border-t-0 pl-4 pr-10 text-[13px] text-[#f2f6ff] outline-none placeholder:text-[#3a4151] focus:ring-1 focus:ring-violet-600/50")}
+        className={cn(COMMENT_BOX, "h-9 w-full pl-4 pr-10 text-[13px] text-[#f2f6ff] outline-none placeholder:text-[#3a4151] focus:ring-1 focus:ring-violet-600/50")}
       />
       <button
         type="submit"
