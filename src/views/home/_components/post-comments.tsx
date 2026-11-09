@@ -16,16 +16,16 @@ import { shortAge } from "../_lib/feed.ts";
 
 type Comment = FunctionReturnType<typeof api.posts.listComments>["page"][number];
 
-/** Round avatar used next to comments and the comment box. */
+/** Small square avatar used next to comments and the comment box. */
 function SmallAvatar({ name, url }: { name: string; url: string | null }) {
   return (
-    <ProfileAvatar
-      name={name}
-      url={url}
-      className="size-9 border border-[#101626] bg-[#a8a9ae] text-base text-[#2a2a2e] sm:size-10"
-    />
+    <ProfileAvatar name={name} url={url} className="size-[31px] rounded-[2px] bg-[#a8a9ae] text-sm text-[#2a2a2e]" />
   );
 }
+
+/** Raised slate box of the design: soft inner shade at the top and a drop shadow below. */
+const COMMENT_BOX =
+  "rounded-[4px] border-b border-white/[0.03] bg-[#0f172a] shadow-[inset_0_7px_8px_-5px_rgba(0,0,0,0.45),0_4px_8px_-1px_rgba(0,0,0,0.6)]";
 
 const LINK_ACTION = "flex cursor-pointer items-center gap-1.5 transition-colors hover:text-[#f2f6ff]";
 
@@ -73,7 +73,7 @@ function CommentForm({
         placeholder={placeholder}
         aria-label={placeholder}
         onChange={(e) => setBody(e.target.value)}
-        className="h-9 w-full rounded-full border border-[#090f1f] bg-[#0f172a] pl-4 pr-10 text-[13px] shadow-[inset_0_2px_6px_rgba(0,0,0,0.65)] text-[#f2f6ff] outline-none placeholder:text-[#3a4151] focus:border-violet-600/50"
+        className={cn(COMMENT_BOX, "h-9 w-full border-x-0 border-t-0 pl-4 pr-10 text-[13px] text-[#f2f6ff] outline-none placeholder:text-[#3a4151] focus:ring-1 focus:ring-violet-600/50")}
       />
       <button
         type="submit"
@@ -105,34 +105,34 @@ function CommentItem({
   const profile = `/seller/${comment.author._id}`;
 
   return (
-    <li className="flex gap-3 border-t border-[#101626] py-3">
+    <li className="flex gap-1.5">
       <Link href={profile} className="h-fit shrink-0 cursor-pointer">
         <SmallAvatar name={comment.author.name} url={comment.author.avatarUrl} />
       </Link>
-      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-        <div className="flex items-start gap-2">
-          <p className="min-w-0 flex-1 whitespace-pre-wrap break-words text-[15px] leading-snug text-[#f2f6ff]">
-            <Link href={profile} className="mr-1.5 cursor-pointer font-bold text-[#f6f8ff] hover:underline">
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
+        <div className={cn(COMMENT_BOX, "flex min-h-[84px] flex-col gap-1 px-[15px] py-2.5")}>
+          <div className="flex items-start justify-between gap-3">
+            <Link href={profile} className="cursor-pointer truncate text-[13px] text-[#f6f8ff] hover:underline">
               {comment.author.name}
             </Link>
-            {comment.body}
-          </p>
-          <span className="flex shrink-0 items-center gap-2 pt-0.5 text-[11px] text-[#cbd1df]">
-            <span title={new Date(comment._creationTime).toLocaleString()}>{shortAge(comment._creationTime)}</span>
-            {comment.canDelete && (
-              <button
-                type="button"
-                aria-label="Delete comment"
-                onClick={() => remove({ commentId: comment._id }).catch((e) => toast.error(getErrorMessage(e, "Could not delete")))}
-                className="cursor-pointer hover:text-rose-400"
-              >
-                <Trash2 className="size-3" />
-              </button>
-            )}
-          </span>
+            <span className="flex shrink-0 items-center gap-2 text-[10px] text-[#cbd1df]">
+              <span title={new Date(comment._creationTime).toLocaleString()}>{shortAge(comment._creationTime)}</span>
+              {comment.canDelete && (
+                <button
+                  type="button"
+                  aria-label="Delete comment"
+                  onClick={() => remove({ commentId: comment._id }).catch((e) => toast.error(getErrorMessage(e, "Could not delete")))}
+                  className="cursor-pointer hover:text-rose-400"
+                >
+                  <Trash2 className="size-3" />
+                </button>
+              )}
+            </span>
+          </div>
+          <p className="whitespace-pre-wrap break-words text-[13px] leading-5 text-[#f2f6ff]">{comment.body}</p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-[#9a9ca5]">
+        <div className="flex flex-wrap items-center gap-x-7 gap-y-1 pl-0.5 text-[13px] text-[#9a9ca5]">
           <Authenticated>
             <button
               type="button"
@@ -199,7 +199,7 @@ function Replies({ postId, parentId }: { postId: Id<"posts">; parentId: Id<"post
   );
   if (status === "LoadingFirstPage") return <Skeleton className="h-16" />;
   return (
-    <ul className="-mb-3 flex flex-col">
+    <ul className="flex flex-col gap-3">
       {results.map((r) => (
         <CommentItem key={r._id} postId={postId} comment={r} threadId={parentId} />
       ))}
@@ -241,13 +241,13 @@ function CommentList({ postId }: { postId: Id<"posts"> }) {
   if (results.length === 0) return null;
   return (
     <>
-      <ul className="flex flex-col">
+      <ul className="flex flex-col gap-4">
         {results.map((c) => (
           <CommentItem key={c._id} postId={postId} comment={c} threadId={c._id} />
         ))}
       </ul>
       {status === "CanLoadMore" && (
-        <button type="button" onClick={() => loadMore(10)} className={cn(LINK_ACTION, "self-start border-t border-[#101626] pt-3 pl-12 text-[13px] text-[#9a9ca5]")}>
+        <button type="button" onClick={() => loadMore(10)} className={cn(LINK_ACTION, "self-start pl-[37px] text-[13px] text-[#9a9ca5]")}>
           View more comments
         </button>
       )}
@@ -267,13 +267,13 @@ export default function PostComments({
 }) {
   const { needsUpgrade } = useUpgradeGate();
   return (
-    <div className={cn("flex flex-col", className)}>
-      <div className="border-t border-[#101626] py-3">
+    <div className={cn("flex flex-col gap-5", className)}>
+      <div>
         <Authenticated>
           {needsUpgrade("post") ? (
             <PremiumNotice />
           ) : (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5">
               <MyAvatar />
               <CommentForm postId={postId} />
             </div>
