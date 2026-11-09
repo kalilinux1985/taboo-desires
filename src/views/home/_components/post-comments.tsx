@@ -153,8 +153,8 @@ function CommentItem({
             title={comment.likedByMe ? "Unlike" : "Like"}
             className={LINK_ACTION}
           >
-            <Heart className="size-3.5 text-violet-600" strokeWidth={comment.likedByMe ? 3 : 2} />
-            <span className={cn(comment.likedByMe && "text-violet-600")}>{comment.likeCount}</span>
+            <Heart className={cn("size-3.5", comment.likedByMe ? "text-violet-900" : "text-violet-600")} strokeWidth={comment.likedByMe ? 3 : 2} />
+            <span className={cn(comment.likedByMe && "text-violet-900")}>{comment.likeCount}</span>
           </button>
           {isTop && comment.replyCount > 0 && (
             <button

@@ -186,8 +186,8 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
             title={item.likedByMe ? "Unlike" : "Like"}
             className={action}
           >
-            <Heart className="size-4 text-violet-600" strokeWidth={item.likedByMe ? 3 : 2} />
-            <span className={cn(item.likedByMe && "text-violet-600")}>{item.likeCount}</span>
+            <Heart className={cn("size-4", item.likedByMe ? "text-violet-900" : "text-violet-600")} strokeWidth={item.likedByMe ? 3 : 2} />
+            <span className={cn(item.likedByMe && "text-violet-900")}>{item.likeCount}</span>
           </button>
           <span className="flex min-w-0 items-center gap-1 text-xs [&>a]:size-5">
             <LikerAvatars likers={item.likers} total={item.likeCount} postId={item._id} size="sm" />
