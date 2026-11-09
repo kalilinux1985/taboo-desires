@@ -251,7 +251,7 @@ export function ActivitySection({ authorId }: { authorId: Id<"users"> }) {
       ) : results.length === 0 ? (
         <p className="text-sm text-slate-400">No posts yet.</p>
       ) : (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col">
           {results.map((item) => (
             <PostCard key={item._id} item={item} online={false} />
           ))}
