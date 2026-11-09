@@ -1666,7 +1666,8 @@ async function loadFeedAuthor(ctx, userId) {
       avatarUrl: null,
       accountType: null,
       country: null,
-      verified: false
+      verified: false,
+      isPro: false
     };
   }
   const details = user.accountType === "buyer" ? user.buyerDetails : user.sellerDetails;
@@ -1676,7 +1677,8 @@ async function loadFeedAuthor(ctx, userId) {
     avatarUrl: user.avatarStorageId ? await ctx.storage.getUrl(user.avatarStorageId) : null,
     accountType: user.accountType ?? null,
     country: details?.country ?? null,
-    verified: !!user.verified
+    verified: !!user.verified,
+    isPro: user.accountType === "seller" && await getPlan(ctx, user._id) === "pro"
   };
 }
 async function loadListingPreview(ctx, listingId) {
