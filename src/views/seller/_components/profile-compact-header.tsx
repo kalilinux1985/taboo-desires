@@ -36,7 +36,7 @@ export default function ProfileCompactHeader({ profile }: { profile: Profile }) 
         {online && (
           <span
             aria-label="Online"
-            className="absolute bottom-1 right-1 size-3.5 rounded-full border-2 border-[#182235] bg-emerald-500"
+            className="absolute bottom-1 right-1 size-3.5 rounded-full border-2 border-[#111a2c] bg-emerald-500"
           />
         )}
       </div>

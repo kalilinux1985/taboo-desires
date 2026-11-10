@@ -121,7 +121,7 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
         {online && (
           <span
             aria-label="Online"
-            className="absolute bottom-0 right-0 size-3.5 rounded-full border-2 border-[#182235] bg-emerald-600"
+            className="absolute bottom-0 right-0 size-3.5 rounded-full border-2 border-[#111a2c] bg-emerald-600"
           />
         )}
       </Link>
