@@ -12,9 +12,9 @@ export const HEADING_FONT = "[font-family:var(--font-profile-heading),ui-serif,G
 /** Small violet outlined action ("VIEW ALL LISTINGS") */
 export const OUTLINE_ACTION =
   "inline-flex cursor-pointer items-center rounded-sm border-2 border-violet-600 px-4 py-1.5 text-sm font-bold uppercase tracking-tight text-violet-600 transition-colors hover:bg-violet-600 hover:text-white";
-/** Tab pill: slate-900 at rest, violet-600 when active or hovered */
+/** Tab pill: secondary background (#181a1b) at rest, violet-600 when active or hovered */
 export const TAB_PILL =
-  "h-[26px] min-w-[70px] w-full flex-none cursor-pointer rounded-[3px] border-0 bg-slate-900 px-[12px] py-0 text-[11.5px] text-[#6b7180] shadow-none transition-colors hover:bg-violet-600 hover:text-white md:w-auto dark:text-[#6b7180] dark:hover:text-white data-[state=active]:bg-violet-600 data-[state=active]:font-bold data-[state=active]:text-white data-[state=active]:shadow-none dark:data-[state=active]:border-0 dark:data-[state=active]:bg-violet-600 dark:data-[state=active]:text-white";
+  "h-[26px] min-w-[70px] w-full flex-none cursor-pointer rounded-[3px] border-0 bg-[#181a1b] px-[12px] py-0 text-[11.5px] text-[#6b7180] shadow-none transition-colors hover:bg-violet-600 hover:text-white md:w-auto dark:text-[#6b7180] dark:hover:text-white data-[state=active]:bg-violet-600 data-[state=active]:font-bold data-[state=active]:text-white data-[state=active]:shadow-none dark:data-[state=active]:border-0 dark:data-[state=active]:bg-violet-600 dark:data-[state=active]:text-white";
 /** Panel around the profile tabs (the lower, lighter layer) */
 export const TABS_PANEL =
   "rounded-[3px] border border-[#383b3d]/90 bg-[#181a1b] px-3 py-3 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)] sm:px-[25px] sm:py-[17px]";
