@@ -42,7 +42,7 @@ function FeedSkeleton() {
   return (
     <div className="flex flex-col">
       {Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className="flex gap-4 border-b border-white/10 py-6">
+        <div key={i} className="flex gap-4 border-b border-[#383b3d] py-6">
           <Skeleton className="size-14 shrink-0 rounded-full sm:size-20" />
           <div className="flex flex-1 flex-col gap-3">
             <Skeleton className="h-5 w-40" />
@@ -137,7 +137,7 @@ export default function ActivityFeed() {
         </Button>
       </div>
 
-      <Separator className="my-5 bg-white/10" />
+      <Separator className="my-5 bg-[#383b3d]" />
 
       <div className="flex items-center justify-between gap-3">
         <DropdownMenu>
@@ -169,7 +169,7 @@ export default function ActivityFeed() {
         </Button>
       </div>
 
-      <Separator className="mt-5 bg-white/10" />
+      <Separator className="mt-5 bg-[#383b3d]" />
 
       <FeedList key={`${filter}-${sort}-${refreshKey}`} filter={filter} sort={sort} onCompose={canPost ? () => setComposer("post") : null} />
 
@@ -232,7 +232,7 @@ function FeedList({
   }
 
   return (
-    <div className="flex flex-col rounded-[3px] border border-[#101626] bg-[#1f2021] px-4 shadow-[0_8px_20px_-10px_rgba(0,0,0,0.6)] [&>article:last-of-type]:border-b-0">
+    <div className="flex flex-col rounded-[3px] border border-[#383b3d] bg-[#181a1b] px-4 shadow-[0_8px_20px_-10px_rgba(0,0,0,0.6)] [&>article:last-of-type]:border-b-0">
       {results.map((item) => (
         <PostCard key={item._id} item={item} online={onlineSet.has(item.author._id)} />
       ))}

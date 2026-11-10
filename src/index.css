@@ -51,16 +51,16 @@
 }
 
 /* Navy dark theme sampled from the seller-profile design:
-   #252728 page, #1f2021 cards and panels, #26282a comments, #334155 (slate-700) text fields,
+   #202425 page and comments, #181a1b cards and panels, #383b3d borders, #334155 (slate-700) text fields,
    #080d20 header, #050b1b inset boxes,
    #10182d secondary surfaces, #7c3aed violet accents */
 :root {
   --radius: 0.625rem;
-  --background: #252728;
+  --background: #202425;
   --foreground: #f2f6ff;
-  --card: #1f2021;
+  --card: #181a1b;
   --card-foreground: #f2f6ff;
-  --popover: #1f2021;
+  --popover: #181a1b;
   --popover-foreground: #f2f6ff;
   --primary: #7c3aed;
   --primary-foreground: #ffffff;
@@ -71,8 +71,8 @@
   --accent: #1a1440;
   --accent-foreground: #ede9fe;
   --destructive: oklch(0.66 0.22 18);
-  --border: rgb(255 255 255 / 6%);
-  --input: rgb(255 255 255 / 8%);
+  --border: #383b3d;
+  --input: #383b3d;
   --ring: rgb(124 58 237 / 70%);
   --chart-1: #7c3aed;
   --chart-2: #8b5cf6;
@@ -85,7 +85,7 @@
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #0f1827;
   --sidebar-accent-foreground: #f2f6ff;
-  --sidebar-border: rgb(255 255 255 / 6%);
+  --sidebar-border: #383b3d;
   --sidebar-ring: rgb(124 58 237 / 70%);
 }
 
@@ -104,17 +104,17 @@
   }
 }
 
-/* Locked surfaces: the page is always #252728, comment boxes #26282a and
-   every text field slate-700 (#334155), whatever classes a component sets and
+/* Locked surfaces: the page and the comment boxes (comments, replies and the
+   comment input) are always #202425 and every other text field slate-700 (#334155), whatever classes a component sets and
    whatever state the field is in (focus, disabled, invalid, browser autofill). */
 @layer base {
   html,
   body {
-    background-color: #252728 !important;
+    background-color: #202425 !important;
   }
 
   .comment-surface {
-    background-color: #26282a !important;
+    background-color: #202425 !important;
   }
 
   textarea,
@@ -131,6 +131,12 @@
       [type="image"]
     ) {
     background-color: #334155 !important;
+  }
+
+  /* The comment input is a comment box first, a text field second */
+  input.comment-surface,
+  textarea.comment-surface {
+    background-color: #202425 !important;
   }
 
   input:-webkit-autofill,

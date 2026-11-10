@@ -70,7 +70,7 @@ function PlanActions({ months, mine }: { months: number; mine: Mine | null }) {
     <Button
       variant="outline"
       disabled={pending}
-      className="h-9 w-full cursor-pointer rounded-full border-white/20 bg-transparent text-sm font-semibold"
+      className="h-9 w-full cursor-pointer rounded-full border-[#383b3d] bg-transparent text-sm font-semibold"
     >
       Pay another way <ArrowRight className="size-4" />
     </Button>
@@ -79,7 +79,7 @@ function PlanActions({ months, mine }: { months: number; mine: Mine | null }) {
     <>
       {pending ? goPremium : <RequestProDialog months={months} trigger={goPremium} />}
       <p className="text-center text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Subscription</p>
-      <div className="h-px bg-white/10" />
+      <div className="h-px bg-[#383b3d]" />
       {pending ? another : <RequestProDialog months={months} payAnotherWay trigger={another} />}
     </>
   );
@@ -98,7 +98,7 @@ function PlanCard({ months, discount, mine }: { months: number; discount: number
       <p className="font-semibold text-muted-foreground">
         ${(planMonthlyCents(months) / 100).toFixed(2)} / month
       </p>
-      <div className="h-px bg-white/10" />
+      <div className="h-px bg-[#383b3d]" />
       <AuthLoading>
         <Skeleton className="h-11 w-full rounded-full" />
       </AuthLoading>

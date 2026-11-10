@@ -22,7 +22,7 @@ export default function AvatarDropzone(props: AvatarPickerProps) {
         void pick(e.dataTransfer.files[0]);
       }}
       className={cn(
-        "flex min-h-64 items-center justify-center rounded-lg border-2 border-dashed border-white/15 bg-background/50 p-4 transition-colors",
+        "flex min-h-64 items-center justify-center rounded-lg border-2 border-dashed border-[#383b3d] bg-background/50 p-4 transition-colors",
         dragging && "border-violet-600 bg-violet-600/10",
       )}
     >
