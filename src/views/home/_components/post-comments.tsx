@@ -16,10 +16,10 @@ import { shortAge } from "../_lib/feed.ts";
 
 type Comment = FunctionReturnType<typeof api.posts.listComments>["page"][number];
 
-/** Small square avatar used next to comments and the comment box. */
+/** Small round avatar used next to comments, replies and the comment box. */
 function SmallAvatar({ name, url }: { name: string; url: string | null }) {
   return (
-    <ProfileAvatar name={name} url={url} className="size-[31px] rounded-[2px] bg-[#a8a9ae] text-sm text-[#2a2a2e]" />
+    <ProfileAvatar name={name} url={url} className="size-[31px] rounded-full bg-[#a8a9ae] text-sm text-[#2a2a2e]" />
   );
 }
 
