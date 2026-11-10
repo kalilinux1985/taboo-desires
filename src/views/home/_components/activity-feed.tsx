@@ -232,7 +232,7 @@ function FeedList({
   }
 
   return (
-    <div className="flex flex-col rounded-[3px] border border-[#101626] bg-[#040a18] px-4 shadow-[0_8px_20px_-10px_rgba(0,0,0,0.6)] [&>article:last-of-type]:border-b-0">
+    <div className="flex flex-col rounded-[3px] border border-[#101626] bg-slate-800 px-4 shadow-[0_8px_20px_-10px_rgba(0,0,0,0.6)] [&>article:last-of-type]:border-b-0">
       {results.map((item) => (
         <PostCard key={item._id} item={item} online={onlineSet.has(item.author._id)} />
       ))}
