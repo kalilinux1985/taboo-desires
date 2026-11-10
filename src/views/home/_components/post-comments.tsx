@@ -24,7 +24,7 @@ function SmallAvatar({ name, url }: { name: string; url: string | null }) {
 }
 
 /** Slate box of the design with an inner shadow (no drop shadow). */
-const COMMENT_BOX = "comment-surface rounded-[4px] bg-slate-700 shadow-[inset_0_2px_6px_rgba(0,0,0,0.6)]";
+const COMMENT_BOX = "comment-surface rounded-[4px] bg-[#26282a] shadow-[inset_0_2px_6px_rgba(0,0,0,0.6)]";
 
 const LINK_ACTION = "flex cursor-pointer items-center gap-1.5 transition-colors hover:text-[#f2f6ff]";
 

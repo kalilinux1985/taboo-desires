@@ -51,15 +51,16 @@
 }
 
 /* Navy dark theme sampled from the seller-profile design:
-   #334155 (slate-700) page and text fields, #080d20 header, #0a1123 panels, #050b1b inset boxes,
+   #252728 page, #1f2021 cards and panels, #26282a comments, #334155 (slate-700) text fields,
+   #080d20 header, #050b1b inset boxes,
    #10182d secondary surfaces, #7c3aed violet accents */
 :root {
   --radius: 0.625rem;
-  --background: #334155; /* slate-700 */
+  --background: #252728;
   --foreground: #f2f6ff;
-  --card: #0a1123;
+  --card: #1f2021;
   --card-foreground: #f2f6ff;
-  --popover: #0a1123;
+  --popover: #1f2021;
   --popover-foreground: #f2f6ff;
   --primary: #7c3aed;
   --primary-foreground: #ffffff;
@@ -103,13 +104,17 @@
   }
 }
 
-/* Locked surfaces: the page, every text field and comment boxes are always
-   slate-700 (#334155), whatever classes a component sets and whatever state
-   the field is in (focus, disabled, invalid, browser autofill). */
+/* Locked surfaces: the page is always #252728, comment boxes #26282a and
+   every text field slate-700 (#334155), whatever classes a component sets and
+   whatever state the field is in (focus, disabled, invalid, browser autofill). */
 @layer base {
   html,
   body {
-    background-color: #334155 !important;
+    background-color: #252728 !important;
+  }
+
+  .comment-surface {
+    background-color: #26282a !important;
   }
 
   textarea,
@@ -124,8 +129,7 @@
       [type="button"],
       [type="reset"],
       [type="image"]
-    ),
-  .comment-surface {
+    ) {
     background-color: #334155 !important;
   }
 
