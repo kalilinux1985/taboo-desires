@@ -60,7 +60,7 @@ export default function ProfileSidebar({
           <button
             type="button"
             onClick={onShowPhotos}
-            className="absolute bottom-3 right-3 flex cursor-pointer items-center gap-2 rounded-sm border border-[#383b3d] bg-[#0a1123]/90 px-3 py-1.5 text-base font-bold text-violet-600 shadow-lg backdrop-blur-sm transition-colors hover:bg-violet-600 hover:text-white"
+            className="absolute bottom-3 right-3 flex cursor-pointer items-center gap-2 rounded-sm border border-[#383b3d]/90 bg-[#0a1123]/90 px-3 py-1.5 text-base font-bold text-violet-600 shadow-lg backdrop-blur-sm transition-colors hover:bg-violet-600 hover:text-white"
           >
             <ImageIcon className="size-5" /> {photos} {photos === 1 ? "Photo" : "Photos"}
           </button>
@@ -126,7 +126,7 @@ export default function ProfileSidebar({
           <CustomRequestButton sellerId={profile._id} sellerName={profile.name} className="w-full" />
         )}
 
-        <div className="flex flex-wrap gap-2 border-t border-[#383b3d] pt-4">
+        <div className="flex flex-wrap gap-2 border-t border-[#383b3d]/90 pt-4">
           <button
             type="button"
             onClick={onShowShop}

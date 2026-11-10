@@ -94,7 +94,7 @@ export default function RequestCard({ request: r, role }: { request: CustomReque
       </div>
       <p className="whitespace-pre-line break-words text-sm">{r.details}</p>
 
-      <div className="flex flex-wrap items-end justify-between gap-3 border-t border-[#383b3d] pt-4">
+      <div className="flex flex-wrap items-end justify-between gap-3 border-t border-[#383b3d]/90 pt-4">
         <div>
           <p className="text-xs text-muted-foreground">
             {isCountered ? `Budget ${formatPrice(r.budgetCents)} · Current offer` : "Budget"}

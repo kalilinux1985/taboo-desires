@@ -71,8 +71,8 @@
   --accent: #1a1440;
   --accent-foreground: #ede9fe;
   --destructive: oklch(0.66 0.22 18);
-  --border: #383b3d;
-  --input: #383b3d;
+  --border: rgb(56 59 61 / 90%); /* #383b3d at 90% */
+  --input: rgb(56 59 61 / 90%); /* #383b3d at 90% */
   --ring: rgb(124 58 237 / 70%);
   --chart-1: #7c3aed;
   --chart-2: #8b5cf6;
@@ -85,7 +85,7 @@
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #0f1827;
   --sidebar-accent-foreground: #f2f6ff;
-  --sidebar-border: #383b3d;
+  --sidebar-border: rgb(56 59 61 / 90%); /* #383b3d at 90% */
   --sidebar-ring: rgb(124 58 237 / 70%);
 }
 

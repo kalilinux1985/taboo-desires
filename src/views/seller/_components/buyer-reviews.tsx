@@ -49,7 +49,7 @@ export default function BuyerReviews({ buyerId, isMe }: { buyerId: Id<"users">; 
           {results.map((r) => (
             <article
               key={r._id}
-              className="flex flex-col gap-3 rounded-md border border-[#383b3d] bg-card p-4 shadow-[inset_4px_4px_14px_-4px_var(--color-violet-800)]"
+              className="flex flex-col gap-3 rounded-md border border-[#383b3d]/90 bg-card p-4 shadow-[inset_4px_4px_14px_-4px_var(--color-violet-800)]"
             >
               <div className="flex items-center justify-between gap-3">
                 <Link
