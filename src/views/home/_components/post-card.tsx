@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useMutation } from "@/lib/backend/react.tsx";
-import { Clock, Forward, Heart, Lock, MessageCircle, MoreHorizontal, Trash2 } from "lucide-react";
+import { Clock, Heart, Lock, MessageCircle, MoreHorizontal, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/backend/api.ts";
 import { Button } from "@/components/ui/button.tsx";
@@ -94,19 +94,6 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
     remove({ postId: item._id })
       .then(() => toast.success("Post deleted"))
       .catch((e) => toast.error(getErrorMessage(e, "Could not delete")));
-  const share = async () => {
-    const url = `${window.location.origin}${item.listing ? `/listing/${item.listing._id}` : profile}`;
-    try {
-      if (navigator.share) await navigator.share({ url, title: item.author.name });
-      else {
-        await navigator.clipboard.writeText(url);
-        toast.success("Link copied");
-      }
-    } catch {
-      // Share sheet dismissed
-    }
-  };
-
   const action = "flex cursor-pointer items-center gap-1.5 transition-colors hover:text-[#f2f6ff]";
   const text = item.body || (item.kind !== "status" ? `${verb.lead} ${verb.link}${item.listing ? `: ${item.listing.title}` : ""}` : "");
 
@@ -193,9 +180,6 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
             <LikerAvatars likers={item.likers} total={item.likeCount} postId={item._id} size="sm" />
           </span>
           <div className="ml-auto flex shrink-0 items-center gap-3 text-xs text-[#61646d]">
-            <button type="button" onClick={share} aria-label="Share" title="Share" className={action}>
-              <Forward className="size-4 text-violet-600" />
-            </button>
             <span className="flex items-center gap-1" title={new Date(item._creationTime).toLocaleString()}>
               <Clock className="size-3.5" /> {shortAge(item._creationTime, now)}
             </span>
