@@ -251,7 +251,7 @@ export function ActivitySection({ authorId }: { authorId: Id<"users"> }) {
       ) : results.length === 0 ? (
         <p className="text-sm text-slate-400">No posts yet.</p>
       ) : (
-        <div className="flex flex-col rounded-[3px] border border-[#101626] bg-slate-800 px-4 shadow-[0_8px_20px_-10px_rgba(0,0,0,0.6)] [&>article:last-of-type]:border-b-0">
+        <div className="flex flex-col rounded-[3px] border border-[#101626] bg-slate-900/75 px-4 shadow-[0_8px_20px_-10px_rgba(0,0,0,0.6)] [&>article:last-of-type]:border-b-0">
           {results.map((item) => (
             <PostCard key={item._id} item={item} online={false} />
           ))}
