@@ -1,12 +1,12 @@
 // Colours and type of the seller profile design (sampled from the reference):
-// #0f172a page, #0a1123 panels, #050b1b insets, #1a2238 hairline borders at 45%,
-// #1f2235 resting tabs and #7c3aed (violet-600) accents.
+// #0f172a page, #0a1123 panels, #040a18 darker cards, white borders at 40%,
+// #1f2235 resting tabs and #7b3aec (violet-600) accents.
 
 /** Outer panel: a section of the page */
 export const PANEL =
-  "rounded-[1px] border border-[#1a2238]/45 bg-[#0a1123] shadow-[0_10px_30px_-12px_rgba(0,0,0,0.7)]";
+  "rounded-[1px] border border-white/40 bg-[#0a1123] shadow-[0_10px_30px_-12px_rgba(0,0,0,0.45)]";
 /** Inner box inside a panel (forms, posts, cards) */
-export const INSET = "rounded-[1px] border border-[#1a2238]/45 bg-[#050b1b]";
+export const INSET = "rounded-[1px] border border-white/40 bg-[#040a18]";
 /** Body text in the book serif */
 export const TEXT_FONT = "[font-family:var(--font-profile-text),ui-serif,Georgia,serif]";
 /** Section headings in the old-style serif */
@@ -19,7 +19,7 @@ export const TAB_PILL =
   "h-[26px] min-w-[64px] w-full flex-none cursor-pointer rounded-[1px] border-0 bg-[#1f2235] px-[13px] py-0 text-[12px] text-white shadow-none transition-colors hover:bg-violet-600 hover:text-white md:w-auto dark:text-white dark:hover:text-white data-[state=active]:bg-violet-600 data-[state=active]:font-bold data-[state=active]:text-white data-[state=active]:shadow-none dark:data-[state=active]:border-0 dark:data-[state=active]:bg-violet-600 dark:data-[state=active]:text-white";
 /** Panel around the profile tabs */
 export const TABS_PANEL =
-  "rounded-[1px] border border-[#1a2238]/45 bg-[#0a1123] px-3 py-3 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.7)] sm:px-[25px] sm:py-[17px]";
+  "rounded-[1px] border border-white/40 bg-[#0a1123] px-3 py-3 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.45)] sm:px-[25px] sm:py-[17px]";
 /** Darker bar inside the tabs panel that holds the tab pills */
 export const TABS_BAR =
-  "flex gap-2 rounded-[1px] border border-[#1a2238]/45 bg-[#0f172a] px-[12px] py-[9px] md:items-center md:gap-[15px]";
+  "flex gap-2 rounded-[1px] border border-white/40 bg-[#0f172a] px-[12px] py-[9px] md:items-center md:gap-[15px]";

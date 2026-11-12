@@ -95,7 +95,7 @@ function ProfileShopCard({ listing }: { listing: ListingCardData }) {
   return (
     <Link
       href={`/listing/${listing._id}`}
-      className="group flex min-w-0 cursor-pointer flex-col rounded-[1px] bg-[#060918] shadow-[0_10px_22px_-8px_rgba(0,0,0,0.75)] transition-transform duration-200 hover:-translate-y-0.5"
+      className="group flex min-w-0 cursor-pointer flex-col rounded-[1px] bg-[#040a18] shadow-[0_10px_22px_-8px_rgba(0,0,0,0.45)] transition-transform duration-200 hover:-translate-y-0.5"
     >
       <div className="relative aspect-[3/2] rounded-t-[1px] bg-[#808185]">
         <div className="absolute inset-0 overflow-hidden rounded-t-[1px]">
@@ -117,13 +117,13 @@ function ProfileShopCard({ listing }: { listing: ListingCardData }) {
         </span>
       </div>
       <div className="flex flex-1 flex-col px-[14px] pb-[14px] pt-[14px]">
-        <p className="truncate pr-14 text-[13px] text-[#7a39eb]">{listing.sellerName}</p>
+        <p className="truncate pr-14 text-[13px] text-[#7b3aec]">{listing.sellerName}</p>
         <h3 className="mt-2 truncate text-base font-bold text-white">{listing.title}</h3>
         <p className="mt-1 line-clamp-2 min-h-9 text-[11px] leading-[18px] text-[#fefefe]">
           {listing.description || `${listing.brand} · Size ${listing.size}`}
         </p>
         <div className="mt-3 flex items-center justify-between gap-2">
-          <span className="text-[13px] text-[#7939e8]">${(listing.priceCents / 100).toFixed(2)} USD</span>
+          <span className="text-[13px] text-[#7b3aec]">${(listing.priceCents / 100).toFixed(2)} USD</span>
           <FavoriteButton listingId={listing._id} sellerId={listing.sellerId} variant="bookmark" />
         </div>
       </div>
@@ -186,7 +186,7 @@ function ContentTile({
 }) {
   return (
     <Link href={href} title={title} className="group flex w-[73px] cursor-pointer flex-col items-center gap-2.5">
-      <span className="relative flex size-[73px] items-center justify-center overflow-hidden rounded-[1px] bg-[#030917] text-[#7e3aef] shadow-[0_8px_16px_-8px_rgba(0,0,0,0.7)] transition-colors group-hover:bg-violet-600/15">
+      <span className="relative flex size-[73px] items-center justify-center overflow-hidden rounded-[1px] bg-[#040a18] text-[#7b3aec] shadow-[0_8px_16px_-8px_rgba(0,0,0,0.45)] transition-colors group-hover:bg-violet-600/15">
         {imageUrl ? (
           <>
             <img
@@ -195,7 +195,7 @@ function ContentTile({
               loading="lazy"
               className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
-            <span className="absolute bottom-1 left-1 flex size-5 items-center justify-center rounded-[1px] bg-[#030917]/85">
+            <span className="absolute bottom-1 left-1 flex size-5 items-center justify-center rounded-[1px] bg-[#040a18]/85">
               <Icon className="size-3.5" strokeWidth={1.75} />
             </span>
           </>

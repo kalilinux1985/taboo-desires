@@ -98,12 +98,12 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
   const text = item.body || (item.kind !== "status" ? `${verb.lead} ${verb.link}${item.listing ? `: ${item.listing.title}` : ""}` : "");
 
   return (
-    <article className="flex gap-3 rounded-[1px] border border-[#1a2238]/45 bg-[#0a1123] p-4 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.7)] sm:gap-4">
+    <article className="flex gap-3 rounded-[1px] border border-white/40 bg-[#0a1123] p-4 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.45)] sm:gap-4">
       <Link href={profile} className="relative h-fit shrink-0 cursor-pointer">
         <ProfileAvatar
           name={item.author.name}
           url={item.author.avatarUrl}
-          className="size-12 border border-[#1a2238]/45 bg-[#a8a9ae] text-xl text-[#2a2a2e] sm:size-14 sm:text-2xl"
+          className="size-12 border border-white/40 bg-[#a8a9ae] text-xl text-[#2a2a2e] sm:size-14 sm:text-2xl"
         />
         {online && (
           <span
@@ -142,7 +142,7 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
         </header>
 
         {text && (
-          <p className="whitespace-pre-wrap break-words rounded-[1px] bg-background px-3.5 py-2.5 text-[15px] leading-snug text-[#a8abb4] shadow-[inset_0_2px_12px_rgba(0,0,0,0.5)]">
+          <p className="whitespace-pre-wrap break-words rounded-[1px] bg-background px-3.5 py-2.5 text-[15px] leading-snug text-[#a8abb4] shadow-[inset_0_2px_12px_rgba(0,0,0,0.45)]">
             {text}
           </p>
         )}
@@ -160,7 +160,7 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
             aria-expanded={showComments}
             aria-label={showComments ? "Hide comments" : "Show comments"}
             title="Comments"
-            className={cn(action, "border-r border-[#1a2238]/45 pr-3", showComments && "text-[#f2f6ff]")}
+            className={cn(action, "border-r border-white/40 pr-3", showComments && "text-[#f2f6ff]")}
           >
             {item.commentCount}
             <MessageCircle className="size-4 text-violet-600" />

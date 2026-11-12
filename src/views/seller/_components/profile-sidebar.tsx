@@ -101,7 +101,7 @@ export default function ProfileSidebar({ profile }: { profile: Profile }) {
 
   return (
     <aside className="flex flex-col gap-[14px] lg:sticky lg:top-20">
-      <div className={cn(PANEL, "aspect-square overflow-hidden border-[#2a2f3d] bg-[#85868a]")}>
+      <div className={cn(PANEL, "aspect-square overflow-hidden border-white/40 bg-[#85868a]")}>
         {profile.avatarUrl ? (
           <img src={profile.avatarUrl} alt={profile.name} className="size-full object-cover" />
         ) : (
@@ -111,8 +111,8 @@ export default function ProfileSidebar({ profile }: { profile: Profile }) {
         )}
       </div>
 
-      <div className={cn(PANEL, "flex flex-col bg-[#060c1c] px-[16px] pb-[18px] pt-[16px]")}>
-        <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-[#6e36d7]">
+      <div className={cn(PANEL, "flex flex-col bg-[#040a18] px-[16px] pb-[18px] pt-[16px]")}>
+        <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-[#7b3aec]">
           <Crown className="size-3" /> {profile.isPro ? "Premium Seller" : "Seller"}
         </p>
         <h1 className="mt-1 truncate text-[22px] font-bold leading-tight tracking-[0.06em] text-[#83868d]">

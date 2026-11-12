@@ -57,9 +57,9 @@ export default function ProfileAbout({ profile }: { profile: Profile }) {
         {profile.stats.followerCount} Followers · {profile.counts.following} Following
       </p>
       {profile.bio && (
-        <ExpandableBio text={profile.bio} className="border-t border-[#1a2238]/45 pt-4" />
+        <ExpandableBio text={profile.bio} className="border-t border-white/40 pt-4" />
       )}
-      <dl className="border-t border-[#1a2238]/45 pt-3">
+      <dl className="border-t border-white/40 pt-3">
         {first.map((f) => (
           <Detail key={f.key} label={f.label} value={f.value} />
         ))}
@@ -73,7 +73,7 @@ export default function ProfileAbout({ profile }: { profile: Profile }) {
           <ChevronDown className={cn("size-4 text-violet-600 transition-transform", open && "rotate-180")} />
         </button>
         {open && (
-          <div className="mt-1 border-t border-[#1a2238]/45 pt-2">
+          <div className="mt-1 border-t border-white/40 pt-2">
             {more.map((f) => (
               <Detail key={f.key} label={f.label} value={f.value} />
             ))}

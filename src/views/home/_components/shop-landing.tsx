@@ -33,7 +33,7 @@ function FilterPanel({
         type="button"
         onClick={() => setMobileOpen((o) => !o)}
         aria-expanded={mobileOpen}
-        className="flex w-full cursor-pointer items-center justify-between rounded-[1px] border bg-card px-4 py-3 font-bold shadow-[0_10px_30px_-12px_rgba(0,0,0,0.7)] lg:hidden"
+        className="flex w-full cursor-pointer items-center justify-between rounded-[1px] border bg-card px-4 py-3 font-bold shadow-[0_10px_30px_-12px_rgba(0,0,0,0.45)] lg:hidden"
       >
         <span className="flex items-center gap-2">
           <SlidersHorizontal className="size-4 text-violet-600" /> Filters
@@ -113,7 +113,7 @@ function CtaPanel({
     <div
       className={cn(
         "relative flex min-w-0 flex-col gap-5 overflow-hidden px-6 py-8 sm:px-10 sm:py-10",
-        tone === "sell" ? "bg-primary" : "border bg-[#050b1b]",
+        tone === "sell" ? "bg-primary" : "border bg-[#040a18]",
       )}
     >
       {tone === "buy" && (

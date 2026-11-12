@@ -120,7 +120,7 @@ function ShopMenu({ label, short, section }: (typeof MENUS)[number]) {
       <DropdownMenuContent
         align="start"
         sideOffset={14}
-        className="min-w-56 rounded-[1px] border-[#1a2238]/45 bg-[#0a0f22]/98 font-serif"
+        className="min-w-56 rounded-[1px] border-white/40 bg-[#0a0f22]/98 font-serif"
       >
         {links.map((l) => {
           const href = "page" in l ? shopPageHref(l.page) : l.href;
@@ -147,7 +147,7 @@ function HeaderSearch() {
     setOpen(false);
   };
   const field = (autoFocus: boolean) => (
-    <form onSubmit={submit} role="search" className="flex h-[41px] w-full items-center gap-2.5 rounded-[1px] bg-background px-3 shadow-[inset_0_2px_12px_rgba(0,0,0,0.5)]">
+    <form onSubmit={submit} role="search" className="flex h-[41px] w-full items-center gap-2.5 rounded-[1px] bg-background px-3 shadow-[inset_0_2px_12px_rgba(0,0,0,0.45)]">
       <Search className="size-5 shrink-0 text-slate-400" strokeWidth={1.5} />
       <input
         value={text}
@@ -166,7 +166,7 @@ function HeaderSearch() {
         <PopoverTrigger aria-label="Search" className={cn(HEADER_ICON_BUTTON, "xl:hidden")}>
           <Search className="size-5" strokeWidth={1.75} />
         </PopoverTrigger>
-        <PopoverContent align="start" sideOffset={10} className="w-72 rounded-[1px] border-[#1a2238]/45 bg-[#0a0f22]/98 p-2">
+        <PopoverContent align="start" sideOffset={10} className="w-72 rounded-[1px] border-white/40 bg-[#0a0f22]/98 p-2">
           {field(true)}
         </PopoverContent>
       </Popover>

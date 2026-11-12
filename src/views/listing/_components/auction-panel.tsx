@@ -174,7 +174,7 @@ export default function AuctionPanel({
   const live = auction.status === "live";
 
   return (
-    <div className="flex flex-col gap-4 rounded-[1px] border-2 border-primary bg-card p-4 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.7)] sm:p-5">
+    <div className="flex flex-col gap-4 rounded-[1px] border-2 border-primary bg-card p-4 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.45)] sm:p-5">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">

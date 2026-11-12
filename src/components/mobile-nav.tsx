@@ -273,7 +273,7 @@ export default function MobileNav() {
       <SheetContent
         side="left"
         showCloseButton={false}
-        className="flex w-[88vw] max-w-sm flex-col gap-0 overflow-y-auto border-[#1a2238]/45 bg-[#0a0f22]/98 p-0 data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]"
+        className="flex w-[88vw] max-w-sm flex-col gap-0 overflow-y-auto border-white/40 bg-[#0a0f22]/98 p-0 data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]"
       >
         <SheetTitle className="sr-only">Site menu</SheetTitle>
         <SheetDescription className="sr-only">
@@ -303,23 +303,23 @@ export default function MobileNav() {
           <AccountHeader onNavigate={close} />
         </div>
 
-        <Separator className="bg-[#1a2238]/45" />
+        <Separator className="bg-white/40" />
         <PremiumBanner onNavigate={close} />
-        <Separator className="bg-[#1a2238]/45" />
+        <Separator className="bg-white/40" />
 
         {isAuthenticated && <AccountLinks onNavigate={close} />}
 
         <div className="flex-1" />
-        <Separator className="bg-[#1a2238]/45" />
+        <Separator className="bg-white/40" />
         <nav aria-label="Shop" className="flex flex-col gap-0.5 px-3 py-3">
           {SHOP_SECTIONS.map((s) => (
             <ShopSection key={s.label} section={s} onNavigate={close} />
           ))}
         </nav>
 
-        <Separator className="bg-[#1a2238]/45" />
+        <Separator className="bg-white/40" />
         <SearchBox onNavigate={close} />
-        <Separator className="bg-[#1a2238]/45" />
+        <Separator className="bg-white/40" />
 
         <div className="px-6 py-5">
           {isAuthenticated ? (
