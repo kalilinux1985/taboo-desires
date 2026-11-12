@@ -151,3 +151,18 @@
   }
 }
 
+
+/* The seller profile keeps the navy of its design (page #0f172a, comment boxes
+   #0f172a) inside the site's charcoal theme. These win over the locks above. */
+@layer base {
+  html:has(.profile-navy),
+  body:has(.profile-navy) {
+    background-color: #0f172a !important;
+  }
+
+  .profile-navy .comment-surface,
+  .profile-navy input.comment-surface,
+  .profile-navy textarea.comment-surface {
+    background-color: #0f172a !important;
+  }
+}

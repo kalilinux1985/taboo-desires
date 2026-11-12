@@ -158,17 +158,31 @@ function RequestForm({ sellerId, sellerName, onDone }: { sellerId: Id<"users">; 
   );
 }
 
-/** "Request a custom" button that opens the request form. Signed-out visitors get a sign-in button. */
+/**
+ * "Request a custom" button that opens the request form. Signed-out visitors get a sign-in button.
+ * Pass `open`/`onOpenChange` with `hideTrigger` to open the form from elsewhere (a menu item).
+ */
 export default function CustomRequestButton({
   sellerId,
   sellerName,
   className,
+  open: openProp,
+  onOpenChange,
+  hideTrigger = false,
 }: {
   sellerId: Id<"users">;
   sellerName: string;
   className?: string;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  hideTrigger?: boolean;
 }) {
-  const [open, setOpen] = useState(false);
+  const [openState, setOpenState] = useState(false);
+  const open = openProp ?? openState;
+  const setOpen = (next: boolean) => {
+    setOpenState(next);
+    onOpenChange?.(next);
+  };
   const access = useAccess();
   return (
     <>
@@ -176,11 +190,13 @@ export default function CustomRequestButton({
         {/* Only buyers send custom requests */}
         {access?.can.buy && (
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button className={cn("cursor-pointer", className)}>
-              <Sparkles /> Request a custom
-            </Button>
-          </DialogTrigger>
+          {!hideTrigger && (
+            <DialogTrigger asChild>
+              <Button className={cn("cursor-pointer", className)}>
+                <Sparkles /> Request a custom
+              </Button>
+            </DialogTrigger>
+          )}
           <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
             <DialogHeader>
               <DialogTitle>Custom request for {sellerName}</DialogTitle>
@@ -198,9 +214,11 @@ export default function CustomRequestButton({
         </Dialog>
         )}
       </Authenticated>
-      <Unauthenticated>
-        <SignInButton signInText="Sign in to request a custom" showIcon={false} className={className} />
-      </Unauthenticated>
+      {!hideTrigger && (
+        <Unauthenticated>
+          <SignInButton signInText="Sign in to request a custom" showIcon={false} className={className} />
+        </Unauthenticated>
+      )}
     </>
   );
 }

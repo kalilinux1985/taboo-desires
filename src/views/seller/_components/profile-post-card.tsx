@@ -1,0 +1,132 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { MessageCircle, MoreHorizontal, ThumbsUp, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import { useMutation } from "@/lib/backend/react.tsx";
+import { api } from "@/lib/backend/api.ts";
+import { cn } from "@/lib/utils.ts";
+import { getErrorMessage } from "@/lib/listings.ts";
+import { useNow } from "@/hooks/use-now.ts";
+import { Button } from "@/components/ui/button.tsx";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu.tsx";
+import ProfileAvatar from "@/components/profile-avatar.tsx";
+import { ListingPreview, PostImages, roleLabel } from "@/views/home/_components/post-card.tsx";
+import PostComments from "@/views/home/_components/post-comments.tsx";
+import { activityVerb, shortAge, type FeedItem } from "@/views/home/_lib/feed.ts";
+
+const ACTION = "flex cursor-pointer items-center gap-1.5 transition-colors hover:text-[#f9f9f9]";
+
+/**
+ * A post in the profile's Latest Activity, laid out like the design: square
+ * avatar, seller level, "Name • 2hr", the text and photo, Like and Comments,
+ * then the comment box and comments.
+ */
+export default function ProfilePostCard({ item }: { item: FeedItem }) {
+  const toggleLike = useMutation(api.posts.toggleLike);
+  const remove = useMutation(api.posts.remove);
+  const [showComments, setShowComments] = useState(item.commentCount > 0);
+  const now = useNow(30_000);
+  const verb = activityVerb(item);
+  const profile = `/seller/${item.author._id}`;
+  const label = roleLabel(item.author);
+  const text =
+    item.body || (item.kind !== "status" ? `${verb.lead} ${verb.link}${item.listing ? `: ${item.listing.title}` : ""}` : "");
+
+  const like = () =>
+    toggleLike({ postId: item._id }).catch((e) => toast.error(getErrorMessage(e, "Sign in to like posts")));
+  const del = () =>
+    remove({ postId: item._id })
+      .then(() => toast.success("Post deleted"))
+      .catch((e) => toast.error(getErrorMessage(e, "Could not delete")));
+
+  return (
+    <article className="flex flex-col rounded-[3px] border border-[#1a2238] bg-[#050b1b] px-[14px] py-[15px] shadow-[0_8px_20px_-10px_rgba(0,0,0,0.7)]">
+      <header className="flex items-center gap-2.5">
+        <Link href={profile} className="shrink-0 cursor-pointer">
+          <ProfileAvatar
+            name={item.author.name}
+            url={item.author.avatarUrl}
+            className="size-[37px] rounded-[2px] bg-[#a8a9ae] text-base text-[#2a2a2e]"
+          />
+        </Link>
+        <div className="flex min-w-0 flex-1 flex-col">
+          {label && (
+            <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-[#7939e8]">{label}</span>
+          )}
+          <p className="flex min-w-0 items-baseline gap-2 text-[#66656a]">
+            <Link href={profile} className="cursor-pointer truncate text-[15px] tracking-[0.03em] hover:underline">
+              {item.author.name}
+            </Link>
+            <span aria-hidden>•</span>
+            <span className="shrink-0 text-[11px]" title={new Date(item._creationTime).toLocaleString()}>
+              {shortAge(item._creationTime, now)}
+            </span>
+          </p>
+        </div>
+        {item.canDelete && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" aria-label="Post options" className="size-7 shrink-0 cursor-pointer text-[#66656a]">
+                <MoreHorizontal />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onSelect={del} className="cursor-pointer text-destructive focus:text-destructive">
+                <Trash2 /> Delete post
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      </header>
+
+      {text && (
+        <p className="mt-4 whitespace-pre-wrap break-words text-[15px] leading-[1.55] text-[#a1a2a4]">{text}</p>
+      )}
+      {item.images.length > 0 && (
+        <div className="mt-3 [&>div]:max-w-[185px]">
+          <PostImages images={item.images} />
+        </div>
+      )}
+      {item.listing && (
+        <div className="mt-3">
+          <ListingPreview listing={item.listing} />
+        </div>
+      )}
+      {item.kind === "listing" && !item.listing && (
+        <p className="mt-3 text-sm text-[#66656a]">This listing is no longer available.</p>
+      )}
+
+      <div className="mt-4 flex items-center gap-6 text-[12px] text-[#9fa0a2]">
+        <button
+          type="button"
+          onClick={like}
+          aria-pressed={item.likedByMe}
+          className={cn(ACTION, item.likedByMe && "text-[#f9f9f9]")}
+        >
+          <ThumbsUp className="size-3.5 fill-violet-600 text-violet-600" />
+          {item.likedByMe ? "Liked" : "Like"}
+          {item.likeCount > 0 && <span className="text-[#66656a]">({item.likeCount})</span>}
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowComments((s) => !s)}
+          aria-expanded={showComments}
+          className={cn(ACTION, showComments && "text-[#f9f9f9]")}
+        >
+          <MessageCircle className="size-3.5 fill-violet-600 text-violet-600" />
+          Comments
+          {item.commentCount > 0 && <span className="text-[#66656a]">({item.commentCount})</span>}
+        </button>
+      </div>
+
+      <PostComments postId={item._id} showList={showComments} variant="profile" className="mt-4" />
+    </article>
+  );
+}

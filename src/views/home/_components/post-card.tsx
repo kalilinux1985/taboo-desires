@@ -21,7 +21,7 @@ import { activityVerb, shortAge, type FeedItem } from "../_lib/feed.ts";
 import PostComments from "./post-comments.tsx";
 import LikerAvatars from "./liker-avatars.tsx";
 
-function PostImages({ images }: { images: string[] }) {
+export function PostImages({ images }: { images: string[] }) {
   if (images.length === 1) {
     return (
       <div className="w-full max-w-[210px] overflow-hidden rounded-[2px] bg-[#8b8b90]">
@@ -40,7 +40,7 @@ function PostImages({ images }: { images: string[] }) {
   );
 }
 
-function ListingPreview({ listing }: { listing: NonNullable<FeedItem["listing"]> }) {
+export function ListingPreview({ listing }: { listing: NonNullable<FeedItem["listing"]> }) {
   return (
     <Link
       href={`/listing/${listing._id}`}
@@ -68,7 +68,7 @@ function ListingPreview({ listing }: { listing: NonNullable<FeedItem["listing"]>
 }
 
 /** Small tag after the name: "Premium Seller", "Seller" or "Buyer". */
-function roleLabel(author: FeedItem["author"]) {
+export function roleLabel(author: FeedItem["author"]) {
   if (author.accountType === "seller") return author.isPro ? "Premium Seller" : "Seller";
   if (author.accountType === "buyer") return "Buyer";
   return null;

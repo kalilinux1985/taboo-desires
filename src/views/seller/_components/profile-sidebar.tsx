@@ -1,11 +1,18 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { Award, EllipsisVertical, ImageIcon, Images, Link2, Pencil, ShoppingBag, Star, UserRound } from "lucide-react";
+import { format } from "date-fns";
+import { ChevronDown, Crown, EllipsisVertical, Heart, ImageIcon, Link2, Pencil, Sparkles, Star } from "lucide-react";
+import { toast } from "sonner";
+import { useBackendAuth, useMutation, useQuery } from "@/lib/backend/react.tsx";
 import type { FunctionReturnType } from "@/lib/backend/types.ts";
-import type { api } from "@/lib/backend/api.ts";
+import { api } from "@/lib/backend/api.ts";
 import { settingsPathFor } from "@/lib/settings.ts";
+import { getErrorMessage } from "@/lib/listings.ts";
 import { cn } from "@/lib/utils.ts";
+import { useAccess } from "@/hooks/use-access.ts";
+import { SELLER_DETAIL_FIELDS } from "@/shared/sellerDetails.ts";
 import { Button } from "@/components/ui/button.tsx";
 import {
   DropdownMenu,
@@ -14,135 +21,183 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu.tsx";
 import CustomRequestButton from "@/components/custom-request-button.tsx";
-import CountryFlag from "@/components/country-flag.tsx";
-import FollowButton from "./follow-button.tsx";
 import MessageSellerButton from "./message-seller-dialog.tsx";
+import ExpandableBio from "./expandable-bio.tsx";
 import { copyProfileLink } from "../_lib/profile-share.ts";
 import { PANEL } from "../_lib/theme.ts";
 
 type Profile = NonNullable<FunctionReturnType<typeof api.users.getProfile>>;
 
-const ONLINE_WINDOW_MS = 5 * 60 * 1000;
-const isOnline = (lastSeenAt: string | null) =>
-  !!lastSeenAt && Date.now() - Date.parse(lastSeenAt) < ONLINE_WINDOW_MS;
+/** Small buttons of the card: solid "MESSAGE SELLER", outlined "EDIT PROFILE" and "⋮". */
+const SOLID_BTN =
+  "h-[24px] cursor-pointer gap-1.5 rounded-[2px] bg-violet-600 px-3 text-[9px] font-bold uppercase tracking-[0.08em] text-white hover:bg-violet-500 [&_svg]:size-3";
+const OUTLINE_BTN =
+  "h-[24px] cursor-pointer gap-1.5 rounded-[2px] border border-violet-600 bg-transparent px-2.5 text-[9px] font-bold uppercase tracking-[0.08em] text-violet-500 hover:bg-violet-600 hover:text-white [&_svg]:size-3";
 
-/** Profile picture with online badge, then name, rating, country, actions and counts. */
-export default function ProfileSidebar({
-  profile,
-  onShowShop,
-  onShowInstant,
-  onShowPhotos,
-}: {
-  profile: Profile;
-  onShowShop: () => void;
-  onShowInstant: () => void;
-  onShowPhotos: () => void;
-}) {
-  const photos = profile.counts.photos;
-  const rating = profile.stats.rating;
-  const country = profile.sellerDetails.country;
+/** The details list of the design, in its order; Age comes from the age range. */
+const MAIN_DETAILS: { key: string; label: string }[] = [
+  { key: "gender", label: "Gender" },
+  { key: "ageRange", label: "Age" },
+  { key: "ethnicity", label: "Ethnicity" },
+  { key: "bodySize", label: "Body Size" },
+];
+const MAIN_KEYS = new Set([...MAIN_DETAILS.map((d) => d.key), "country"]);
+
+const filled = (v: string | undefined) => !!v?.trim() && v !== "Prefer not to say";
+
+function Detail({ label, value }: { label: string; value: string }) {
   return (
-    <aside className="flex flex-col gap-4 lg:sticky lg:top-20">
-      <div className={cn(PANEL, "relative aspect-square overflow-hidden bg-[#8b8b90]")}>
+    <div className="flex items-baseline justify-between gap-4 text-[12px] leading-[22px]">
+      <dt className="text-[#999a9e]">{label}:</dt>
+      <dd className="truncate text-right text-[#f9f9f9]">{value}</dd>
+    </div>
+  );
+}
+
+/** "Follow" / "Unfollow" in the ⋮ menu for signed-in visitors. */
+function FollowItem({ sellerId }: { sellerId: Profile["_id"] }) {
+  const following = useQuery(api.follows.isFollowing, { sellerId });
+  const toggle = useMutation(api.follows.toggle);
+  return (
+    <DropdownMenuItem
+      className="cursor-pointer"
+      disabled={following === undefined}
+      onSelect={() =>
+        toggle({ sellerId })
+          .then((now) => toast.success(now ? "Following. New listings will show in your feed." : "Unfollowed"))
+          .catch((e) => toast.error(getErrorMessage(e, "Could not update follow")))
+      }
+    >
+      <Heart /> {following ? "Unfollow" : "Follow"}
+    </DropdownMenuItem>
+  );
+}
+
+/**
+ * Left column of the profile: the square profile picture, then one card with
+ * the seller level, name, rating, Message / Edit and ⋮ buttons, bio,
+ * follower counts and the details list.
+ */
+export default function ProfileSidebar({ profile }: { profile: Profile }) {
+  const { isAuthenticated } = useBackendAuth();
+  const access = useAccess();
+  const [customOpen, setCustomOpen] = useState(false);
+  const [more, setMore] = useState(false);
+  const { rating, reviewCount, followerCount } = profile.stats;
+  const details = profile.sellerDetails as Record<string, string | undefined>;
+
+  const main = MAIN_DETAILS.filter((d) => filled(details[d.key])).map((d) => ({ ...d, value: details[d.key]! }));
+  const extra = SELLER_DETAIL_FIELDS.filter((f) => !MAIN_KEYS.has(f.key) && filled(details[f.key])).map((f) => ({
+    key: f.key,
+    label: f.label,
+    value: details[f.key]!,
+  }));
+  const hasMore = extra.length > 0 || profile.paymentMethods.length > 0 || profile.offerings.length > 0;
+  const canRequestCustom = !profile.isMe && isAuthenticated && !!access?.can.buy;
+
+  return (
+    <aside className="flex flex-col gap-[14px] lg:sticky lg:top-20">
+      <div className={cn(PANEL, "aspect-square overflow-hidden border-[#2a2f3d] bg-[#85868a]")}>
         {profile.avatarUrl ? (
           <img src={profile.avatarUrl} alt={profile.name} className="size-full object-cover" />
         ) : (
           <div className="flex size-full items-center justify-center">
-            <UserRound className="size-2/3 text-[#5f5f64]" strokeWidth={1.1} />
+            <ImageIcon className="size-4/5 text-[#5c5d61]" strokeWidth={1.2} />
           </div>
-        )}
-        {isOnline(profile.activity.lastSeenAt) && (
-          <span className="absolute right-0 top-0 rounded-bl-md bg-emerald-500 px-2.5 py-0.5 text-xs font-bold text-white">
-            Online
-          </span>
-        )}
-        {(photos > 0 || profile.isMe) && (
-          <button
-            type="button"
-            onClick={onShowPhotos}
-            className="absolute bottom-3 right-3 flex cursor-pointer items-center gap-2 rounded-sm border border-[#383b3d]/90 bg-[#0a1123]/90 px-3 py-1.5 text-base font-bold text-violet-600 shadow-lg backdrop-blur-sm transition-colors hover:bg-violet-600 hover:text-white"
-          >
-            <ImageIcon className="size-5" /> {photos} {photos === 1 ? "Photo" : "Photos"}
-          </button>
         )}
       </div>
 
-      <div className={cn(PANEL, "flex flex-col gap-3 p-4")}>
-        <div>
-          <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.18em] text-violet-600">
-            <Award className="size-3.5" /> {profile.accountType === "buyer" ? "Buyer" : "Seller"}
-          </p>
-          <h1 className="truncate text-3xl font-bold tracking-wide text-slate-200">{profile.name}</h1>
-          <p className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1 text-sm text-slate-400">
-            <span className="flex items-center gap-1" aria-label={rating ? `Rated ${rating.toFixed(1)}` : "No ratings yet"}>
-              <Star className="size-4 text-violet-600" />
-              {rating ? rating.toFixed(1) : null}
-            </span>
-            {country && (
-              <span className="flex items-center gap-1.5">
-                <CountryFlag country={country} />
-                {country}
-              </span>
-            )}
-          </p>
-        </div>
+      <div className={cn(PANEL, "flex flex-col bg-[#060c1c] px-[16px] pb-[18px] pt-[16px]")}>
+        <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-[#6e36d7]">
+          <Crown className="size-3" /> {profile.isPro ? "Premium Seller" : "Seller"}
+        </p>
+        <h1 className="mt-1 truncate text-[22px] font-bold leading-tight tracking-[0.06em] text-[#83868d]">
+          {profile.name}
+        </h1>
+        <p
+          className="mt-1.5 flex items-center gap-1.5 text-[11px] text-[#787b84]"
+          aria-label={rating ? `Rated ${rating.toFixed(1)} from ${reviewCount} reviews` : "No ratings yet"}
+        >
+          <Star className="size-3.5 text-violet-600" />
+          {rating ? `${rating.toFixed(1)} (${reviewCount})` : "0.0 (0)"}
+        </p>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="mt-3 flex items-center justify-between gap-2">
           {profile.isMe ? (
-            <Button asChild size="sm" variant="ghost" className="h-8 flex-1 cursor-pointer rounded-sm border border-violet-600 text-xs font-bold uppercase text-violet-600 hover:bg-violet-600 hover:text-white">
+            <Button asChild size="sm" className={OUTLINE_BTN}>
               <Link href={settingsPathFor(profile.accountType)}>
                 <Pencil /> Edit profile
               </Link>
             </Button>
           ) : (
-            <>
-              <MessageSellerButton
-                sellerId={profile._id}
-                sellerName={profile.name}
-                className="h-8 flex-1 cursor-pointer rounded-sm bg-violet-600 text-xs font-bold uppercase text-white hover:bg-violet-600"
-              />
-              <FollowButton sellerId={profile._id} />
-            </>
+            <MessageSellerButton sellerId={profile._id} sellerName={profile.name} className={cn(SOLID_BTN, "min-w-[118px]")} />
           )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                size="icon"
-                variant="ghost"
-                aria-label="More options"
-                className="size-8 cursor-pointer rounded-sm border border-violet-600 text-violet-600"
-              >
+              <Button size="icon" aria-label="More options" className={cn(OUTLINE_BTN, "w-[30px] px-0")}>
                 <EllipsisVertical />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              {!profile.isMe && isAuthenticated && <FollowItem sellerId={profile._id} />}
+              {canRequestCustom && (
+                <DropdownMenuItem className="cursor-pointer" onSelect={() => setCustomOpen(true)}>
+                  <Sparkles /> Request a custom
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem className="cursor-pointer" onSelect={() => void copyProfileLink(profile._id)}>
                 <Link2 /> Copy profile link
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        {!profile.isMe && (
-          <CustomRequestButton sellerId={profile._id} sellerName={profile.name} className="w-full" />
+        {canRequestCustom && (
+          <CustomRequestButton
+            sellerId={profile._id}
+            sellerName={profile.name}
+            open={customOpen}
+            onOpenChange={setCustomOpen}
+            hideTrigger
+          />
         )}
 
-        <div className="flex flex-wrap gap-2 border-t border-[#383b3d]/90 pt-4">
-          <button
-            type="button"
-            onClick={onShowShop}
-            className="flex cursor-pointer items-center gap-1.5 rounded-full bg-[#10182d] px-3 py-1.5 text-sm font-bold text-slate-200 hover:bg-violet-600/30"
-          >
-            <ShoppingBag className="size-4 text-violet-600" /> {profile.counts.listings} Listing
-            {profile.counts.listings === 1 ? "" : "s"}
-          </button>
-          <button
-            type="button"
-            onClick={onShowInstant}
-            className="flex cursor-pointer items-center gap-1.5 rounded-full bg-[#10182d] px-3 py-1.5 text-sm font-bold text-slate-200 hover:bg-violet-600/30"
-          >
-            <Images className="size-4 text-violet-600" /> {profile.counts.instantContent} Instant Content
-          </button>
+        <div className="min-h-[64px] py-4 text-[12px] leading-5">
+          {profile.bio && <ExpandableBio text={profile.bio} />}
         </div>
+
+        <p className="text-center text-[11px] text-[#fefefe]">
+          ({followerCount}) Followers - ({profile.counts.following}) Following
+        </p>
+
+        <dl className="mt-5 flex flex-col">
+          {main.map((d) => (
+            <Detail key={d.key} label={d.label} value={d.value} />
+          ))}
+          <Detail label="Joined" value={format(profile.memberSince, "MMM yyyy")} />
+          <Detail label="Profile Visits" value={profile.activity.profileVisits.toLocaleString("en-US")} />
+          {more && (
+            <>
+              {extra.map((d) => (
+                <Detail key={d.key} label={d.label} value={d.value} />
+              ))}
+              {profile.paymentMethods.length > 0 && (
+                <Detail label="Payment Methods" value={profile.paymentMethods.join(", ")} />
+              )}
+              {profile.offerings.length > 0 && <Detail label="What I Offer" value={profile.offerings.join(", ")} />}
+            </>
+          )}
+        </dl>
+        {hasMore && (
+          <button
+            type="button"
+            aria-expanded={more}
+            onClick={() => setMore((m) => !m)}
+            className="mt-2 flex cursor-pointer items-center gap-1 self-start text-[11px] text-[#999a9e] hover:text-[#f9f9f9]"
+          >
+            {more ? "Show less" : "Show more"}
+            <ChevronDown className={cn("size-3.5 text-violet-600 transition-transform", more && "rotate-180")} />
+          </button>
+        )}
       </div>
     </aside>
   );
