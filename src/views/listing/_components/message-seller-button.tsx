@@ -85,7 +85,7 @@ export default function MessageSellerButton({
                 key={q}
                 type="button"
                 onClick={() => setBody(q)}
-                className="cursor-pointer rounded-sm border bg-secondary px-2.5 py-1 text-xs font-medium hover:bg-accent hover:text-accent-foreground"
+                className="cursor-pointer rounded-[1px] border bg-secondary px-2.5 py-1 text-xs font-medium hover:bg-accent hover:text-accent-foreground"
               >
                 {q}
               </button>

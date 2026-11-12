@@ -31,9 +31,9 @@ type Profile = NonNullable<FunctionReturnType<typeof api.users.getProfile>>;
 
 /** Small buttons of the card: solid "MESSAGE SELLER", outlined "EDIT PROFILE" and "⋮". */
 const SOLID_BTN =
-  "h-[24px] cursor-pointer gap-1.5 rounded-[2px] bg-violet-600 px-3 text-[9px] font-bold uppercase tracking-[0.08em] text-white hover:bg-violet-500 [&_svg]:size-3";
+  "h-[24px] cursor-pointer gap-1.5 rounded-[1px] bg-violet-600 px-3 text-[9px] font-bold uppercase tracking-[0.08em] text-white hover:bg-violet-500 [&_svg]:size-3";
 const OUTLINE_BTN =
-  "h-[24px] cursor-pointer gap-1.5 rounded-[2px] border border-violet-600 bg-transparent px-2.5 text-[9px] font-bold uppercase tracking-[0.08em] text-violet-500 hover:bg-violet-600 hover:text-white [&_svg]:size-3";
+  "h-[24px] cursor-pointer gap-1.5 rounded-[1px] border border-violet-600 bg-transparent px-2.5 text-[9px] font-bold uppercase tracking-[0.08em] text-violet-500 hover:bg-violet-600 hover:text-white [&_svg]:size-3";
 
 /** The details list of the design, in its order; Age comes from the age range. */
 const MAIN_DETAILS: { key: string; label: string }[] = [

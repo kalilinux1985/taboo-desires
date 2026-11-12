@@ -15,7 +15,7 @@ export default function AccountBadge({ kind, className }: { kind: AccountKind; c
     <span
       title={label}
       className={cn(
-        "inline-flex shrink-0 items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary-foreground",
+        "inline-flex shrink-0 items-center gap-1 rounded-[1px] bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary-foreground",
         className,
       )}
     >

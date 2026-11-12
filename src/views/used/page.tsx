@@ -70,7 +70,7 @@ export default function ShopCategoryPage({ page }: { page: ShopPage }) {
         <div className="flex gap-3">
           <Button
             onClick={() => setFiltersOpen(true)}
-            className="h-12 flex-1 cursor-pointer rounded-full text-base font-bold"
+            className="h-12 flex-1 cursor-pointer rounded-[1px] text-base font-bold"
           >
             <SlidersHorizontal className="size-5" /> Filter
             {active > 0 && (
@@ -84,7 +84,7 @@ export default function ShopCategoryPage({ page }: { page: ShopPage }) {
               <Button
                 variant="secondary"
                 aria-label="Sort"
-                className="h-12 w-16 cursor-pointer rounded-2xl border-b-4 border-[#1a2238]/45"
+                className="h-12 w-16 cursor-pointer rounded-[1px] border-b-4 border-[#1a2238]/45"
               >
                 <ArrowUpDown className="size-5" />
               </Button>

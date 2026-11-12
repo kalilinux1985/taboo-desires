@@ -32,7 +32,7 @@ export default function BuyerHeader(p: Props) {
           <UserRound className="size-2/3 text-muted-foreground/40" strokeWidth={1.25} />
         )}
         {isOnline(p.lastSeenAt) && (
-          <span className="absolute right-0 top-0 rounded-bl-md bg-emerald-500 px-2.5 py-0.5 text-xs font-bold text-white">
+          <span className="absolute right-0 top-0 rounded-bl-[1px] bg-emerald-500 px-2.5 py-0.5 text-xs font-bold text-white">
             Online
           </span>
         )}

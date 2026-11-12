@@ -64,7 +64,7 @@ function InboxList({ activeId }: { activeId?: string }) {
               activeId === c._id && "bg-secondary",
             )}
           >
-            <div className="size-12 shrink-0 overflow-hidden rounded-sm bg-muted">
+            <div className="size-12 shrink-0 overflow-hidden rounded-[1px] bg-muted">
               {c.listing?.imageUrl && (
                 <img src={c.listing.imageUrl} alt="" className="size-full object-cover" />
               )}
@@ -98,7 +98,7 @@ function Inbox() {
   const { conversationId } = useParams<{ conversationId: Id<"conversations"> }>();
   return (
     <div className="mx-auto flex h-[calc(100dvh-3.5rem)] max-w-7xl md:px-4 md:py-6">
-      <div className="flex min-h-0 flex-1 overflow-hidden border-x md:rounded-md md:border">
+      <div className="flex min-h-0 flex-1 overflow-hidden border-x md:rounded-[1px] md:border">
         <aside
           className={cn(
             "w-full shrink-0 overflow-y-auto border-r md:block md:w-80",

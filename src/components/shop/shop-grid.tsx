@@ -23,7 +23,7 @@ export function ShopCard({ listing }: { listing: ListingCardData }) {
   return (
     <Link
       href={`/listing/${listing._id}`}
-      className="group flex min-w-0 cursor-pointer flex-col overflow-hidden rounded-sm border bg-card shadow-[0_10px_30px_-12px_rgba(0,0,0,0.7)] transition-[transform,border-color] duration-200 hover:-translate-y-0.5 hover:border-violet-400/45"
+      className="group flex min-w-0 cursor-pointer flex-col overflow-hidden rounded-[1px] border bg-card shadow-[0_10px_30px_-12px_rgba(0,0,0,0.7)] transition-[transform,border-color] duration-200 hover:-translate-y-0.5 hover:border-violet-400/45"
     >
       <div className="relative aspect-[5/3] bg-muted">
         <div className="absolute inset-0 overflow-hidden">
@@ -38,7 +38,7 @@ export function ShopCard({ listing }: { listing: ListingCardData }) {
             <div className="size-full bg-gradient-to-br from-violet-900 to-indigo-950" />
           )}
         </div>
-        <span className="absolute left-3 top-3 rounded-sm bg-background/75 px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-accent-foreground">
+        <span className="absolute left-3 top-3 rounded-[1px] bg-background/75 px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-accent-foreground">
           {CONDITION_LABEL[listing.condition]}
         </span>
         <FavoriteButton
@@ -58,7 +58,7 @@ export function ShopCard({ listing }: { listing: ListingCardData }) {
         <p className="flex min-w-0 items-center gap-2 text-xs font-extrabold text-violet-600">
           <span className="truncate">{listing.sellerName}</span>
           {listing.sellerCountry && (
-            <span className="shrink-0 rounded-sm border px-1 font-mono text-[10px] font-bold text-muted-foreground">
+            <span className="shrink-0 rounded-[1px] border px-1 font-mono text-[10px] font-bold text-muted-foreground">
               {listing.sellerCountry}
             </span>
           )}
@@ -75,13 +75,13 @@ export function ShopCard({ listing }: { listing: ListingCardData }) {
           <span className="ml-1 font-mono text-[11px] text-violet-600">USD</span>
         </span>
         {liveAuction ? (
-          <span className="flex items-center gap-1.5 rounded-full border border-rose-400 px-3 py-1 text-xs font-extrabold text-rose-400">
+          <span className="flex items-center gap-1.5 rounded-[1px] border border-rose-400 px-3 py-1 text-xs font-extrabold text-rose-400">
             <Gavel className="size-3.5" /> {liveAuction.bidCount}{" "}
             {liveAuction.bidCount === 1 ? "bid" : "bids"} ·{" "}
             <Countdown endsAt={liveAuction.endsAt} className="text-rose-400" />
           </span>
         ) : (
-          <span className="rounded-full bg-primary px-3 py-1 text-xs font-extrabold text-primary-foreground">
+          <span className="rounded-[1px] bg-primary px-3 py-1 text-xs font-extrabold text-primary-foreground">
             Buy it now
           </span>
         )}
@@ -111,7 +111,7 @@ export function ShopGrid({
     return (
       <div className={cn("grid gap-6", className)}>
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="overflow-hidden rounded-sm border bg-card shadow-[0_10px_30px_-12px_rgba(0,0,0,0.7)]">
+          <div key={i} className="overflow-hidden rounded-[1px] border bg-card shadow-[0_10px_30px_-12px_rgba(0,0,0,0.7)]">
             <Skeleton className="aspect-[5/3] w-full rounded-none" />
             <div className="flex flex-col gap-2 p-4">
               <Skeleton className="h-3 w-1/3" />
@@ -126,7 +126,7 @@ export function ShopGrid({
 
   if (results.length === 0) {
     return (
-      <div className="rounded-sm border border-dashed px-6 py-14 text-center text-muted-foreground">
+      <div className="rounded-[1px] border border-dashed px-6 py-14 text-center text-muted-foreground">
         <p>{filtered ? "No listings match these filters." : "Nothing listed here yet."}</p>
         {filtered ? (
           <Button variant="secondary" size="sm" className="mt-4 cursor-pointer" onClick={onClear}>

@@ -107,7 +107,7 @@ export default function BuyerOverviewCard(p: Props) {
           <span className="text-sm text-muted-foreground">Nothing listed yet.</span>
         ) : (
           lookingFor.map((item) => (
-            <span key={item} className="rounded-md bg-primary px-2.5 py-1 text-xs font-bold text-primary-foreground">
+            <span key={item} className="rounded-[1px] bg-primary px-2.5 py-1 text-xs font-bold text-primary-foreground">
               {item}
             </span>
           ))

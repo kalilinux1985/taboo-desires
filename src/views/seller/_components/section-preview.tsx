@@ -29,7 +29,7 @@ export default function SectionPreview({
         {actionLabel}
       </Button>
       {count === 0 ? (
-        <div className="rounded-lg bg-accent/40 px-4 py-4 text-sm text-accent-foreground">{emptyLabel}</div>
+        <div className="rounded-[1px] bg-accent/40 px-4 py-4 text-sm text-accent-foreground">{emptyLabel}</div>
       ) : (
         children
       )}

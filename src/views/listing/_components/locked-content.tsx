@@ -39,10 +39,10 @@ export function UnlockedMedia({ media }: { media: NonNullable<Locked["media"]> }
       <div className="grid gap-3 sm:grid-cols-2">
         {media.map((m) =>
           m.kind === "video" ? (
-            <video key={m.storageId} src={m.url} controls playsInline className="w-full rounded-md bg-black" />
+            <video key={m.storageId} src={m.url} controls playsInline className="w-full rounded-[1px] bg-black" />
           ) : (
             <a key={m.storageId} href={m.url} target="_blank" rel="noreferrer" className="cursor-pointer">
-              <img src={m.url} alt="" className="w-full rounded-md object-cover" />
+              <img src={m.url} alt="" className="w-full rounded-[1px] object-cover" />
             </a>
           ),
         )}
@@ -83,7 +83,7 @@ export function BuyLockedPanel({
   };
 
   return (
-    <div className="flex flex-col gap-3 rounded-md border border-primary/40 bg-accent/30 p-4">
+    <div className="flex flex-col gap-3 rounded-[1px] border border-primary/40 bg-accent/30 p-4">
       <div className="flex items-center gap-2 font-semibold">
         <Lock className="size-4 text-violet-600" /> Locked content
       </div>
@@ -126,7 +126,7 @@ export function UnlockRequests({ listingId }: { listingId: Id<"listings"> }) {
   };
 
   return (
-    <section className="flex flex-col gap-3 rounded-md border border-[#1a2238]/45 bg-card shadow-[0_10px_30px_-12px_rgba(0,0,0,0.7)] p-4">
+    <section className="flex flex-col gap-3 rounded-[1px] border border-[#1a2238]/45 bg-card shadow-[0_10px_30px_-12px_rgba(0,0,0,0.7)] p-4">
       <h2 className="font-semibold">Purchase requests</h2>
       {requests === undefined ? (
         <Skeleton className="h-12 w-full" />

@@ -35,7 +35,7 @@ import { profileFontVars } from "../_lib/fonts.ts";
 
 const MAX_BYTES = 10 * 1024 * 1024;
 const MAX_PHOTOS = 4;
-const FIELD = "h-9 rounded-sm border-[#1a2238]/45 bg-[#0f172a] text-sm placeholder:text-slate-400";
+const FIELD = "h-9 rounded-[1px] border-[#1a2238]/45 bg-[#0f172a] text-sm placeholder:text-slate-400";
 
 type Photo = { id: Id<"_storage">; url: string };
 
@@ -142,7 +142,7 @@ function QuickListingForm({ onPosted }: { onPosted: () => void }) {
       {photos.length > 0 && (
         <div className="flex gap-2">
           {photos.map((p) => (
-            <div key={p.id} className="relative size-14 overflow-hidden rounded-sm">
+            <div key={p.id} className="relative size-14 overflow-hidden rounded-[1px]">
               <img src={p.url} alt="" className="size-full object-cover" />
               <button
                 type="button"
@@ -162,7 +162,7 @@ function QuickListingForm({ onPosted }: { onPosted: () => void }) {
           type="button"
           onClick={() => fileRef.current?.click()}
           disabled={uploading || photos.length >= MAX_PHOTOS}
-          className="flex cursor-pointer items-center gap-2 rounded-sm bg-[#0f172a] px-3 py-1.5 text-sm disabled:opacity-50"
+          className="flex cursor-pointer items-center gap-2 rounded-[1px] bg-[#0f172a] px-3 py-1.5 text-sm disabled:opacity-50"
         >
           {uploading ? <Spinner /> : <ImageIcon className="size-4 text-violet-600" />} Photo
         </button>
@@ -170,7 +170,7 @@ function QuickListingForm({ onPosted }: { onPosted: () => void }) {
           <button
             type="submit"
             disabled={posting || !canList}
-            className="flex cursor-pointer items-center gap-2 rounded-sm bg-[#0f172a] px-3 py-1.5 text-sm font-semibold hover:bg-violet-600 disabled:opacity-50"
+            className="flex cursor-pointer items-center gap-2 rounded-[1px] bg-[#0f172a] px-3 py-1.5 text-sm font-semibold hover:bg-violet-600 disabled:opacity-50"
           >
             {posting && <Spinner />} Post Listing
           </button>
@@ -203,7 +203,7 @@ export default function CreateListingButton({ className }: { className?: string 
         <Button
           className={cn(
             // Phones: fills the right column's height, icon above the words
-            "h-auto cursor-pointer flex-col gap-1 whitespace-normal rounded-sm bg-violet-600 px-2 py-2 text-center font-bold leading-tight text-white hover:bg-violet-600 md:h-9 md:flex-row md:whitespace-nowrap md:px-4",
+            "h-auto cursor-pointer flex-col gap-1 whitespace-normal rounded-[1px] bg-violet-600 px-2 py-2 text-center font-bold leading-tight text-white hover:bg-violet-600 md:h-9 md:flex-row md:whitespace-nowrap md:px-4",
             className,
           )}
         >

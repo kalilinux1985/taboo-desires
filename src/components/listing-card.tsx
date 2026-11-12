@@ -32,7 +32,7 @@ export function ListingCard({ listing }: { listing: ListingCardData }) {
       href={`/listing/${listing._id}`}
       className="group flex cursor-pointer flex-col gap-2"
     >
-      <div className="relative aspect-square overflow-hidden rounded-[3px] bg-muted shadow-[0_10px_30px_-12px_rgba(0,0,0,0.7)]">
+      <div className="relative aspect-square overflow-hidden rounded-[1px] bg-muted shadow-[0_10px_30px_-12px_rgba(0,0,0,0.7)]">
         {listing.imageUrl && (
           <img
             src={listing.imageUrl}
@@ -48,7 +48,7 @@ export function ListingCard({ listing }: { listing: ListingCardData }) {
             </span>
           </div>
         )}
-        <Badge className="absolute left-2 top-2 rounded-sm bg-background/90 text-foreground uppercase tracking-wide">
+        <Badge className="absolute left-2 top-2 rounded-[1px] bg-background/90 text-foreground uppercase tracking-wide">
           {CONDITION_LABEL[listing.condition]}
         </Badge>
         <FavoriteButton
@@ -62,7 +62,7 @@ export function ListingCard({ listing }: { listing: ListingCardData }) {
           </span>
         )}
         {liveAuction && (
-          <div className="absolute inset-x-2 bottom-2 flex items-center justify-between gap-2 rounded-sm bg-primary px-2 py-1 text-xs font-bold uppercase text-primary-foreground">
+          <div className="absolute inset-x-2 bottom-2 flex items-center justify-between gap-2 rounded-[1px] bg-primary px-2 py-1 text-xs font-bold uppercase text-primary-foreground">
             <span className="flex items-center gap-1">
               <Gavel className="size-3.5" /> {liveAuction.bidCount}{" "}
               {liveAuction.bidCount === 1 ? "bid" : "bids"}

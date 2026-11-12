@@ -98,7 +98,7 @@ export default function ProfilePhotos({
         {photos.map((p) => (
           <div
             key={p._id}
-            className="group relative aspect-square overflow-hidden rounded-md bg-muted"
+            className="group relative aspect-square overflow-hidden rounded-[1px] bg-muted"
           >
             <img src={p.url} alt="" className="size-full object-cover" />
             {isMe && p.photoId && (
@@ -118,7 +118,7 @@ export default function ProfilePhotos({
             type="button"
             disabled={uploading}
             onClick={() => inputRef.current?.click()}
-            className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-md border-2 border-dashed text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+            className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-[1px] border-2 border-dashed text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
           >
             {uploading ? <Spinner /> : <ImagePlus className="size-6" />}
             <span className="text-xs font-medium">{limit === undefined ? "Add photos" : "Add photo"}</span>

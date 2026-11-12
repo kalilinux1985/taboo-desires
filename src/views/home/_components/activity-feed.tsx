@@ -36,7 +36,7 @@ import RepostDialog from "./repost-dialog.tsx";
 
 const PAGE = 10;
 const PILL_OUTLINE =
-  "h-10 cursor-pointer gap-1.5 rounded-full border-2 border-violet-600 bg-transparent px-4 font-bold text-violet-300 hover:bg-violet-800/30 hover:text-violet-200";
+  "h-10 cursor-pointer gap-1.5 rounded-[1px] border-2 border-violet-600 bg-transparent px-4 font-bold text-violet-300 hover:bg-violet-800/30 hover:text-violet-200";
 
 function FeedSkeleton() {
   return (
@@ -89,7 +89,7 @@ export default function ActivityFeed() {
           <div className="flex">
             <Button
               onClick={() => setComposer("post")}
-              className="h-11 cursor-pointer rounded-l-full rounded-r-none px-5 text-base font-bold"
+              className="h-11 cursor-pointer rounded-l-[1px] rounded-r-none px-5 text-base font-bold"
             >
               <Plus className="size-5" /> Add Post
             </Button>
@@ -97,7 +97,7 @@ export default function ActivityFeed() {
               <DropdownMenuTrigger asChild>
                 <Button
                   aria-label="More post options"
-                  className="h-11 cursor-pointer rounded-l-none rounded-r-full border-l border-primary-foreground/30 px-3"
+                  className="h-11 cursor-pointer rounded-l-none rounded-r-[1px] border-l border-primary-foreground/30 px-3"
                 >
                   <ChevronDown className="size-5" />
                 </Button>
@@ -115,11 +115,11 @@ export default function ActivityFeed() {
             </DropdownMenu>
           </div>
         ) : access === undefined ? (
-          <Skeleton className="h-11 w-40 rounded-full" />
+          <Skeleton className="h-11 w-40 rounded-[1px]" />
         ) : access?.accountType === "seller" ? (
           <Button
             onClick={() => sendToPlans("post")}
-            className="h-11 cursor-pointer rounded-full px-5 text-base font-bold"
+            className="h-11 cursor-pointer rounded-[1px] px-5 text-base font-bold"
           >
             <Plus className="size-5" /> Add Post
           </Button>
@@ -232,7 +232,7 @@ function FeedList({
   }
 
   return (
-    <div className="flex flex-col rounded-[3px] border border-[#1a2238]/45 bg-[#0a1123] px-4 shadow-[0_8px_20px_-10px_rgba(0,0,0,0.6)] [&>article:last-of-type]:border-b-0">
+    <div className="flex flex-col rounded-[1px] border border-[#1a2238]/45 bg-[#0a1123] px-4 shadow-[0_8px_20px_-10px_rgba(0,0,0,0.6)] [&>article:last-of-type]:border-b-0">
       {results.map((item) => (
         <PostCard key={item._id} item={item} online={onlineSet.has(item.author._id)} />
       ))}

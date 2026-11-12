@@ -87,7 +87,7 @@ export default function RequestCard({ request: r, role }: { request: CustomReque
         <Badge className={cn("shrink-0", STATUS_STYLE[r.status])}>{STATUS_LABEL[r.status]}</Badge>
       </div>
 
-      <div className="grid grid-cols-3 gap-3 rounded-lg bg-secondary/50 p-3">
+      <div className="grid grid-cols-3 gap-3 rounded-[1px] bg-secondary/50 p-3">
         <Detail label="Item" value={CATEGORY_LABEL[r.category]} />
         <Detail label="Wear time" value={CONDITION_LABEL[r.wearTime]} />
         <Detail label="Size" value={r.size} />

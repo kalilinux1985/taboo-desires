@@ -84,7 +84,7 @@ export default function AccountTypeDialog() {
                 onClick={() => setChoice(o.id)}
                 aria-pressed={active}
                 className={cn(
-                  "relative flex cursor-pointer flex-col gap-3 rounded-xl border p-4 text-left transition-colors",
+                  "relative flex cursor-pointer flex-col gap-3 rounded-[1px] border p-4 text-left transition-colors",
                   active ? "border-primary bg-primary/10" : "hover:border-primary/50",
                 )}
               >

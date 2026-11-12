@@ -16,7 +16,7 @@ export default function UpgradeNotice({
   return (
     <div
       className={cn(
-        "flex flex-col gap-3 rounded-lg border border-primary/30 bg-primary/10 p-4 sm:flex-row sm:items-center sm:justify-between",
+        "flex flex-col gap-3 rounded-[1px] border border-primary/30 bg-primary/10 p-4 sm:flex-row sm:items-center sm:justify-between",
         className,
       )}
     >

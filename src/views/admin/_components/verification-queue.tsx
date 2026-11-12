@@ -103,11 +103,11 @@ export default function VerificationQueue() {
                 <img
                   src={r.photoUrl}
                   alt={`Verification photo from ${r.sellerName}`}
-                  className="h-40 w-full rounded-md object-cover sm:w-40"
+                  className="h-40 w-full rounded-[1px] object-cover sm:w-40"
                 />
               </a>
             ) : (
-              <div className="flex h-40 w-full shrink-0 items-center justify-center rounded-md bg-muted sm:w-40">
+              <div className="flex h-40 w-full shrink-0 items-center justify-center rounded-[1px] bg-muted sm:w-40">
                 <ImageOff className="text-muted-foreground" />
               </div>
             )}

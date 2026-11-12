@@ -27,7 +27,7 @@ export default function MultiSelect({
           id={id}
           type="button"
           data-slot="select-trigger"
-          className="flex h-9 w-full cursor-pointer items-center justify-between gap-2 rounded-md border bg-background px-3 text-left text-sm"
+          className="flex h-9 w-full cursor-pointer items-center justify-between gap-2 rounded-[1px] border bg-background px-3 text-left text-sm"
         >
           <span className={cn("truncate", value.length === 0 && "text-muted-foreground")}>
             {value.length ? value.join(", ") : placeholder}
@@ -45,9 +45,9 @@ export default function MultiSelect({
               role="menuitemcheckbox"
               aria-checked={on}
               onClick={() => toggle(option)}
-              className="flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent"
+              className="flex w-full cursor-pointer items-center gap-2 rounded-[1px] px-2 py-1.5 text-left text-sm hover:bg-accent"
             >
-              <span className={cn("flex size-4 items-center justify-center rounded-sm border", on && "border-primary bg-primary text-primary-foreground")}>
+              <span className={cn("flex size-4 items-center justify-center rounded-[1px] border", on && "border-primary bg-primary text-primary-foreground")}>
                 {on && <Check className="size-3" />}
               </span>
               {option}

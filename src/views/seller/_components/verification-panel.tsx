@@ -45,7 +45,7 @@ export default function VerificationPanel() {
   const rejected = state.status === "rejected";
 
   return (
-    <section className="flex flex-col gap-4 rounded-md border border-sky-400/30 bg-sky-400/5 p-5 sm:flex-row sm:items-center sm:justify-between">
+    <section className="flex flex-col gap-4 rounded-[1px] border border-sky-400/30 bg-sky-400/5 p-5 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex min-w-0 gap-4">
         <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-sky-400/15 text-sky-400">
           {pending ? <Clock /> : rejected ? <ShieldAlert /> : <BadgeCheck />}

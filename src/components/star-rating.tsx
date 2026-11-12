@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils.ts";
 
 const STARS = [1, 2, 3, 4, 5] as const;
 
-/** Read-only star row; fills stars up to the rounded rating. */
+/** Read-only star row; fills stars up to the rounded-[1px] rating. */
 export function Stars({ rating, className }: { rating: number; className?: string }) {
   const filled = Math.round(rating);
   return (
@@ -30,7 +30,7 @@ export function StarInput({ value, onChange }: { value: number; onChange: (v: nu
           aria-checked={value === s}
           aria-label={`${s} star${s > 1 ? "s" : ""}`}
           onClick={() => onChange(s)}
-          className="cursor-pointer rounded-sm p-0.5 transition-transform hover:scale-110"
+          className="cursor-pointer rounded-[1px] p-0.5 transition-transform hover:scale-110"
         >
           <Star
             className={cn("size-7", s <= value ? "text-violet-600" : "text-muted-foreground/40")}

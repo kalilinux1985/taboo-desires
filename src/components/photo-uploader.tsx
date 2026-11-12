@@ -62,11 +62,11 @@ export default function PhotoUploader({
       {photos.map((p, i) => (
         <div
           key={p.id}
-          className="group relative aspect-square overflow-hidden rounded-md bg-muted"
+          className="group relative aspect-square overflow-hidden rounded-[1px] bg-muted"
         >
           <img src={p.url} alt="" className="size-full object-cover" />
           {showCover && i === 0 && (
-            <span className="absolute bottom-1 left-1 rounded-sm bg-accent px-1.5 py-0.5 text-[10px] font-bold uppercase text-accent-foreground">
+            <span className="absolute bottom-1 left-1 rounded-[1px] bg-accent px-1.5 py-0.5 text-[10px] font-bold uppercase text-accent-foreground">
               Cover
             </span>
           )}
@@ -83,7 +83,7 @@ export default function PhotoUploader({
       {Array.from({ length: uploading }).map((_, i) => (
         <div
           key={`u${i}`}
-          className="flex aspect-square items-center justify-center rounded-md bg-muted"
+          className="flex aspect-square items-center justify-center rounded-[1px] bg-muted"
         >
           <Spinner />
         </div>
@@ -92,7 +92,7 @@ export default function PhotoUploader({
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-md border-2 border-dashed text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+          className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-[1px] border-2 border-dashed text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
         >
           <ImagePlus className="size-6" />
           <span className="text-xs font-medium">Add photos</span>

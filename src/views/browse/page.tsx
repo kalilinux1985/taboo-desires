@@ -173,7 +173,7 @@ export default function BrowsePage() {
               type="button"
               onClick={() => chooseCategory(c.value)}
               className={cn(
-                "cursor-pointer rounded-sm border px-3 py-1.5 text-sm font-semibold uppercase tracking-wide transition-colors",
+                "cursor-pointer rounded-[1px] border px-3 py-1.5 text-sm font-semibold uppercase tracking-wide transition-colors",
                 category === c.value
                   ? "border-primary bg-primary text-primary-foreground"
                   : "bg-card hover:bg-secondary",
@@ -201,7 +201,7 @@ function FilterPill({ label, onClear }: { label: string; onClear: () => void }) 
     <button
       type="button"
       onClick={onClear}
-      className="flex cursor-pointer items-center gap-1.5 rounded-full border border-violet-600 bg-primary px-3 py-1 text-sm font-semibold text-primary-foreground"
+      className="flex cursor-pointer items-center gap-1.5 rounded-[1px] border border-violet-600 bg-primary px-3 py-1 text-sm font-semibold text-primary-foreground"
     >
       {label} <X className="size-3.5" aria-label="Remove filter" />
     </button>

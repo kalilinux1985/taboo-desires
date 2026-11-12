@@ -29,7 +29,7 @@ function PhotoStrip({ photos }: { photos: Profile["photos"] }) {
   return (
     <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
       {photos.map((p) => (
-        <div key={p._id} className="aspect-square overflow-hidden rounded-md bg-muted">
+        <div key={p._id} className="aspect-square overflow-hidden rounded-[1px] bg-muted">
           <img src={p.url} alt="" className="size-full object-cover" />
         </div>
       ))}
@@ -110,7 +110,7 @@ export default function BuyerProfile({ profile }: { profile: Profile }) {
           {profile.isMe || profile.counts.photos > 0 ? (
             <ProfilePhotos userId={profile._id} isMe={profile.isMe} total={profile.counts.photos} ownCount={profile.counts.profilePhotos} limit={BUYER_PHOTO_MAX} />
           ) : (
-            <p className="rounded-lg bg-accent/40 px-4 py-4 text-sm text-accent-foreground">No photos yet</p>
+            <p className="rounded-[1px] bg-accent/40 px-4 py-4 text-sm text-accent-foreground">No photos yet</p>
           )}
         </TabsContent>
         <TabsContent value="reviews">

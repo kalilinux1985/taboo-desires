@@ -157,7 +157,7 @@ function SubscriptionList({ tab }: { tab: "pending" | "active" }) {
                 <Link href={`/seller/${s.userId}`} className="cursor-pointer truncate font-semibold hover:underline">
                   {s.sellerName}
                 </Link>
-                {s.isCurrentlyPro && <Badge className="rounded-full">Pro</Badge>}
+                {s.isCurrentlyPro && <Badge className="rounded-[1px]">Pro</Badge>}
               </div>
               {s.email && <p className="truncate text-xs text-muted-foreground">{s.email}</p>}
               <p className="text-xs text-muted-foreground">
@@ -176,7 +176,7 @@ function SubscriptionList({ tab }: { tab: "pending" | "active" }) {
                 </p>
               )}
               {s.note && (
-                <p className="mt-2 break-words rounded-md bg-muted px-3 py-2 text-sm">{s.note}</p>
+                <p className="mt-2 break-words rounded-[1px] bg-muted px-3 py-2 text-sm">{s.note}</p>
               )}
             </div>
             <ApproveControls subscriptionId={s._id} pending={tab === "pending"} requestedMonths={s.requestedMonths} />

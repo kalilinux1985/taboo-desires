@@ -66,7 +66,7 @@ function Gallery({
   const current = images[active] ?? images[0];
   return (
     <div className="flex flex-col gap-3">
-      <div className="relative aspect-square overflow-hidden rounded-md bg-muted">
+      <div className="relative aspect-square overflow-hidden rounded-[1px] bg-muted">
         {current && <img src={current.url} alt={title} className="size-full object-cover" />}
         {locked && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/30 text-white">
@@ -85,7 +85,7 @@ function Gallery({
               type="button"
               onClick={() => setActive(i)}
               className={cn(
-                "aspect-square cursor-pointer overflow-hidden rounded-sm border-2",
+                "aspect-square cursor-pointer overflow-hidden rounded-[1px] border-2",
                 i === active ? "border-primary" : "border-transparent opacity-70 hover:opacity-100",
               )}
             >
@@ -247,9 +247,9 @@ export default function ListingPage() {
             <p className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
               {listing.brand}
             </p>
-            {isAuction && <Badge className="rounded-sm uppercase">Auction</Badge>}
+            {isAuction && <Badge className="rounded-[1px] uppercase">Auction</Badge>}
             {locked && (
-              <Badge className="rounded-sm uppercase">
+              <Badge className="rounded-[1px] uppercase">
                 <Lock /> Paywalled
               </Badge>
             )}
@@ -316,7 +316,7 @@ export default function ListingPage() {
           </>
         )}
 
-        <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-md border bg-border">
+        <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-[1px] border bg-border">
           {specs.map((s) => (
             <div key={s.label} className="bg-card p-3">
               <dt className="text-xs uppercase tracking-wider text-muted-foreground">{s.label}</dt>
@@ -337,7 +337,7 @@ export default function ListingPage() {
         {listing.seller && (
           <Link
             href={`/seller/${listing.seller._id}`}
-            className="flex cursor-pointer items-center gap-3 rounded-md border border-[#1a2238]/45 bg-card shadow-[0_10px_30px_-12px_rgba(0,0,0,0.7)] p-4 transition-colors hover:bg-secondary"
+            className="flex cursor-pointer items-center gap-3 rounded-[1px] border border-[#1a2238]/45 bg-card shadow-[0_10px_30px_-12px_rgba(0,0,0,0.7)] p-4 transition-colors hover:bg-secondary"
           >
             <ProfileAvatar
               name={listing.seller.name}

@@ -46,7 +46,7 @@ export default function ProfileCompactHeader({ profile }: { profile: Profile }) 
         </p>
         <h1 className="flex min-w-0 items-center gap-2.5 text-2xl font-bold text-slate-200 sm:text-3xl">
           <span className="truncate">{profile.name}</span>
-          {country && <CountryFlag country={country} className="h-4 w-6 shrink-0 rounded-[2px] object-cover" />}
+          {country && <CountryFlag country={country} className="h-4 w-6 shrink-0 rounded-[1px] object-cover" />}
         </h1>
         <p
           className="flex items-center gap-1.5 text-sm text-slate-300"

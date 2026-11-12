@@ -20,7 +20,7 @@ export default function CountryFlag({ country, className }: { country: string; c
       alt=""
       aria-hidden
       loading="lazy"
-      className={className ?? "h-3.5 w-5 rounded-[2px] object-cover"}
+      className={className ?? "h-3.5 w-5 rounded-[1px] object-cover"}
     />
   );
 }

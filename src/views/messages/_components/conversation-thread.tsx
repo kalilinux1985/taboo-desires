@@ -117,7 +117,7 @@ function MessageList({
           <div key={m._id} className={cn("flex max-w-[80%] flex-col gap-1", mine ? "self-end items-end" : "self-start items-start")}>
             <div
               className={cn(
-                "whitespace-pre-wrap break-words rounded-lg px-3 py-2 text-sm",
+                "whitespace-pre-wrap break-words rounded-[1px] px-3 py-2 text-sm",
                 mine ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground",
               )}
             >
@@ -180,7 +180,7 @@ export default function ConversationThread({
             href={`/listing/${convo.listing._id}`}
             className="flex min-w-0 flex-1 cursor-pointer items-center gap-3"
           >
-            <div className="size-11 shrink-0 overflow-hidden rounded-sm bg-muted">
+            <div className="size-11 shrink-0 overflow-hidden rounded-[1px] bg-muted">
               {convo.listing.imageUrl && (
                 <img src={convo.listing.imageUrl} alt="" className="size-full object-cover" />
               )}

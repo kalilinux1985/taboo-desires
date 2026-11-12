@@ -86,7 +86,7 @@ export default function LockedMediaUploader({
       {items.map((item, i) => (
         <div
           key={item.storageId}
-          className="relative aspect-square overflow-hidden rounded-md bg-muted"
+          className="relative aspect-square overflow-hidden rounded-[1px] bg-muted"
         >
           {item.kind === "video" ? (
             <video
@@ -99,12 +99,12 @@ export default function LockedMediaUploader({
             <img src={item.url} alt="" className="size-full object-cover" />
           )}
           {item.kind === "video" && (
-            <span className="absolute bottom-1 right-1 flex items-center gap-1 rounded-sm bg-black/70 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white">
+            <span className="absolute bottom-1 right-1 flex items-center gap-1 rounded-[1px] bg-black/70 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white">
               <Film className="size-3" /> Video
             </span>
           )}
           {i === 0 && (
-            <span className="absolute bottom-1 left-1 rounded-sm bg-accent px-1.5 py-0.5 text-[10px] font-bold uppercase text-accent-foreground">
+            <span className="absolute bottom-1 left-1 rounded-[1px] bg-accent px-1.5 py-0.5 text-[10px] font-bold uppercase text-accent-foreground">
               Cover
             </span>
           )}
@@ -123,7 +123,7 @@ export default function LockedMediaUploader({
       {Array.from({ length: uploading }).map((_, i) => (
         <div
           key={`u${i}`}
-          className="flex aspect-square items-center justify-center rounded-md bg-muted"
+          className="flex aspect-square items-center justify-center rounded-[1px] bg-muted"
         >
           <Spinner />
         </div>
@@ -132,7 +132,7 @@ export default function LockedMediaUploader({
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-md border-2 border-dashed text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+          className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-[1px] border-2 border-dashed text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
         >
           <ImagePlus className="size-6" />
           <span className="text-xs font-medium">Add photos or videos</span>

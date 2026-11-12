@@ -36,7 +36,7 @@ export default function SaleTypePicker({
             disabled={(disabled && !active) || locked}
             onClick={() => !disabled && !locked && onChange(o.value)}
             className={cn(
-              "flex flex-col items-start gap-1 rounded-md border-2 bg-card p-4 text-left transition-colors",
+              "flex flex-col items-start gap-1 rounded-[1px] border-2 bg-card p-4 text-left transition-colors",
               active ? "border-primary" : "border-border hover:border-[#1a2238]/45",
               disabled || locked ? "cursor-default" : "cursor-pointer",
               ((disabled && !active) || locked) && "opacity-50",
@@ -44,7 +44,7 @@ export default function SaleTypePicker({
           >
             <span
               className={cn(
-                "mb-1 flex size-8 items-center justify-center rounded-sm",
+                "mb-1 flex size-8 items-center justify-center rounded-[1px]",
                 active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
               )}
             >
@@ -53,7 +53,7 @@ export default function SaleTypePicker({
             <span className="flex items-center gap-2 font-display text-xl">
               {o.title}
               {locked && (
-                <span className="flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 font-sans text-[10px] font-bold uppercase text-primary-foreground">
+                <span className="flex items-center gap-1 rounded-[1px] bg-primary px-2 py-0.5 font-sans text-[10px] font-bold uppercase text-primary-foreground">
                   <Crown className="size-3" /> Pro
                 </span>
               )}

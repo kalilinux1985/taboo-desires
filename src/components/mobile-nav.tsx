@@ -66,7 +66,7 @@ function NavLink({
       href={href}
       onClick={onNavigate}
       className={cn(
-        "flex items-center gap-3 rounded-md px-3 py-2.5 text-lg transition-colors hover:bg-white/5",
+        "flex items-center gap-3 rounded-[1px] px-3 py-2.5 text-lg transition-colors hover:bg-white/5",
         active && "bg-primary/20 text-accent-foreground",
       )}
     >
@@ -90,13 +90,13 @@ function ShopSection({
 }) {
   return (
     <Collapsible className="group/section">
-      <CollapsibleTrigger className="flex w-full cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-left text-lg transition-colors hover:bg-white/5">
+      <CollapsibleTrigger className="flex w-full cursor-pointer items-center gap-2 rounded-[1px] px-3 py-2 text-left text-lg transition-colors hover:bg-white/5">
         <ChevronRight className="size-4 shrink-0 text-muted-foreground/60" />
         <span>{section.label}</span>
         <ChevronDown className="size-4 shrink-0 text-violet-600 transition-transform group-data-[state=open]/section:rotate-180" />
       </CollapsibleTrigger>
       <CollapsibleContent className="data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down overflow-hidden">
-        <ul className="mx-1 mb-2 mt-1 rounded-xl bg-background py-1.5">
+        <ul className="mx-1 mb-2 mt-1 rounded-[1px] bg-background py-1.5">
           {section.links.map((l) => {
             const href = "page" in l ? shopPageHref(l.page) : l.href;
             return (
@@ -104,7 +104,7 @@ function ShopSection({
               <Link
                 href={href}
                 onClick={onNavigate}
-                className="mx-1.5 block rounded-lg px-4 py-2.5 text-base transition-colors hover:bg-white/5"
+                className="mx-1.5 block rounded-[1px] px-4 py-2.5 text-base transition-colors hover:bg-white/5"
               >
                 {l.label}
               </Link>

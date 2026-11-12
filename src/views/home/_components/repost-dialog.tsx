@@ -88,11 +88,11 @@ export default function RepostDialog({
                   type="button"
                   onClick={() => setPicked(l._id)}
                   className={cn(
-                    "relative flex cursor-pointer flex-col gap-1 rounded-md p-1 text-left ring-2 ring-transparent transition",
+                    "relative flex cursor-pointer flex-col gap-1 rounded-[1px] p-1 text-left ring-2 ring-transparent transition",
                     picked === l._id && "ring-violet-600",
                   )}
                 >
-                  <div className="aspect-square overflow-hidden rounded-sm bg-muted">
+                  <div className="aspect-square overflow-hidden rounded-[1px] bg-muted">
                     {l.imageUrl && <img src={l.imageUrl} alt={l.title} className="size-full object-cover" />}
                   </div>
                   <span className="truncate text-xs font-semibold">{l.title}</span>

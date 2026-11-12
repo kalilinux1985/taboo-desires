@@ -49,7 +49,7 @@ function BidForm({ auction }: { auction: Auction }) {
 
   if (auction.iAmHighBidder) {
     return (
-      <div className="flex items-center gap-3 rounded-md bg-accent p-4 text-accent-foreground">
+      <div className="flex items-center gap-3 rounded-[1px] bg-accent p-4 text-accent-foreground">
         <Crown className="size-5 shrink-0" />
         <div>
           <p className="font-display text-xl leading-tight">You're winning</p>
@@ -137,7 +137,7 @@ function BidHistory({ bids }: { bids: Auction["bids"] }) {
 function EndedBanner({ auction }: { auction: Auction }) {
   if (auction.iWon) {
     return (
-      <div className="flex items-center gap-3 rounded-md bg-accent p-4 text-accent-foreground">
+      <div className="flex items-center gap-3 rounded-[1px] bg-accent p-4 text-accent-foreground">
         <Trophy className="size-5 shrink-0" />
         <div>
           <p className="font-display text-xl leading-tight">You won this auction</p>
@@ -147,7 +147,7 @@ function EndedBanner({ auction }: { auction: Auction }) {
     );
   }
   return (
-    <p className="rounded-md bg-muted p-4 text-sm text-muted-foreground">
+    <p className="rounded-[1px] bg-muted p-4 text-sm text-muted-foreground">
       {auction.bidCount > 0
         ? `Auction ended. Sold for ${formatPrice(auction.currentBidCents)}.`
         : "Auction ended with no bids."}
@@ -174,7 +174,7 @@ export default function AuctionPanel({
   const live = auction.status === "live";
 
   return (
-    <div className="flex flex-col gap-4 rounded-[3px] border-2 border-primary bg-card p-4 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.7)] sm:p-5">
+    <div className="flex flex-col gap-4 rounded-[1px] border-2 border-primary bg-card p-4 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.7)] sm:p-5">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -212,7 +212,7 @@ export default function AuctionPanel({
             <BidForm auction={auction} />
           </Authenticated>
           <Unauthenticated>
-            <div className="flex items-center justify-between gap-3 rounded-md bg-muted p-3">
+            <div className="flex items-center justify-between gap-3 rounded-[1px] bg-muted p-3">
               <p className="text-sm">Sign in to place a bid.</p>
               <SignInButton size="sm" />
             </div>
@@ -220,7 +220,7 @@ export default function AuctionPanel({
         </>
       )}
       {live && isOwner && (
-        <p className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
+        <p className="rounded-[1px] bg-muted p-3 text-sm text-muted-foreground">
           This is your auction. It closes automatically and the highest bid wins.
         </p>
       )}

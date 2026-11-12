@@ -24,7 +24,7 @@ import LikerAvatars from "./liker-avatars.tsx";
 export function PostImages({ images }: { images: string[] }) {
   if (images.length === 1) {
     return (
-      <div className="w-full max-w-[210px] overflow-hidden rounded-[2px] bg-[#8b8b90]">
+      <div className="w-full max-w-[210px] overflow-hidden rounded-[1px] bg-[#8b8b90]">
         <img src={images[0]} alt="" loading="lazy" className="max-h-[22rem] w-full object-cover" />
       </div>
     );
@@ -32,7 +32,7 @@ export function PostImages({ images }: { images: string[] }) {
   return (
     <div className="grid max-w-[426px] grid-cols-2 gap-1.5">
       {images.map((url) => (
-        <div key={url} className="aspect-square overflow-hidden rounded-[2px] bg-[#8b8b90]">
+        <div key={url} className="aspect-square overflow-hidden rounded-[1px] bg-[#8b8b90]">
           <img src={url} alt="" loading="lazy" className="size-full object-cover" />
         </div>
       ))}
@@ -44,7 +44,7 @@ export function ListingPreview({ listing }: { listing: NonNullable<FeedItem["lis
   return (
     <Link
       href={`/listing/${listing._id}`}
-      className="group relative block w-full max-w-[210px] cursor-pointer overflow-hidden rounded-[2px] bg-[#8b8b90]"
+      className="group relative block w-full max-w-[210px] cursor-pointer overflow-hidden rounded-[1px] bg-[#8b8b90]"
     >
       {listing.imageUrl && (
         <img
@@ -76,7 +76,7 @@ export function roleLabel(author: FeedItem["author"]) {
 
 /**
  * One activity post: round avatar on the left; name and flag, the text in a
- * rounded bubble, media, then comment count | likes with liker faces and the
+ * rounded-[1px] bubble, media, then comment count | likes with liker faces and the
  * age on the right; comments below. Used by the home feed and the seller profile.
  */
 export default function PostCard({ item, online }: { item: FeedItem; online: boolean }) {
@@ -120,7 +120,7 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
               {item.author.name}
             </Link>
             {item.author.country && (
-              <CountryFlag country={item.author.country} className="h-3.5 w-5 rounded-[2px] object-cover" />
+              <CountryFlag country={item.author.country} className="h-3.5 w-5 rounded-[1px] object-cover" />
             )}
             {item.author.verified && <VerifiedBadge />}
             {label && <span className="text-[10px] font-bold uppercase tracking-wide text-violet-600">{label}</span>}
@@ -142,7 +142,7 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
         </header>
 
         {text && (
-          <p className="whitespace-pre-wrap break-words rounded-2xl bg-[#0f172a] px-3.5 py-2.5 text-[15px] leading-snug text-[#a8abb4] shadow-[inset_0_2px_6px_rgba(0,0,0,0.5)]">
+          <p className="whitespace-pre-wrap break-words rounded-[1px] bg-[#0f172a] px-3.5 py-2.5 text-[15px] leading-snug text-[#a8abb4] shadow-[inset_0_2px_6px_rgba(0,0,0,0.5)]">
             {text}
           </p>
         )}

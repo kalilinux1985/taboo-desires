@@ -19,7 +19,7 @@ const PANEL_CLASS = cn(PANEL, "flex flex-col gap-5 p-5 sm:px-[26px] sm:py-[22px]
 
 /** Outlined violet action on the right of a heading ("VIEW ALL LISTINGS"). */
 const VIEW_ALL =
-  "inline-flex h-[27px] shrink-0 cursor-pointer items-center justify-center rounded-[2px] border-2 border-violet-600 px-4 text-[13px] uppercase tracking-tight text-violet-600 transition-colors hover:bg-violet-600 hover:text-white";
+  "inline-flex h-[27px] shrink-0 cursor-pointer items-center justify-center rounded-[1px] border-2 border-violet-600 px-4 text-[13px] uppercase tracking-tight text-violet-600 transition-colors hover:bg-violet-600 hover:text-white";
 
 /** Heading of a profile panel: title, optional violet count, short violet underline. */
 function PanelHeading({ title, count, size = "md" }: { title: string; count?: string; size?: "md" | "lg" }) {
@@ -95,10 +95,10 @@ function ProfileShopCard({ listing }: { listing: ListingCardData }) {
   return (
     <Link
       href={`/listing/${listing._id}`}
-      className="group flex min-w-0 cursor-pointer flex-col rounded-[2px] bg-[#060918] shadow-[0_10px_22px_-8px_rgba(0,0,0,0.75)] transition-transform duration-200 hover:-translate-y-0.5"
+      className="group flex min-w-0 cursor-pointer flex-col rounded-[1px] bg-[#060918] shadow-[0_10px_22px_-8px_rgba(0,0,0,0.75)] transition-transform duration-200 hover:-translate-y-0.5"
     >
-      <div className="relative aspect-[3/2] rounded-t-[2px] bg-[#808185]">
-        <div className="absolute inset-0 overflow-hidden rounded-t-[2px]">
+      <div className="relative aspect-[3/2] rounded-t-[1px] bg-[#808185]">
+        <div className="absolute inset-0 overflow-hidden rounded-t-[1px]">
           {listing.imageUrl && (
             <img
               src={listing.imageUrl}
@@ -186,7 +186,7 @@ function ContentTile({
 }) {
   return (
     <Link href={href} title={title} className="group flex w-[73px] cursor-pointer flex-col items-center gap-2.5">
-      <span className="relative flex size-[73px] items-center justify-center overflow-hidden rounded-[3px] bg-[#030917] text-[#7e3aef] shadow-[0_8px_16px_-8px_rgba(0,0,0,0.7)] transition-colors group-hover:bg-violet-600/15">
+      <span className="relative flex size-[73px] items-center justify-center overflow-hidden rounded-[1px] bg-[#030917] text-[#7e3aef] shadow-[0_8px_16px_-8px_rgba(0,0,0,0.7)] transition-colors group-hover:bg-violet-600/15">
         {imageUrl ? (
           <>
             <img
@@ -195,7 +195,7 @@ function ContentTile({
               loading="lazy"
               className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
-            <span className="absolute bottom-1 left-1 flex size-5 items-center justify-center rounded-[2px] bg-[#030917]/85">
+            <span className="absolute bottom-1 left-1 flex size-5 items-center justify-center rounded-[1px] bg-[#030917]/85">
               <Icon className="size-3.5" strokeWidth={1.75} />
             </span>
           </>
