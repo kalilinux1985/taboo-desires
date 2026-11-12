@@ -126,7 +126,7 @@ export function UnlockRequests({ listingId }: { listingId: Id<"listings"> }) {
   };
 
   return (
-    <section className="flex flex-col gap-3 rounded-md border border-[#1a2238]/30 bg-card shadow-[inset_4px_4px_14px_-4px_var(--color-violet-800)] p-4">
+    <section className="flex flex-col gap-3 rounded-md border border-[#1a2238]/45 bg-card shadow-[inset_4px_4px_14px_-4px_var(--color-violet-800)] p-4">
       <h2 className="font-semibold">Purchase requests</h2>
       {requests === undefined ? (
         <Skeleton className="h-12 w-full" />

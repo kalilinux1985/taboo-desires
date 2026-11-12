@@ -82,7 +82,7 @@ function SettingsInner({ kind }: { kind?: SettingsKind }) {
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[1fr_360px]">
       <Card>
-        <CardHeader className="border-b border-[#1a2238]/30 pb-4">
+        <CardHeader className="border-b border-[#1a2238]/45 pb-4">
           <CardTitle className="font-display text-2xl">Profile Information</CardTitle>
         </CardHeader>
         <CardContent>

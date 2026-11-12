@@ -35,7 +35,7 @@ import { profileFontVars } from "../_lib/fonts.ts";
 
 const MAX_BYTES = 10 * 1024 * 1024;
 const MAX_PHOTOS = 4;
-const FIELD = "h-9 rounded-sm border-[#1a2238]/30 bg-[#0f172a] text-sm placeholder:text-slate-400";
+const FIELD = "h-9 rounded-sm border-[#1a2238]/45 bg-[#0f172a] text-sm placeholder:text-slate-400";
 
 type Photo = { id: Id<"_storage">; url: string };
 
@@ -211,7 +211,7 @@ export default function CreateListingButton({ className }: { className?: string 
         </Button>
       </DialogTrigger>
       <DialogContent
-        className={cn(profileFontVars, TEXT_FONT, "max-h-[90vh] overflow-y-auto border-[#1a2238]/30 bg-[#0a1123] sm:max-w-lg")}
+        className={cn(profileFontVars, TEXT_FONT, "max-h-[90vh] overflow-y-auto border-[#1a2238]/45 bg-[#0a1123] sm:max-w-lg")}
       >
         <DialogHeader>
           <DialogTitle className={cn(HEADING_FONT, "w-fit border-b-2 border-violet-600 pb-0.5 text-2xl font-normal")}>

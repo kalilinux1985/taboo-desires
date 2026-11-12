@@ -21,7 +21,7 @@ export default function SectionPreview({
   children?: ReactNode;
 }) {
   return (
-    <section className="flex flex-col gap-4 border-b border-[#1a2238]/30 pb-8">
+    <section className="flex flex-col gap-4 border-b border-[#1a2238]/45 pb-8">
       <h2 className="w-fit border-b-2 border-violet-600 pb-1.5 text-2xl font-bold">
         {title} <span className="font-normal text-violet-600">{count} {unit}</span>
       </h2>
