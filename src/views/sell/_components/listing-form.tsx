@@ -148,7 +148,7 @@ export default function ListingForm({
   return (
     <Form {...form}>
       <form onSubmit={submit} className="flex flex-col gap-6">
-        <div className="flex items-start justify-between gap-4 rounded-md border border-[#1a2238]/45 bg-card shadow-[inset_4px_4px_14px_-4px_var(--color-violet-800)] p-4">
+        <div className="flex items-start justify-between gap-4 rounded-md border border-[#1a2238]/45 bg-card shadow-[0_10px_30px_-12px_rgba(0,0,0,0.7)] p-4">
           <div className="flex gap-3">
             <span className="flex size-9 shrink-0 items-center justify-center rounded-sm bg-accent text-accent-foreground">
               <Lock className="size-4" />

@@ -23,7 +23,7 @@ export function ShopCard({ listing }: { listing: ListingCardData }) {
   return (
     <Link
       href={`/listing/${listing._id}`}
-      className="group flex min-w-0 cursor-pointer flex-col overflow-hidden rounded-sm border bg-card transition-[transform,border-color] duration-200 hover:-translate-y-0.5 hover:border-violet-400/45"
+      className="group flex min-w-0 cursor-pointer flex-col overflow-hidden rounded-sm border bg-card shadow-[0_10px_30px_-12px_rgba(0,0,0,0.7)] transition-[transform,border-color] duration-200 hover:-translate-y-0.5 hover:border-violet-400/45"
     >
       <div className="relative aspect-[5/3] bg-muted">
         <div className="absolute inset-0 overflow-hidden">
@@ -111,7 +111,7 @@ export function ShopGrid({
     return (
       <div className={cn("grid gap-6", className)}>
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="overflow-hidden rounded-sm border bg-card">
+          <div key={i} className="overflow-hidden rounded-sm border bg-card shadow-[0_10px_30px_-12px_rgba(0,0,0,0.7)]">
             <Skeleton className="aspect-[5/3] w-full rounded-none" />
             <div className="flex flex-col gap-2 p-4">
               <Skeleton className="h-3 w-1/3" />

@@ -87,7 +87,7 @@ function PlanActions({ months, mine }: { months: number; mine: Mine | null }) {
 
 function PlanCard({ months, discount, mine }: { months: number; discount: number; mine: Mine | null | undefined }) {
   return (
-    <div className="relative flex flex-col gap-4 overflow-hidden rounded-xl border bg-card p-6 text-center shadow-[0_20px_50px_-30px] shadow-primary/60">
+    <div className="relative flex flex-col gap-4 overflow-hidden rounded-[3px] border bg-card p-6 text-center shadow-[0_10px_30px_-12px_rgba(0,0,0,0.7)]">
       {discount > 0 && (
         <span className="absolute -right-10 top-6 w-36 rotate-45 bg-rose-500 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-white">
           Save {discount}%
@@ -154,7 +154,7 @@ function Plans() {
   const mine = useQuery(api.subscriptions.mine, access ? {} : "skip");
   if (access && access.accountType === "buyer" && !access.isAdmin) {
     return (
-      <p className="rounded-lg border bg-card p-6 text-center text-muted-foreground">
+      <p className="rounded-[3px] border bg-card p-6 text-center text-muted-foreground shadow-[0_10px_30px_-12px_rgba(0,0,0,0.7)]">
         Premium is for sellers. Buyer accounts are always free.
       </p>
     );
@@ -203,7 +203,7 @@ export default function PricingPage() {
           <p className="text-lg font-semibold text-violet-600">One sale can cover your whole plan.</p>
         </motion.header>
 
-        <ul className="mx-auto flex w-full max-w-2xl flex-col items-center gap-2 rounded-lg border bg-card/60 px-5 py-5 text-center">
+        <ul className="mx-auto flex w-full max-w-2xl flex-col items-center gap-2 rounded-[3px] border bg-card/60 px-5 py-5 text-center shadow-[0_10px_30px_-12px_rgba(0,0,0,0.7)]">
           {PERKS.map((p) => (
             <li key={p} className="flex items-center gap-2">
               <CircleCheck className="size-4 shrink-0 text-violet-600" /> {p}
@@ -225,7 +225,7 @@ export default function PricingPage() {
               </li>
             ))}
           </ul>
-          <div className="rounded-lg border bg-card p-5 text-sm text-muted-foreground">
+          <div className="rounded-[3px] border bg-card p-5 text-sm text-muted-foreground shadow-[0_10px_30px_-12px_rgba(0,0,0,0.7)]">
             <p className="pb-1 font-semibold text-foreground">How does Premium work?</p>
             Pick a plan and send your request. Our team reviews it and switches Premium on for
             your shop, usually within a day. Your plan starts once it's approved, and choosing
