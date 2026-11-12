@@ -182,20 +182,51 @@ async function listProfilePhotos(ctx: QueryCtx, userId: Id<"users">) {
   return withPhotoUrls(ctx, rows);
 }
 
-/** All of a member's profile photos, newest first, a page at a time. */
+/**
+ * Everything a member has uploaded outside their listings, newest first, a page
+ * at a time: profile photos and the photos on their activity posts. Listing and
+ * Instant Content photos are left out. `photoId` is set on profile photos, the
+ * only ones removed from here (post photos go when the post is deleted).
+ */
 export const photosByUser = query({
   args: { userId: v.id("users"), paginationOpts: paginationOptsValidator },
   handler: async (ctx, { userId, paginationOpts }) => {
-    const result = await ctx.db.paginate(
-      "profilePhotos",
-      {
-        where: sql`user_id = ${userId}::uuid`,
-        order: [{ column: "created_at", cast: "timestamptz" }],
-        direction: "desc",
-      },
-      paginationOpts,
-    );
-    return { ...result, page: await withPhotoUrls(ctx, result.page) };
+    ctx.db.touch("profilePhotos", "posts");
+    const limit = Math.min(Math.max(1, Math.floor(paginationOpts.numItems)), 100);
+    const cursor = paginationOpts.cursor;
+    const offset = cursor?.startsWith("o:") ? Math.max(0, Number(cursor.slice(2)) || 0) : 0;
+    const rows = await ctx.db.rows(sql`
+      select * from (
+        select id::text as source_id, storage_id, created_at, 0::int as ord, true as own
+          from public.profile_photos
+         where user_id = ${userId}::uuid
+        union all
+        select p.id::text, t.img, p.created_at, t.ord::int, false
+          from public.posts p
+         cross join lateral unnest(p.image_ids) with ordinality as t(img, ord)
+         where p.author_id = ${userId}::uuid and p.kind <> 'listing'
+      ) photos
+      order by created_at desc, source_id desc, ord
+      limit ${limit + 1} offset ${offset}`);
+    const pageRows = rows.slice(0, limit);
+    const urls = await Promise.all(pageRows.map((r) => ctx.storage.getUrl(String(r.storage_id) as Id<"_storage">)));
+    const page = pageRows.flatMap((r, i) => {
+      const url = urls[i];
+      if (!url) return [];
+      const own = r.own === true;
+      return [
+        {
+          _id: `${own ? "profile" : "post"}:${String(r.source_id)}:${Number(r.ord)}`,
+          url,
+          photoId: own ? (String(r.source_id) as Id<"profilePhotos">) : null,
+        },
+      ];
+    });
+    return {
+      page,
+      isDone: rows.length <= limit,
+      continueCursor: `o:${offset + pageRows.length}`,
+    };
   },
 });
 
@@ -236,7 +267,7 @@ export const getProfile = query({
 });
 
 async function profileCounts(ctx: QueryCtx, userId: Id<"users">) {
-  ctx.db.touch("listings", "follows", "profilePhotos");
+  ctx.db.touch("listings", "follows", "profilePhotos", "posts");
   const [row] = await ctx.db.rows(sql`
     select
       (select count(*)::int from public.listings
@@ -244,12 +275,18 @@ async function profileCounts(ctx: QueryCtx, userId: Id<"users">) {
       (select count(*)::int from public.listings
         where seller_id = ${userId}::uuid and status = 'active' and paywall is not null) as instant,
       (select count(*)::int from public.follows where follower_id = ${userId}::uuid) as following,
-      (select count(*)::int from public.profile_photos where user_id = ${userId}::uuid) as photos`);
+      (select count(*)::int from public.profile_photos where user_id = ${userId}::uuid)
+        + (select coalesce(sum(cardinality(image_ids)), 0)::int from public.posts
+            where author_id = ${userId}::uuid and kind <> 'listing') as photos,
+      (select count(*)::int from public.profile_photos where user_id = ${userId}::uuid) as profile_photos`);
   return {
     listings: Number(row.listings),
     instantContent: Number(row.instant),
     following: Number(row.following),
+    /** Profile photos plus photos on activity posts (the Photos tab) */
     photos: Number(row.photos),
+    /** Profile photos only (the buyer limit counts these) */
+    profilePhotos: Number(row.profile_photos),
   };
 }
 

@@ -108,7 +108,7 @@ export default function BuyerProfile({ profile }: { profile: Profile }) {
         </TabsContent>
         <TabsContent value="photos">
           {profile.isMe || profile.counts.photos > 0 ? (
-            <ProfilePhotos userId={profile._id} isMe={profile.isMe} total={profile.counts.photos} limit={BUYER_PHOTO_MAX} />
+            <ProfilePhotos userId={profile._id} isMe={profile.isMe} total={profile.counts.photos} ownCount={profile.counts.profilePhotos} limit={BUYER_PHOTO_MAX} />
           ) : (
             <p className="rounded-lg bg-accent/40 px-4 py-4 text-sm text-accent-foreground">No photos yet</p>
           )}

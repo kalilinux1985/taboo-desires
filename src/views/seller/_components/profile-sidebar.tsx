@@ -89,7 +89,8 @@ export default function ProfileSidebar({ profile }: { profile: Profile }) {
   const details = profile.sellerDetails as Record<string, string | undefined>;
 
   const main = MAIN_DETAILS.map((d) => ({ ...d, value: filled(details[d.key]) ? details[d.key]! : NOT_SET }));
-  const [gender, ...restMain] = main;
+  // Gender and Age always show; the rest waits behind Show more
+  const [gender, age, ...restMain] = main;
   const country = details.country;
   const extra = SELLER_DETAIL_FIELDS.filter((f) => !MAIN_KEYS.has(f.key) && filled(details[f.key])).map((f) => ({
     key: f.key,
@@ -118,12 +119,6 @@ export default function ProfileSidebar({ profile }: { profile: Profile }) {
           {profile.name}
         </h1>
         <p className="mt-1.5 flex flex-wrap items-center gap-x-3.5 gap-y-1 text-[11px] text-[#787b84]">
-          {country && (
-            <span className="flex items-center gap-1.5">
-              <CountryFlag country={country} className="h-2.5 w-3.5 rounded-[1px] object-cover" />
-              {country}
-            </span>
-          )}
           <span
             className="flex items-center gap-1"
             aria-label={rating ? `Rated ${rating.toFixed(1)} from ${reviewCount} reviews` : "No ratings yet"}
@@ -131,6 +126,12 @@ export default function ProfileSidebar({ profile }: { profile: Profile }) {
             <Star className="size-3.5 text-violet-600" />
             {rating ? rating.toFixed(1) : "0.0"} ({reviewCount})
           </span>
+          {country && (
+            <span className="flex items-center gap-1.5">
+              <CountryFlag country={country} className="h-2.5 w-3.5 rounded-[1px] object-cover" />
+              {country}
+            </span>
+          )}
           {profile.verified && (
             <span className="flex items-center gap-1">
               <IdCard className="size-3.5 text-violet-600" /> ID Verified
@@ -193,13 +194,12 @@ export default function ProfileSidebar({ profile }: { profile: Profile }) {
 
         <dl className="mt-5 flex flex-col">
           <Detail label={gender.label} value={gender.value} />
+          <Detail label={age.label} value={age.value} />
           {more && (
             <>
               {restMain.map((d) => (
                 <Detail key={d.key} label={d.label} value={d.value} />
               ))}
-              <Detail label="Joined" value={format(profile.memberSince, "MMM yyyy")} />
-              <Detail label="Profile Visits" value={profile.activity.profileVisits.toLocaleString("en-US")} />
               {extra.map((d) => (
                 <Detail key={d.key} label={d.label} value={d.value} />
               ))}
@@ -214,11 +214,15 @@ export default function ProfileSidebar({ profile }: { profile: Profile }) {
           type="button"
           aria-expanded={more}
           onClick={() => setMore((m) => !m)}
-          className="mt-1 flex cursor-pointer items-center gap-1 self-start text-[11px] text-[#999a9e] hover:text-[#f9f9f9]"
+          className="my-1 flex cursor-pointer items-center gap-1 self-start text-[11px] text-[#999a9e] hover:text-[#f9f9f9]"
         >
           {more ? "Show less" : "Show more"}
           <ChevronDown className={cn("size-3.5 text-violet-600 transition-transform", more && "rotate-180")} />
         </button>
+        <dl className="flex flex-col">
+          <Detail label="Joined" value={format(profile.memberSince, "MMM yyyy")} />
+          <Detail label="Profile Visits" value={profile.activity.profileVisits.toLocaleString("en-US")} />
+        </dl>
       </div>
     </aside>
   );

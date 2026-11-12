@@ -22,13 +22,16 @@ export default function ProfilePhotos({
   isMe,
   total,
   limit,
+  ownCount,
 }: {
   userId: Id<"users">;
   isMe: boolean;
   /** How many photos the member has in all */
   total: number;
-  /** Most photos this member may have; leave out for no limit */
+  /** Most profile photos this member may have; leave out for no limit */
   limit?: number;
+  /** Profile photos only (the limit counts these, not photos on posts) */
+  ownCount?: number;
 }) {
   const { results: photos, status, loadMore } = usePaginatedQuery(
     api.users.photosByUser,
@@ -42,7 +45,7 @@ export default function ProfilePhotos({
   const [uploading, setUploading] = useState(false);
 
   if (!isMe && total === 0) return null;
-  const room = limit === undefined ? Infinity : limit - total;
+  const room = limit === undefined ? Infinity : limit - (ownCount ?? total);
 
   const upload = async (list: FileList | null) => {
     const files = Array.from(list ?? []).slice(0, room);
@@ -83,7 +86,7 @@ export default function ProfilePhotos({
     <section className="flex flex-col gap-3">
       {isMe && limit !== undefined && (
         <p className="self-end font-mono text-xs text-muted-foreground">
-          {total}/{limit}
+          {ownCount ?? total}/{limit}
         </p>
       )}
       {status === "LoadingFirstPage" && (
@@ -98,11 +101,11 @@ export default function ProfilePhotos({
             className="group relative aspect-square overflow-hidden rounded-md bg-muted"
           >
             <img src={p.url} alt="" className="size-full object-cover" />
-            {isMe && (
+            {isMe && p.photoId && (
               <button
                 type="button"
                 aria-label="Remove photo"
-                onClick={() => remove(p._id)}
+                onClick={() => remove(p.photoId!)}
                 className="absolute right-1 top-1 flex size-7 cursor-pointer items-center justify-center rounded-full bg-black/70 text-white"
               >
                 <Trash2 className="size-3.5" />
