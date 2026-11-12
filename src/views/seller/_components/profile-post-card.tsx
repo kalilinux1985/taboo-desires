@@ -122,7 +122,7 @@ export default function ProfilePostCard({ item }: { item: FeedItem }) {
           aria-pressed={item.likedByMe}
           className={cn(ACTION, item.likedByMe && "text-[#f9f9f9]")}
         >
-          <ThumbsUp className="size-3.5 fill-violet-600 text-violet-600" />
+          <ThumbsUp className="size-3.5 text-violet-600" />
           {item.likedByMe ? "Liked" : "Like"}
         </button>
         <button
@@ -131,11 +131,11 @@ export default function ProfilePostCard({ item }: { item: FeedItem }) {
           aria-expanded={showComments}
           className={cn(ACTION, showComments && "text-[#f9f9f9]")}
         >
-          <MessageCircle className="size-3.5 fill-violet-600 text-violet-600" />
+          <MessageCircle className="size-3.5 text-violet-600" />
           Comments
         </button>
         <button type="button" onClick={share} className={cn(ACTION, "ml-auto")}>
-          <Forward className="size-3.5 fill-violet-600 text-violet-600" />
+          <Forward className="size-3.5 text-violet-600" />
           Share
         </button>
       </div>
