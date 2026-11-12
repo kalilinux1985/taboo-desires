@@ -165,4 +165,47 @@
   .profile-navy textarea.comment-surface {
     background-color: #0f172a !important;
   }
+
+  /* Cards, borders and text fields in the profile's navy (Seller Settings) */
+  .profile-navy {
+    --card: #0a1123;
+    --border: #1a2238;
+    --input: #1a2238;
+    --muted: #0f172a;
+    --secondary: #0f172a;
+    --accent: #1f2235;
+  }
+
+  .profile-navy [data-slot="card"] {
+    border-color: #1a2238 !important;
+    border-radius: 3px !important;
+    background-color: #0a1123 !important;
+    box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.7) !important;
+  }
+
+  .profile-navy textarea,
+  .profile-navy
+    input:not(
+      [type="checkbox"],
+      [type="radio"],
+      [type="file"],
+      [type="range"],
+      [type="color"],
+      [type="hidden"],
+      [type="submit"],
+      [type="button"],
+      [type="reset"],
+      [type="image"]
+    ),
+  .profile-navy [data-slot="select-trigger"] {
+    background-color: #0f172a !important;
+    border-color: #1a2238 !important;
+  }
+
+  .profile-navy input:-webkit-autofill,
+  .profile-navy input:-webkit-autofill:hover,
+  .profile-navy input:-webkit-autofill:focus,
+  .profile-navy textarea:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 1000px #0f172a inset !important;
+  }
 }

@@ -52,7 +52,8 @@ function SettingsInner({ kind }: { kind?: SettingsKind }) {
   // Sellers: profile, More About You, Login Credentials, Notifications & Visibility, delete
   if (isSeller) {
     return (
-      <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
+      // profile-navy: the seller profile's navy colors (see index.css)
+      <div className="profile-navy mx-auto flex w-full max-w-2xl flex-col gap-6">
         <Card>
           <CardContent className="pt-6">
             <ProfileForm profile={profile} />
