@@ -147,7 +147,7 @@ function HeaderSearch() {
     setOpen(false);
   };
   const field = (autoFocus: boolean) => (
-    <form onSubmit={submit} role="search" className="flex h-[41px] w-full items-center gap-2.5 rounded-[1px] bg-background px-3 shadow-[inset_0_2px_12px_rgba(0,0,0,0.45)]">
+    <form onSubmit={submit} role="search" className="flex h-[41px] w-full items-center gap-2.5 rounded-[1px] bg-background px-3 shadow-[inset_0_3px_8px_rgba(0,0,0,0.45),inset_0_0_3px_rgba(0,0,0,0.45)]">
       <Search className="size-5 shrink-0 text-slate-400" strokeWidth={1.5} />
       <input
         value={text}

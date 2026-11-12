@@ -117,8 +117,12 @@
     background-color: var(--background) !important;
   }
 
+  /* Comments, replies and the comment box */
   .comment-surface {
     background-color: var(--background) !important;
+    box-shadow:
+      inset 0 3px 8px rgba(0, 0, 0, 0.45),
+      inset 0 0 3px rgba(0, 0, 0, 0.45) !important;
   }
 
   textarea,
@@ -134,10 +138,14 @@
       [type="reset"],
       [type="image"]
     ),
-  [data-slot="select-trigger"] {
+  select,
+  [data-slot="select-trigger"],
+  [role="combobox"] {
     background-color: var(--background) !important;
     border-color: rgb(255 255 255 / 40%) !important;
-    box-shadow: inset 0 2px 12px rgba(0, 0, 0, 0.45) !important;
+    box-shadow:
+      inset 0 3px 8px rgba(0, 0, 0, 0.45),
+      inset 0 0 3px rgba(0, 0, 0, 0.45) !important;
   }
 
   /* A field drawn by its container (the header search) */
@@ -154,7 +162,8 @@
   textarea:-webkit-autofill:focus {
     -webkit-box-shadow:
       0 0 0 1000px var(--background) inset,
-      inset 0 2px 12px rgba(0, 0, 0, 0.45) !important;
+      inset 0 3px 8px rgba(0, 0, 0, 0.45),
+      inset 0 0 3px rgba(0, 0, 0, 0.45) !important;
     -webkit-text-fill-color: var(--foreground);
     caret-color: var(--foreground);
   }
