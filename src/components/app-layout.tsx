@@ -177,8 +177,9 @@ function HeaderSearch() {
 function Header() {
   return (
     <header className="sticky top-0 z-40 bg-gray-950/98 backdrop-blur">
-      <div className="mx-auto flex h-[60px] max-w-[1205px] items-center justify-between gap-4 px-4 xl:px-0">
-        {/* Phones: menu button and logo on the left */}
+      <div className="mx-auto flex h-[60px] max-w-[1205px] items-center justify-between gap-4 px-4 md:justify-center xl:px-0">
+        {/* Phones: menu button and logo on the left, actions on the right.
+            Wider screens: logo and search, shop menus and actions centred as one group. */}
         <div className="flex items-center gap-3 md:gap-[19px]">
           <MobileNav />
           <LogoMark />
@@ -186,7 +187,7 @@ function Header() {
             <HeaderSearch />
           </div>
         </div>
-        <nav aria-label="Shop" className="hidden flex-1 items-center justify-center gap-5 md:flex lg:gap-7 xl:justify-start xl:gap-[34px] xl:pl-3">
+        <nav aria-label="Shop" className="hidden items-center justify-center gap-5 md:flex lg:gap-7 xl:gap-[34px] xl:px-3">
           {MENUS.map((m) => (
             <ShopMenu key={m.label} {...m} />
           ))}
