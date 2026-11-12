@@ -70,8 +70,8 @@
   --accent: #1f2235;
   --accent-foreground: #ede9fe;
   --destructive: oklch(0.66 0.22 18);
-  --border: #1a2238;
-  --input: #1a2238;
+  --border: rgb(26 34 56 / 30%); /* #1a2238 at 30% */
+  --input: rgb(26 34 56 / 30%); /* #1a2238 at 30% */
   --ring: rgb(124 58 237 / 70%);
   --chart-1: #7c3aed;
   --chart-2: #8b5cf6;
@@ -84,7 +84,7 @@
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #1f2235;
   --sidebar-accent-foreground: #f2f6ff;
-  --sidebar-border: #1a2238;
+  --sidebar-border: rgb(26 34 56 / 30%); /* #1a2238 at 30% */
   --sidebar-ring: rgb(124 58 237 / 70%);
 }
 
@@ -105,7 +105,7 @@
 
 /* Locked surfaces, in the seller profile's navy everywhere: the page and the
    comment boxes are #0f172a, and every text field and picker is #0f172a with a
-   #1a2238 border and an inner shadow, whatever classes a component sets and
+   #1a2238 (30%) border and an inner shadow, whatever classes a component sets and
    whatever state the field is in (focus, disabled, invalid, browser autofill). */
 @layer base {
   html,
@@ -132,7 +132,7 @@
     ),
   [data-slot="select-trigger"] {
     background-color: #0f172a !important;
-    border-color: #1a2238 !important;
+    border-color: rgb(26 34 56 / 30%) !important;
     box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6) !important;
   }
 
@@ -157,7 +157,7 @@
 
   /* Cards are the profile's panels: #0a1123, hairline border, 3px corners */
   [data-slot="card"] {
-    border-color: #1a2238 !important;
+    border-color: rgb(26 34 56 / 30%) !important;
     border-radius: 3px !important;
     background-color: #0a1123 !important;
     box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.7) !important;

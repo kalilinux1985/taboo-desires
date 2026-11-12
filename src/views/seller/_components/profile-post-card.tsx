@@ -59,7 +59,7 @@ export default function ProfilePostCard({ item }: { item: FeedItem }) {
       .catch((e) => toast.error(getErrorMessage(e, "Could not delete")));
 
   return (
-    <article className="flex flex-col rounded-[3px] border border-[#1a2238] bg-[#050b1b] px-[14px] py-[15px] shadow-[0_8px_20px_-10px_rgba(0,0,0,0.7)]">
+    <article className="flex flex-col rounded-[3px] border border-[#1a2238]/30 bg-[#050b1b] px-[14px] py-[15px] shadow-[0_8px_20px_-10px_rgba(0,0,0,0.7)]">
       <header className="flex items-center gap-2.5">
         <Link href={profile} className="shrink-0 cursor-pointer">
           <ProfileAvatar
