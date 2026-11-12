@@ -98,17 +98,17 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
   const text = item.body || (item.kind !== "status" ? `${verb.lead} ${verb.link}${item.listing ? `: ${item.listing.title}` : ""}` : "");
 
   return (
-    <article className="flex gap-3 border-b border-[#383b3d]/90 py-4 sm:gap-4">
+    <article className="flex gap-3 border-b border-[#1a2238] py-4 sm:gap-4">
       <Link href={profile} className="relative h-fit shrink-0 cursor-pointer">
         <ProfileAvatar
           name={item.author.name}
           url={item.author.avatarUrl}
-          className="size-12 border border-[#383b3d]/90 bg-[#a8a9ae] text-xl text-[#2a2a2e] sm:size-14 sm:text-2xl"
+          className="size-12 border border-[#1a2238] bg-[#a8a9ae] text-xl text-[#2a2a2e] sm:size-14 sm:text-2xl"
         />
         {online && (
           <span
             aria-label="Online"
-            className="absolute bottom-0 right-0 size-3.5 rounded-full border-2 border-[#181a1b] bg-emerald-600"
+            className="absolute bottom-0 right-0 size-3.5 rounded-full border-2 border-[#0a1123] bg-emerald-600"
           />
         )}
       </Link>
@@ -160,7 +160,7 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
             aria-expanded={showComments}
             aria-label={showComments ? "Hide comments" : "Show comments"}
             title="Comments"
-            className={cn(action, "border-r border-[#383b3d]/90 pr-3", showComments && "text-[#f2f6ff]")}
+            className={cn(action, "border-r border-[#1a2238] pr-3", showComments && "text-[#f2f6ff]")}
           >
             {item.commentCount}
             <MessageCircle className="size-4 text-violet-600" />

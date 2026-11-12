@@ -51,41 +51,40 @@
 }
 
 /* Navy dark theme sampled from the seller-profile design:
-   #202425 page and comments, #181a1b cards and panels, #383b3d borders, #334155 (slate-700) text fields,
-   #080d20 header, #050b1b inset boxes,
-   #10182d secondary surfaces, #7c3aed violet accents */
+   #0f172a page, comments and text fields, #0a1123 cards and panels, #1a2238 borders,
+   #0a0f22 header, #050b1b inset boxes, #1f2235 secondary surfaces, #7c3aed violet accents */
 :root {
   --radius: 0.625rem;
-  --background: #202425;
+  --background: #0f172a;
   --foreground: #f2f6ff;
-  --card: #181a1b;
+  --card: #0a1123;
   --card-foreground: #f2f6ff;
-  --popover: #181a1b;
+  --popover: #0a1123;
   --popover-foreground: #f2f6ff;
   --primary: #7c3aed;
   --primary-foreground: #ffffff;
-  --secondary: #10182d;
+  --secondary: #1f2235;
   --secondary-foreground: #f2f6ff;
-  --muted: #10182d;
+  --muted: #0f172a;
   --muted-foreground: #969aa3;
-  --accent: #1a1440;
+  --accent: #1f2235;
   --accent-foreground: #ede9fe;
   --destructive: oklch(0.66 0.22 18);
-  --border: rgb(56 59 61 / 90%); /* #383b3d at 90% */
-  --input: rgb(56 59 61 / 90%); /* #383b3d at 90% */
+  --border: #1a2238;
+  --input: #1a2238;
   --ring: rgb(124 58 237 / 70%);
   --chart-1: #7c3aed;
   --chart-2: #8b5cf6;
   --chart-3: #6d28d9;
   --chart-4: #a78bfa;
   --chart-5: #5b21b6;
-  --sidebar: #080d20;
+  --sidebar: #0a0f22;
   --sidebar-foreground: #babdcc;
   --sidebar-primary: #7c3aed;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #0f1827;
+  --sidebar-accent: #1f2235;
   --sidebar-accent-foreground: #f2f6ff;
-  --sidebar-border: rgb(56 59 61 / 90%); /* #383b3d at 90% */
+  --sidebar-border: #1a2238;
   --sidebar-ring: rgb(124 58 237 / 70%);
 }
 
@@ -104,17 +103,18 @@
   }
 }
 
-/* Locked surfaces: the page and the comment boxes (comments, replies and the
-   comment input) are always #202425 and every other text field slate-700 (#334155), whatever classes a component sets and
+/* Locked surfaces, in the seller profile's navy everywhere: the page and the
+   comment boxes are #0f172a, and every text field and picker is #0f172a with a
+   #1a2238 border and an inner shadow, whatever classes a component sets and
    whatever state the field is in (focus, disabled, invalid, browser autofill). */
 @layer base {
   html,
   body {
-    background-color: #202425 !important;
+    background-color: #0f172a !important;
   }
 
   .comment-surface {
-    background-color: #202425 !important;
+    background-color: #0f172a !important;
   }
 
   textarea,
@@ -129,14 +129,17 @@
       [type="button"],
       [type="reset"],
       [type="image"]
-    ) {
-    background-color: #334155 !important;
+    ),
+  [data-slot="select-trigger"] {
+    background-color: #0f172a !important;
+    border-color: #1a2238 !important;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6) !important;
   }
 
-  /* The comment input is a comment box first, a text field second */
-  input.comment-surface,
-  textarea.comment-surface {
-    background-color: #202425 !important;
+  /* A field drawn by its container (the header search) */
+  input.field-bare {
+    background-color: transparent !important;
+    box-shadow: none !important;
   }
 
   input:-webkit-autofill,
@@ -145,88 +148,18 @@
   textarea:-webkit-autofill,
   textarea:-webkit-autofill:hover,
   textarea:-webkit-autofill:focus {
-    -webkit-box-shadow: 0 0 0 1000px #334155 inset !important;
+    -webkit-box-shadow:
+      0 0 0 1000px #0f172a inset,
+      inset 0 2px 6px rgba(0, 0, 0, 0.6) !important;
     -webkit-text-fill-color: var(--foreground);
     caret-color: var(--foreground);
   }
-}
 
-
-/* The seller profile keeps the navy of its design (page #0f172a, comment boxes
-   #0f172a) inside the site's charcoal theme. These win over the locks above. */
-@layer base {
-  html:has(.profile-navy),
-  body:has(.profile-navy) {
-    background-color: #0f172a !important;
-  }
-
-  .profile-navy .comment-surface,
-  .profile-navy input.comment-surface,
-  .profile-navy textarea.comment-surface {
-    background-color: #0f172a !important;
-  }
-
-  /* Cards, borders and text fields in the profile's navy (Seller Settings) */
-  .profile-navy {
-    --card: #0a1123;
-    --border: #1a2238;
-    --input: #1a2238;
-    --muted: #0f172a;
-    --secondary: #0f172a;
-    --accent: #1f2235;
-  }
-
-  .profile-navy [data-slot="card"] {
+  /* Cards are the profile's panels: #0a1123, hairline border, 3px corners */
+  [data-slot="card"] {
     border-color: #1a2238 !important;
     border-radius: 3px !important;
     background-color: #0a1123 !important;
     box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.7) !important;
-  }
-
-  .profile-navy textarea,
-  .profile-navy
-    input:not(
-      [type="checkbox"],
-      [type="radio"],
-      [type="file"],
-      [type="range"],
-      [type="color"],
-      [type="hidden"],
-      [type="submit"],
-      [type="button"],
-      [type="reset"],
-      [type="image"]
-    ),
-  .profile-navy [data-slot="select-trigger"] {
-    background-color: #0f172a !important;
-    border-color: #1a2238 !important;
-  }
-
-  .profile-navy input:-webkit-autofill,
-  .profile-navy input:-webkit-autofill:hover,
-  .profile-navy input:-webkit-autofill:focus,
-  .profile-navy textarea:-webkit-autofill {
-    -webkit-box-shadow: 0 0 0 1000px #0f172a inset !important;
-  }
-}
-
-/* Settings pages: text fields and pickers look pressed in (inner shadow). */
-@layer base {
-  .settings-fields textarea,
-  .settings-fields
-    input:not(
-      [type="checkbox"],
-      [type="radio"],
-      [type="file"],
-      [type="range"],
-      [type="color"],
-      [type="hidden"],
-      [type="submit"],
-      [type="button"],
-      [type="reset"],
-      [type="image"]
-    ),
-  .settings-fields [data-slot="select-trigger"] {
-    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6) !important;
   }
 }

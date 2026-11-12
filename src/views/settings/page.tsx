@@ -52,8 +52,7 @@ function SettingsInner({ kind }: { kind?: SettingsKind }) {
   // Sellers: profile, More About You, Login Credentials, Notifications & Visibility, delete
   if (isSeller) {
     return (
-      // profile-navy: the seller profile's navy colors (see index.css)
-      <div className="profile-navy mx-auto flex w-full max-w-2xl flex-col gap-6">
+      <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
         <Card>
           <CardContent className="pt-6">
             <ProfileForm profile={profile} />
@@ -83,7 +82,7 @@ function SettingsInner({ kind }: { kind?: SettingsKind }) {
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[1fr_360px]">
       <Card>
-        <CardHeader className="border-b border-[#383b3d]/90 pb-4">
+        <CardHeader className="border-b border-[#1a2238] pb-4">
           <CardTitle className="font-display text-2xl">Profile Information</CardTitle>
         </CardHeader>
         <CardContent>
@@ -132,8 +131,7 @@ function SettingsInner({ kind }: { kind?: SettingsKind }) {
 export default function SettingsPage({ kind }: { kind?: SettingsKind }) {
   const eyebrow = kind === "buyer" ? "Buyer account" : kind === "seller" ? "Seller account" : "Your account";
   return (
-    // settings-fields: inner shadow on every text field and picker (see index.css)
-    <div className="settings-fields mx-auto flex max-w-6xl flex-col gap-8 px-4 py-10">
+    <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-10">
       <header className="flex flex-col gap-2 border-b pb-6">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-600">{eyebrow}</p>
         <h1 className="font-display text-4xl md:text-6xl">Settings</h1>

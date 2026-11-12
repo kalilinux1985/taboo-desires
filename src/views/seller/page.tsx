@@ -94,7 +94,7 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
     <div
       className={cn(
         TEXT_FONT,
-        "profile-navy mx-auto grid items-start gap-6 px-4 py-6",
+        "mx-auto grid items-start gap-6 px-4 py-6",
         overview ? "max-w-[60rem] lg:grid-cols-[20rem_1fr] lg:gap-12" : "max-w-4xl",
       )}
     >

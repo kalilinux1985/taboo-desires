@@ -89,7 +89,7 @@ export default function BuyerDetailsForm({ initial }: { initial: BuyerDetails })
                 onClick={() => toggle(item)}
                 className={cn(
                   "flex cursor-pointer items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
-                  on ? "border-transparent bg-primary text-primary-foreground" : "border-[#383b3d]/90 hover:bg-secondary",
+                  on ? "border-transparent bg-primary text-primary-foreground" : "border-[#1a2238] hover:bg-secondary",
                 )}
               >
                 {on && <Check className="size-3" />} {item}
