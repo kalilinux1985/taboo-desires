@@ -132,7 +132,8 @@ function SettingsInner({ kind }: { kind?: SettingsKind }) {
 export default function SettingsPage({ kind }: { kind?: SettingsKind }) {
   const eyebrow = kind === "buyer" ? "Buyer account" : kind === "seller" ? "Seller account" : "Your account";
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-10">
+    // settings-fields: inner shadow on every text field and picker (see index.css)
+    <div className="settings-fields mx-auto flex max-w-6xl flex-col gap-8 px-4 py-10">
       <header className="flex flex-col gap-2 border-b pb-6">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-600">{eyebrow}</p>
         <h1 className="font-display text-4xl md:text-6xl">Settings</h1>

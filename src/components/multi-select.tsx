@@ -26,6 +26,7 @@ export default function MultiSelect({
         <button
           id={id}
           type="button"
+          data-slot="select-trigger"
           className="flex h-9 w-full cursor-pointer items-center justify-between gap-2 rounded-md border bg-background px-3 text-left text-sm"
         >
           <span className={cn("truncate", value.length === 0 && "text-muted-foreground")}>

@@ -209,3 +209,24 @@
     -webkit-box-shadow: 0 0 0 1000px #0f172a inset !important;
   }
 }
+
+/* Settings pages: text fields and pickers look pressed in (inner shadow). */
+@layer base {
+  .settings-fields textarea,
+  .settings-fields
+    input:not(
+      [type="checkbox"],
+      [type="radio"],
+      [type="file"],
+      [type="range"],
+      [type="color"],
+      [type="hidden"],
+      [type="submit"],
+      [type="button"],
+      [type="reset"],
+      [type="image"]
+    ),
+  .settings-fields [data-slot="select-trigger"] {
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6) !important;
+  }
+}
