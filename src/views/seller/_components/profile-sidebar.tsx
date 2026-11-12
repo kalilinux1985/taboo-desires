@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
-import { ChevronDown, Crown, EllipsisVertical, Heart, ImageIcon, Link2, Pencil, Sparkles, Star } from "lucide-react";
+import { ChevronDown, Crown, EllipsisVertical, Heart, IdCard, ImageIcon, Link2, Pencil, Sparkles, Star } from "lucide-react";
 import { toast } from "sonner";
 import { useBackendAuth, useMutation, useQuery } from "@/lib/backend/react.tsx";
 import type { FunctionReturnType } from "@/lib/backend/types.ts";
@@ -23,6 +23,7 @@ import {
 import CustomRequestButton from "@/components/custom-request-button.tsx";
 import MessageSellerButton from "./message-seller-dialog.tsx";
 import ExpandableBio from "./expandable-bio.tsx";
+import CountryFlag from "@/components/country-flag.tsx";
 import { copyProfileLink } from "../_lib/profile-share.ts";
 import { PANEL } from "../_lib/theme.ts";
 
@@ -42,6 +43,7 @@ const MAIN_DETAILS: { key: string; label: string }[] = [
   { key: "bodySize", label: "Body Size" },
 ];
 const MAIN_KEYS = new Set([...MAIN_DETAILS.map((d) => d.key), "country"]);
+const NOT_SET = "Not set";
 
 const filled = (v: string | undefined) => !!v?.trim() && v !== "Prefer not to say";
 
@@ -86,13 +88,14 @@ export default function ProfileSidebar({ profile }: { profile: Profile }) {
   const { rating, reviewCount, followerCount } = profile.stats;
   const details = profile.sellerDetails as Record<string, string | undefined>;
 
-  const main = MAIN_DETAILS.filter((d) => filled(details[d.key])).map((d) => ({ ...d, value: details[d.key]! }));
+  const main = MAIN_DETAILS.map((d) => ({ ...d, value: filled(details[d.key]) ? details[d.key]! : NOT_SET }));
+  const [gender, ...restMain] = main;
+  const country = details.country;
   const extra = SELLER_DETAIL_FIELDS.filter((f) => !MAIN_KEYS.has(f.key) && filled(details[f.key])).map((f) => ({
     key: f.key,
     label: f.label,
     value: details[f.key]!,
   }));
-  const hasMore = extra.length > 0 || profile.paymentMethods.length > 0 || profile.offerings.length > 0;
   const canRequestCustom = !profile.isMe && isAuthenticated && !!access?.can.buy;
 
   return (
@@ -114,15 +117,34 @@ export default function ProfileSidebar({ profile }: { profile: Profile }) {
         <h1 className="mt-1 truncate text-[22px] font-bold leading-tight tracking-[0.06em] text-[#83868d]">
           {profile.name}
         </h1>
-        <p
-          className="mt-1.5 flex items-center gap-1.5 text-[11px] text-[#787b84]"
-          aria-label={rating ? `Rated ${rating.toFixed(1)} from ${reviewCount} reviews` : "No ratings yet"}
-        >
-          <Star className="size-3.5 text-violet-600" />
-          {rating ? `${rating.toFixed(1)} (${reviewCount})` : "0.0 (0)"}
+        <p className="mt-1.5 flex flex-wrap items-center gap-x-3.5 gap-y-1 text-[11px] text-[#787b84]">
+          {country && (
+            <span className="flex items-center gap-1.5">
+              <CountryFlag country={country} className="h-2.5 w-3.5 rounded-[1px] object-cover" />
+              {country}
+            </span>
+          )}
+          <span
+            className="flex items-center gap-1"
+            aria-label={rating ? `Rated ${rating.toFixed(1)} from ${reviewCount} reviews` : "No ratings yet"}
+          >
+            <Star className="size-3.5 text-violet-600" />
+            {rating ? rating.toFixed(1) : "0.0"} ({reviewCount})
+          </span>
+          {profile.verified && (
+            <span className="flex items-center gap-1">
+              <IdCard className="size-3.5 text-violet-600" /> ID Verified
+            </span>
+          )}
         </p>
 
-        <div className="mt-3 flex items-center justify-between gap-2">
+        {/* The design's three buttons: Message seller (visitors), Edit profile (you), ⋮ */}
+        <div className="mt-3 grid grid-cols-[1fr_auto_auto] items-center gap-3">
+          {profile.isMe ? (
+            <span />
+          ) : (
+            <MessageSellerButton sellerId={profile._id} sellerName={profile.name} className={cn(SOLID_BTN, "w-full max-w-[118px]")} />
+          )}
           {profile.isMe ? (
             <Button asChild size="sm" className={OUTLINE_BTN}>
               <Link href={settingsPathFor(profile.accountType)}>
@@ -130,11 +152,11 @@ export default function ProfileSidebar({ profile }: { profile: Profile }) {
               </Link>
             </Button>
           ) : (
-            <MessageSellerButton sellerId={profile._id} sellerName={profile.name} className={cn(SOLID_BTN, "min-w-[118px]")} />
+            <span />
           )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button size="icon" aria-label="More options" className={cn(OUTLINE_BTN, "w-[30px] px-0")}>
+              <Button size="icon" aria-label="More options" className={cn(OUTLINE_BTN, "w-[26px] px-0")}>
                 <EllipsisVertical />
               </Button>
             </DropdownMenuTrigger>
@@ -166,17 +188,18 @@ export default function ProfileSidebar({ profile }: { profile: Profile }) {
         </div>
 
         <p className="text-center text-[11px] text-[#fefefe]">
-          ({followerCount}) Followers - ({profile.counts.following}) Following
+          ({followerCount}) Followers - ({profile.counts.following}) Following - ({profile.badges.length}) Badges
         </p>
 
         <dl className="mt-5 flex flex-col">
-          {main.map((d) => (
-            <Detail key={d.key} label={d.label} value={d.value} />
-          ))}
-          <Detail label="Joined" value={format(profile.memberSince, "MMM yyyy")} />
-          <Detail label="Profile Visits" value={profile.activity.profileVisits.toLocaleString("en-US")} />
+          <Detail label={gender.label} value={gender.value} />
           {more && (
             <>
+              {restMain.map((d) => (
+                <Detail key={d.key} label={d.label} value={d.value} />
+              ))}
+              <Detail label="Joined" value={format(profile.memberSince, "MMM yyyy")} />
+              <Detail label="Profile Visits" value={profile.activity.profileVisits.toLocaleString("en-US")} />
               {extra.map((d) => (
                 <Detail key={d.key} label={d.label} value={d.value} />
               ))}
@@ -187,17 +210,15 @@ export default function ProfileSidebar({ profile }: { profile: Profile }) {
             </>
           )}
         </dl>
-        {hasMore && (
-          <button
-            type="button"
-            aria-expanded={more}
-            onClick={() => setMore((m) => !m)}
-            className="mt-2 flex cursor-pointer items-center gap-1 self-start text-[11px] text-[#999a9e] hover:text-[#f9f9f9]"
-          >
-            {more ? "Show less" : "Show more"}
-            <ChevronDown className={cn("size-3.5 text-violet-600 transition-transform", more && "rotate-180")} />
-          </button>
-        )}
+        <button
+          type="button"
+          aria-expanded={more}
+          onClick={() => setMore((m) => !m)}
+          className="mt-1 flex cursor-pointer items-center gap-1 self-start text-[11px] text-[#999a9e] hover:text-[#f9f9f9]"
+        >
+          {more ? "Show less" : "Show more"}
+          <ChevronDown className={cn("size-3.5 text-violet-600 transition-transform", more && "rotate-180")} />
+        </button>
       </div>
     </aside>
   );

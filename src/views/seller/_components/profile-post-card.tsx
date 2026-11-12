@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { MessageCircle, MoreHorizontal, ThumbsUp, Trash2 } from "lucide-react";
+import { Forward, MessageCircle, MoreHorizontal, ThumbsUp, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useMutation } from "@/lib/backend/react.tsx";
 import { api } from "@/lib/backend/api.ts";
@@ -25,7 +25,7 @@ const ACTION = "flex cursor-pointer items-center gap-1.5 transition-colors hover
 
 /**
  * A post in the profile's Latest Activity, laid out like the design: square
- * avatar, seller level, "Name • 2hr", the text and photo, Like and Comments,
+ * avatar, seller level, "Name • 2hr", the text and photo, Like, Comments and Share,
  * then the comment box and comments.
  */
 export default function ProfilePostCard({ item }: { item: FeedItem }) {
@@ -41,6 +41,18 @@ export default function ProfilePostCard({ item }: { item: FeedItem }) {
 
   const like = () =>
     toggleLike({ postId: item._id }).catch((e) => toast.error(getErrorMessage(e, "Sign in to like posts")));
+  const share = async () => {
+    const url = `${window.location.origin}${item.listing ? `/listing/${item.listing._id}` : profile}`;
+    try {
+      if (navigator.share) await navigator.share({ url, title: item.author.name });
+      else {
+        await navigator.clipboard.writeText(url);
+        toast.success("Link copied");
+      }
+    } catch {
+      // Share sheet dismissed
+    }
+  };
   const del = () =>
     remove({ postId: item._id })
       .then(() => toast.success("Post deleted"))
@@ -112,7 +124,6 @@ export default function ProfilePostCard({ item }: { item: FeedItem }) {
         >
           <ThumbsUp className="size-3.5 fill-violet-600 text-violet-600" />
           {item.likedByMe ? "Liked" : "Like"}
-          {item.likeCount > 0 && <span className="text-[#66656a]">({item.likeCount})</span>}
         </button>
         <button
           type="button"
@@ -122,7 +133,10 @@ export default function ProfilePostCard({ item }: { item: FeedItem }) {
         >
           <MessageCircle className="size-3.5 fill-violet-600 text-violet-600" />
           Comments
-          {item.commentCount > 0 && <span className="text-[#66656a]">({item.commentCount})</span>}
+        </button>
+        <button type="button" onClick={share} className={cn(ACTION, "ml-auto")}>
+          <Forward className="size-3.5 fill-violet-600 text-violet-600" />
+          Share
         </button>
       </div>
 

@@ -177,7 +177,6 @@ function CommentItem({
               className={cn(TEXT_ACTION, comment.likedByMe && "text-violet-500")}
             >
               {comment.likedByMe ? "Liked" : "Like"}
-              {comment.likeCount > 0 && ` (${comment.likeCount})`}
             </button>
             <Authenticated>
               <button type="button" onClick={() => setReplying((r) => !r)} className={cn(TEXT_ACTION, replying && "text-violet-500")}>

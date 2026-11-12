@@ -23,7 +23,6 @@ import SellerReviews from "./_components/seller-reviews.tsx";
 import BuyerProfile from "./_components/buyer-profile.tsx";
 import ProfileSidebar from "./_components/profile-sidebar.tsx";
 import ProfileCompactHeader from "./_components/profile-compact-header.tsx";
-import CreateListingButton from "./_components/quick-listing.tsx";
 import {
   ActivitySection,
   InstantSection,
@@ -75,8 +74,8 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
   const overview = tab === "overview";
 
   // The tabs get their own panel at the top of the right column.
-  // Phones: tabs in a left column (Overview + Shop, Instant Content, Photos + Reviews)
-  // and Create Listing in a right column. Medium screens and up: one row.
+  // Phones: two columns of tabs (Overview + Shop, Instant Content, Photos + Reviews).
+  // Medium screens and up: one row.
   const tabsPanel = (
     <div className={TABS_PANEL}>
       <div className={TABS_BAR}>
@@ -87,7 +86,6 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
           <TabsTrigger value="photos" className={TAB_PILL}>Photos</TabsTrigger>
           <TabsTrigger value="reviews" className={TAB_PILL}>Reviews</TabsTrigger>
         </TabsList>
-        {profile.isMe && <CreateListingButton className="w-24 shrink-0 md:w-auto" />}
       </div>
     </div>
   );
