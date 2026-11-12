@@ -142,7 +142,7 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
         </header>
 
         {text && (
-          <p className="whitespace-pre-wrap break-words rounded-[1px] bg-[#0f172a] px-3.5 py-2.5 text-[15px] leading-snug text-[#a8abb4] shadow-[inset_0_2px_12px_rgba(0,0,0,0.5)]">
+          <p className="whitespace-pre-wrap break-words rounded-[1px] bg-background px-3.5 py-2.5 text-[15px] leading-snug text-[#a8abb4] shadow-[inset_0_2px_12px_rgba(0,0,0,0.5)]">
             {text}
           </p>
         )}

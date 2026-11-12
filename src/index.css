@@ -110,11 +110,11 @@
 @layer base {
   html,
   body {
-    background-color: #0f172a !important;
+    background-color: var(--background) !important;
   }
 
   .comment-surface {
-    background-color: #0f172a !important;
+    background-color: var(--background) !important;
   }
 
   textarea,
@@ -131,7 +131,7 @@
       [type="image"]
     ),
   [data-slot="select-trigger"] {
-    background-color: #0f172a !important;
+    background-color: var(--background) !important;
     border-color: rgb(26 34 56 / 45%) !important;
     box-shadow: inset 0 2px 12px rgba(0, 0, 0, 0.5) !important;
   }
@@ -149,7 +149,7 @@
   textarea:-webkit-autofill:hover,
   textarea:-webkit-autofill:focus {
     -webkit-box-shadow:
-      0 0 0 1000px #0f172a inset,
+      0 0 0 1000px var(--background) inset,
       inset 0 2px 12px rgba(0, 0, 0, 0.5) !important;
     -webkit-text-fill-color: var(--foreground);
     caret-color: var(--foreground);

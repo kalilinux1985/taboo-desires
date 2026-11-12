@@ -37,10 +37,10 @@ function SmallAvatar({ name, url }: { name: string; url: string | null }) {
 }
 
 /** Slate box of the design with an inner shadow (no drop shadow). */
-const COMMENT_BOX = "comment-surface rounded-[1px] bg-[#0f172a] shadow-[inset_0_2px_12px_rgba(0,0,0,0.5)]";
+const COMMENT_BOX = "comment-surface rounded-[1px] bg-background shadow-[inset_0_2px_12px_rgba(0,0,0,0.5)]";
 /** Navy box of the profile design with an inner shadow (the profile page keeps .comment-surface navy). */
 const PROFILE_BOX =
-  "comment-surface rounded-[1px] border border-[#1a2238]/45 bg-[#0f172a] shadow-[inset_0_2px_12px_rgba(0,0,0,0.5)]";
+  "comment-surface rounded-[1px] border border-[#1a2238]/45 bg-background shadow-[inset_0_2px_12px_rgba(0,0,0,0.5)]";
 const boxClass = (v: Variant) => (v === "profile" ? PROFILE_BOX : COMMENT_BOX);
 
 const LINK_ACTION = "flex cursor-pointer items-center gap-1.5 transition-colors hover:text-[#f2f6ff]";
