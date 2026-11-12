@@ -98,7 +98,7 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
   const text = item.body || (item.kind !== "status" ? `${verb.lead} ${verb.link}${item.listing ? `: ${item.listing.title}` : ""}` : "");
 
   return (
-    <article className="flex gap-3 border-b border-[#1a2238]/45 py-4 sm:gap-4">
+    <article className="flex gap-3 rounded-[1px] border border-[#1a2238]/45 bg-[#0a1123] p-4 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.7)] sm:gap-4">
       <Link href={profile} className="relative h-fit shrink-0 cursor-pointer">
         <ProfileAvatar
           name={item.author.name}
@@ -142,7 +142,7 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
         </header>
 
         {text && (
-          <p className="whitespace-pre-wrap break-words rounded-[1px] bg-[#0f172a] px-3.5 py-2.5 text-[15px] leading-snug text-[#a8abb4] shadow-[inset_0_2px_6px_rgba(0,0,0,0.5)]">
+          <p className="whitespace-pre-wrap break-words rounded-[1px] bg-[#0f172a] px-3.5 py-2.5 text-[15px] leading-snug text-[#a8abb4] shadow-[inset_0_2px_12px_rgba(0,0,0,0.5)]">
             {text}
           </p>
         )}

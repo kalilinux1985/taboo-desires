@@ -232,7 +232,7 @@ function FeedList({
   }
 
   return (
-    <div className="flex flex-col rounded-[1px] border border-[#1a2238]/45 bg-[#0a1123] px-4 shadow-[0_8px_20px_-10px_rgba(0,0,0,0.6)] [&>article:last-of-type]:border-b-0">
+    <div className="flex flex-col gap-4">
       {results.map((item) => (
         <PostCard key={item._id} item={item} online={onlineSet.has(item.author._id)} />
       ))}
@@ -241,7 +241,7 @@ function FeedList({
           variant="secondary"
           onClick={() => loadMore(PAGE)}
           disabled={status === "LoadingMore"}
-          className="mx-auto my-4 cursor-pointer"
+          className="mx-auto cursor-pointer"
         >
           {status === "LoadingMore" && <Spinner />} Load more
         </Button>
