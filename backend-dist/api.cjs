@@ -377,7 +377,9 @@ var SQL_CAST = {
   uuid: "uuid",
   int: "int",
   bool: "boolean",
-  json: "jsonb",
+  // Bound as text, then parsed: a parameter typed jsonb would be JSON-encoded a
+  // second time by the postgres driver and stored as a string.
+  json: "text::jsonb",
   ts: "timestamptz",
   tsOrEmpty: "timestamptz",
   textArray: "text[]"

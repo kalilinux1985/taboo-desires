@@ -166,12 +166,42 @@ export function ShopSection({
   );
 }
 
-/** A small square tile with an icon and a label underneath ("Pics", "Videos"). */
-function ContentTile({ href, title, icon: Icon, label }: { href: string; title: string; icon: LucideIcon; label: string }) {
+/**
+ * A small square tile: the item's preview picture (the blurred public preview of
+ * the locked content) with its media icon in the corner, or just the icon when
+ * there's no picture; the label ("Pics", "Videos") underneath.
+ */
+function ContentTile({
+  href,
+  title,
+  icon: Icon,
+  label,
+  imageUrl,
+}: {
+  href: string;
+  title: string;
+  icon: LucideIcon;
+  label: string;
+  imageUrl: string | null;
+}) {
   return (
     <Link href={href} title={title} className="group flex w-[73px] cursor-pointer flex-col items-center gap-2.5">
-      <span className="flex size-[73px] items-center justify-center rounded-[3px] bg-[#030917] text-[#7e3aef] shadow-[0_8px_16px_-8px_rgba(0,0,0,0.7)] transition-colors group-hover:bg-violet-600/15">
-        <Icon className="size-9" strokeWidth={1.5} />
+      <span className="relative flex size-[73px] items-center justify-center overflow-hidden rounded-[3px] bg-[#030917] text-[#7e3aef] shadow-[0_8px_16px_-8px_rgba(0,0,0,0.7)] transition-colors group-hover:bg-violet-600/15">
+        {imageUrl ? (
+          <>
+            <img
+              src={imageUrl}
+              alt=""
+              loading="lazy"
+              className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
+            />
+            <span className="absolute bottom-1 left-1 flex size-5 items-center justify-center rounded-[2px] bg-[#030917]/85">
+              <Icon className="size-3.5" strokeWidth={1.75} />
+            </span>
+          </>
+        ) : (
+          <Icon className="size-9" strokeWidth={1.5} />
+        )}
       </span>
       <span className="text-center text-xs font-bold text-[#f3f5f4]">{label}</span>
     </Link>
@@ -214,6 +244,7 @@ export function InstantSection({
                 title={l.title}
                 icon={both ? Clapperboard : video ? Film : Images}
                 label={both ? "Pics & Vids" : video ? "Videos" : "Pics"}
+                imageUrl={l.imageUrl ?? null}
               />
             );
           })}
