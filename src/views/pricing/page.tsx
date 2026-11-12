@@ -70,7 +70,7 @@ function PlanActions({ months, mine }: { months: number; mine: Mine | null }) {
     <Button
       variant="outline"
       disabled={pending}
-      className="h-9 w-full cursor-pointer rounded-[1px] border-white/40 bg-transparent text-sm font-semibold"
+      className="h-9 w-full cursor-pointer rounded-[1px] border-white/28 bg-transparent text-sm font-semibold"
     >
       Pay another way <ArrowRight className="size-4" />
     </Button>
@@ -79,7 +79,7 @@ function PlanActions({ months, mine }: { months: number; mine: Mine | null }) {
     <>
       {pending ? goPremium : <RequestProDialog months={months} trigger={goPremium} />}
       <p className="text-center text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Subscription</p>
-      <div className="h-px bg-white/40" />
+      <div className="h-px bg-white/28" />
       {pending ? another : <RequestProDialog months={months} payAnotherWay trigger={another} />}
     </>
   );
@@ -87,7 +87,7 @@ function PlanActions({ months, mine }: { months: number; mine: Mine | null }) {
 
 function PlanCard({ months, discount, mine }: { months: number; discount: number; mine: Mine | null | undefined }) {
   return (
-    <div className="relative flex flex-col gap-4 overflow-hidden rounded-[1px] border bg-card p-6 text-center shadow-[0_10px_30px_-12px_rgba(0,0,0,0.45)]">
+    <div className="relative flex flex-col gap-4 overflow-hidden rounded-[1px] border bg-card p-6 text-center shadow-[0_14px_34px_-8px_rgba(0,0,0,0.45)]">
       {discount > 0 && (
         <span className="absolute -right-10 top-6 w-36 rotate-45 bg-rose-500 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-white">
           Save {discount}%
@@ -98,7 +98,7 @@ function PlanCard({ months, discount, mine }: { months: number; discount: number
       <p className="font-semibold text-muted-foreground">
         ${(planMonthlyCents(months) / 100).toFixed(2)} / month
       </p>
-      <div className="h-px bg-white/40" />
+      <div className="h-px bg-white/28" />
       <AuthLoading>
         <Skeleton className="h-11 w-full rounded-[1px]" />
       </AuthLoading>
@@ -154,7 +154,7 @@ function Plans() {
   const mine = useQuery(api.subscriptions.mine, access ? {} : "skip");
   if (access && access.accountType === "buyer" && !access.isAdmin) {
     return (
-      <p className="rounded-[1px] border bg-card p-6 text-center text-muted-foreground shadow-[0_10px_30px_-12px_rgba(0,0,0,0.45)]">
+      <p className="rounded-[1px] border bg-card p-6 text-center text-muted-foreground shadow-[0_14px_34px_-8px_rgba(0,0,0,0.45)]">
         Premium is for sellers. Buyer accounts are always free.
       </p>
     );
@@ -203,7 +203,7 @@ export default function PricingPage() {
           <p className="text-lg font-semibold text-violet-600">One sale can cover your whole plan.</p>
         </motion.header>
 
-        <ul className="mx-auto flex w-full max-w-2xl flex-col items-center gap-2 rounded-[1px] border bg-card/60 px-5 py-5 text-center shadow-[0_10px_30px_-12px_rgba(0,0,0,0.45)]">
+        <ul className="mx-auto flex w-full max-w-2xl flex-col items-center gap-2 rounded-[1px] border bg-card/60 px-5 py-5 text-center shadow-[0_14px_34px_-8px_rgba(0,0,0,0.45)]">
           {PERKS.map((p) => (
             <li key={p} className="flex items-center gap-2">
               <CircleCheck className="size-4 shrink-0 text-violet-600" /> {p}
@@ -225,7 +225,7 @@ export default function PricingPage() {
               </li>
             ))}
           </ul>
-          <div className="rounded-[1px] border bg-card p-5 text-sm text-muted-foreground shadow-[0_10px_30px_-12px_rgba(0,0,0,0.45)]">
+          <div className="rounded-[1px] border bg-card p-5 text-sm text-muted-foreground shadow-[0_14px_34px_-8px_rgba(0,0,0,0.45)]">
             <p className="pb-1 font-semibold text-foreground">How does Premium work?</p>
             Pick a plan and send your request. Our team reviews it and switches Premium on for
             your shop, usually within a day. Your plan starts once it's approved, and choosing

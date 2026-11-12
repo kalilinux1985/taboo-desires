@@ -37,7 +37,7 @@ export default function SaleTypePicker({
             onClick={() => !disabled && !locked && onChange(o.value)}
             className={cn(
               "flex flex-col items-start gap-1 rounded-[1px] border-2 bg-card p-4 text-left transition-colors",
-              active ? "border-primary" : "border-border hover:border-white/40",
+              active ? "border-primary" : "border-border hover:border-white/28",
               disabled || locked ? "cursor-default" : "cursor-pointer",
               ((disabled && !active) || locked) && "opacity-50",
             )}

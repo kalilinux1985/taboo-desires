@@ -95,7 +95,7 @@ function ProfileShopCard({ listing }: { listing: ListingCardData }) {
   return (
     <Link
       href={`/listing/${listing._id}`}
-      className="group flex min-w-0 cursor-pointer flex-col rounded-[1px] bg-[#040a18] shadow-[0_10px_22px_-8px_rgba(0,0,0,0.45)] transition-transform duration-200 hover:-translate-y-0.5"
+      className="group flex min-w-0 cursor-pointer flex-col rounded-[1px] bg-[#040a18] shadow-[0_14px_28px_-6px_rgba(0,0,0,0.45)] transition-transform duration-200 hover:-translate-y-0.5"
     >
       <div className="relative aspect-[3/2] rounded-t-[1px] bg-[#808185]">
         <div className="absolute inset-0 overflow-hidden rounded-t-[1px]">
@@ -186,7 +186,7 @@ function ContentTile({
 }) {
   return (
     <Link href={href} title={title} className="group flex w-[73px] cursor-pointer flex-col items-center gap-2.5">
-      <span className="relative flex size-[73px] items-center justify-center overflow-hidden rounded-[1px] bg-[#040a18] text-[#7b3aec] shadow-[0_8px_16px_-8px_rgba(0,0,0,0.45)] transition-colors group-hover:bg-violet-600/15">
+      <span className="relative flex size-[73px] items-center justify-center overflow-hidden rounded-[1px] bg-[#040a18] text-[#7b3aec] shadow-[0_12px_22px_-6px_rgba(0,0,0,0.45)] transition-colors group-hover:bg-violet-600/15">
         {imageUrl ? (
           <>
             <img

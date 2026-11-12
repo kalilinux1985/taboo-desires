@@ -101,7 +101,7 @@ export default function ProfileSidebar({ profile }: { profile: Profile }) {
 
   return (
     <aside className="flex flex-col gap-[14px] lg:sticky lg:top-20">
-      <div className={cn(PANEL, "aspect-square overflow-hidden border-white/40 bg-[#85868a]")}>
+      <div className={cn(PANEL, "aspect-square overflow-hidden border-white/28 bg-[#85868a]")}>
         {profile.avatarUrl ? (
           <img src={profile.avatarUrl} alt={profile.name} className="size-full object-cover" />
         ) : (

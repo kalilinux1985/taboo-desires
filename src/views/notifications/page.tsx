@@ -105,7 +105,7 @@ function NotificationList() {
     );
   }
   return (
-    <ul className="flex flex-col divide-y divide-white/40 rounded-[1px] border bg-card shadow-[0_10px_30px_-12px_rgba(0,0,0,0.45)]">
+    <ul className="flex flex-col divide-y divide-white/28 rounded-[1px] border bg-card shadow-[0_14px_34px_-8px_rgba(0,0,0,0.45)]">
       {items.map((n, i) => {
         const { icon: IconComponent, text, href } = describe(n);
         return (

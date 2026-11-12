@@ -120,7 +120,7 @@ function ShopMenu({ label, short, section }: (typeof MENUS)[number]) {
       <DropdownMenuContent
         align="start"
         sideOffset={14}
-        className="min-w-56 rounded-[1px] border-white/40 bg-[#0a0f22]/98 font-serif"
+        className="min-w-56 rounded-[1px] border-white/28 bg-[#0a0f22]/98 font-serif"
       >
         {links.map((l) => {
           const href = "page" in l ? shopPageHref(l.page) : l.href;
@@ -166,7 +166,7 @@ function HeaderSearch() {
         <PopoverTrigger aria-label="Search" className={cn(HEADER_ICON_BUTTON, "xl:hidden")}>
           <Search className="size-5" strokeWidth={1.75} />
         </PopoverTrigger>
-        <PopoverContent align="start" sideOffset={10} className="w-72 rounded-[1px] border-white/40 bg-[#0a0f22]/98 p-2">
+        <PopoverContent align="start" sideOffset={10} className="w-72 rounded-[1px] border-white/28 bg-[#0a0f22]/98 p-2">
           {field(true)}
         </PopoverContent>
       </Popover>

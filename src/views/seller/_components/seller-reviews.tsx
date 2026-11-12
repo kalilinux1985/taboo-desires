@@ -188,7 +188,7 @@ export default function SellerReviews({
       ) : (
         <div className="grid gap-3 md:grid-cols-2">
           {results.map((r) => (
-            <article key={r._id} className="flex flex-col gap-3 rounded-[1px] border border-white/40 bg-card shadow-[0_10px_30px_-12px_rgba(0,0,0,0.45)] p-4">
+            <article key={r._id} className="flex flex-col gap-3 rounded-[1px] border border-white/28 bg-card shadow-[0_14px_34px_-8px_rgba(0,0,0,0.45)] p-4">
               <div className="flex items-center justify-between gap-3">
                 <Link
                   href={r.reviewer ? `/seller/${r.reviewer._id}` : "#"}
