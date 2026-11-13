@@ -32,7 +32,7 @@ export function ListingCard({ listing }: { listing: ListingCardData }) {
       href={`/listing/${listing._id}`}
       className="group flex cursor-pointer flex-col gap-2"
     >
-      <div className="relative aspect-square overflow-hidden rounded-[1px] bg-muted shadow-[0_14px_34px_-8px_rgba(0,0,0,0.45)]">
+      <div className="relative aspect-square overflow-hidden rounded-[1px] bg-muted shadow-[0_14px_34px_-8px_rgba(0,0,0,0.3)]">
         {listing.imageUrl && (
           <img
             src={listing.imageUrl}

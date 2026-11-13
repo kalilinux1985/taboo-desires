@@ -337,7 +337,7 @@ export default function ListingPage() {
         {listing.seller && (
           <Link
             href={`/seller/${listing.seller._id}`}
-            className="flex cursor-pointer items-center gap-3 rounded-[1px] border border-white/28 bg-card shadow-[0_14px_34px_-8px_rgba(0,0,0,0.45)] p-4 transition-colors hover:bg-secondary"
+            className="flex cursor-pointer items-center gap-3 rounded-[1px] border border-white/25 bg-card shadow-[0_14px_34px_-8px_rgba(0,0,0,0.3)] p-4 transition-colors hover:bg-secondary"
           >
             <ProfileAvatar
               name={listing.seller.name}

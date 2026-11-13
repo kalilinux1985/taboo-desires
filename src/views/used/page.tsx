@@ -84,7 +84,7 @@ export default function ShopCategoryPage({ page }: { page: ShopPage }) {
               <Button
                 variant="secondary"
                 aria-label="Sort"
-                className="h-12 w-16 cursor-pointer rounded-[1px] border-b-4 border-white/28"
+                className="h-12 w-16 cursor-pointer rounded-[1px] border-b-4 border-white/25"
               >
                 <ArrowUpDown className="size-5" />
               </Button>
@@ -116,9 +116,9 @@ export default function ShopCategoryPage({ page }: { page: ShopPage }) {
       <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
         <SheetContent
           side="left"
-          className="flex w-[88vw] max-w-sm flex-col gap-0 border-white/28 bg-card p-0"
+          className="flex w-[88vw] max-w-sm flex-col gap-0 border-white/25 bg-popover p-0"
         >
-          <SheetHeader className="border-b border-white/28">
+          <SheetHeader className="border-b border-white/25">
             <SheetTitle className="flex items-center gap-2 text-lg">
               <SlidersHorizontal className="size-5 text-violet-600" /> Filter
             </SheetTitle>
@@ -132,7 +132,7 @@ export default function ShopCategoryPage({ page }: { page: ShopPage }) {
               defaultOpen={["saleType", "price", "condition"]}
             />
           </div>
-          <SheetFooter className="flex-row gap-2 border-t border-white/28 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <SheetFooter className="flex-row gap-2 border-t border-white/25 pb-[max(1rem,env(safe-area-inset-bottom))]">
             <Button
               variant="secondary"
               onClick={clear}

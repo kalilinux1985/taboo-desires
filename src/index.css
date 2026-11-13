@@ -13,8 +13,8 @@
   --font-display: var(--font-playfair), "Playfair Display", ui-serif, Georgia, serif;
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 
-  /* The site's violet is #7b3aec (violet-600 everywhere) */
-  --color-violet-600: #7b3aec;
+  /* The site's violet is #7f22fe (violet-600 everywhere) */
+  --color-violet-600: #7f22fe;
 
   --radius-sm: 1px;
   --radius-md: 1px;
@@ -53,19 +53,19 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-/* Navy dark theme sampled from the seller-profile design:
-   #0f172a page, comments and text fields, #0a1123 cards and panels, #040a18 darker cards,
-   white at 28% borders, black at 45% shadows, #0a0f22 header, #1f2235 secondary surfaces,
-   #7b3aec violet accents */
+/* Navy dark theme of the seller-profile design:
+   #0f172a page, comments and text fields; cards #030917 at 50% (a card in a card reads darker);
+   1px white borders at 25%; drop shadows black at 30%, inner shadows black at 28%;
+   #0a0f22 header, #1f2235 secondary surfaces, #7f22fe violet accents */
 :root {
   --radius: 1px; /* every corner is 1px (circles stay round) */
   --background: #0f172a;
   --foreground: #f2f6ff;
-  --card: #0a1123;
+  --card: rgb(3 9 23 / 50%); /* #030917 at 50% */
   --card-foreground: #f2f6ff;
-  --popover: #0a1123;
+  --popover: #091021; /* #030917 at 50% over the page, solid for menus */
   --popover-foreground: #f2f6ff;
-  --primary: #7b3aec;
+  --primary: #7f22fe;
   --primary-foreground: #ffffff;
   --secondary: #1f2235;
   --secondary-foreground: #f2f6ff;
@@ -74,22 +74,22 @@
   --accent: #1f2235;
   --accent-foreground: #ede9fe;
   --destructive: oklch(0.66 0.22 18);
-  --border: rgb(255 255 255 / 28%); /* white at 28% */
-  --input: rgb(255 255 255 / 28%); /* white at 28% */
-  --ring: rgb(123 58 236 / 70%);
-  --chart-1: #7b3aec;
+  --border: rgb(255 255 255 / 25%); /* white at 25% */
+  --input: rgb(255 255 255 / 25%); /* white at 25% */
+  --ring: rgb(127 34 254 / 70%);
+  --chart-1: #7f22fe;
   --chart-2: #8b5cf6;
   --chart-3: #6d28d9;
   --chart-4: #a78bfa;
   --chart-5: #5b21b6;
   --sidebar: #0a0f22;
   --sidebar-foreground: #babdcc;
-  --sidebar-primary: #7b3aec;
+  --sidebar-primary: #7f22fe;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #1f2235;
   --sidebar-accent-foreground: #f2f6ff;
-  --sidebar-border: rgb(255 255 255 / 28%); /* white at 28% */
-  --sidebar-ring: rgb(123 58 236 / 70%);
+  --sidebar-border: rgb(255 255 255 / 25%); /* white at 25% */
+  --sidebar-ring: rgb(127 34 254 / 70%);
 }
 
 @layer base {
@@ -109,7 +109,7 @@
 
 /* Locked surfaces, in the seller profile's navy everywhere: the page and the
    comment boxes are #0f172a, and every text field and picker is #0f172a with a
-   white (28%) border and an inner shadow, whatever classes a component sets and
+   white (25%) border and an inner shadow, whatever classes a component sets and
    whatever state the field is in (focus, disabled, invalid, browser autofill). */
 @layer base {
   html,
@@ -121,8 +121,8 @@
   .comment-surface {
     background-color: var(--background) !important;
     box-shadow:
-      inset 0 3px 8px rgba(0, 0, 0, 0.45),
-      inset 0 0 3px rgba(0, 0, 0, 0.45) !important;
+      inset 0 3px 8px rgba(0, 0, 0, 0.28),
+      inset 0 0 3px rgba(0, 0, 0, 0.28) !important;
   }
 
   textarea,
@@ -142,10 +142,10 @@
   [data-slot="select-trigger"],
   [role="combobox"] {
     background-color: var(--background) !important;
-    border-color: rgb(255 255 255 / 28%) !important;
+    border-color: rgb(255 255 255 / 25%) !important;
     box-shadow:
-      inset 0 3px 8px rgba(0, 0, 0, 0.45),
-      inset 0 0 3px rgba(0, 0, 0, 0.45) !important;
+      inset 0 3px 8px rgba(0, 0, 0, 0.28),
+      inset 0 0 3px rgba(0, 0, 0, 0.28) !important;
   }
 
   /* A field drawn by its container (the header search) */
@@ -162,17 +162,17 @@
   textarea:-webkit-autofill:focus {
     -webkit-box-shadow:
       0 0 0 1000px var(--background) inset,
-      inset 0 3px 8px rgba(0, 0, 0, 0.45),
-      inset 0 0 3px rgba(0, 0, 0, 0.45) !important;
+      inset 0 3px 8px rgba(0, 0, 0, 0.28),
+      inset 0 0 3px rgba(0, 0, 0, 0.28) !important;
     -webkit-text-fill-color: var(--foreground);
     caret-color: var(--foreground);
   }
 
-  /* Cards are the profile's panels: #0a1123, hairline border, 1px corners */
+  /* Cards are the profile's cards: #030917 at 50%, 1px white border at 25%, 1px corners */
   [data-slot="card"] {
-    border-color: rgb(255 255 255 / 28%) !important;
+    border-color: rgb(255 255 255 / 25%) !important;
     border-radius: 1px !important;
-    background-color: #0a1123 !important;
-    box-shadow: 0 14px 34px -8px rgba(0, 0, 0, 0.45) !important;
+    background-color: rgb(3 9 23 / 50%) !important;
+    box-shadow: 0 14px 34px -8px rgba(0, 0, 0, 0.3) !important;
   }
 }

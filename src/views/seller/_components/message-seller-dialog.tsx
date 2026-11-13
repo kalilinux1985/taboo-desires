@@ -26,10 +26,14 @@ export default function MessageSellerButton({
   sellerId,
   sellerName,
   className,
+  label = "Message seller",
+  showIcon = true,
 }: {
   sellerId: Id<"users">;
   sellerName: string;
   className?: string;
+  label?: string;
+  showIcon?: boolean;
 }) {
   const { isAuthenticated } = useBackendAuth();
   const { signin } = useAuth();
@@ -60,7 +64,7 @@ export default function MessageSellerButton({
         onClick={() => (isAuthenticated ? setOpen(true) : void signin())}
         className={className}
       >
-        <Mail /> Message seller
+        {showIcon && <Mail />} {label}
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>

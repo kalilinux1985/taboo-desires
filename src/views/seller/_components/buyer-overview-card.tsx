@@ -81,7 +81,7 @@ export default function BuyerOverviewCard(p: Props) {
         <BadgeList badges={p.badges} />
       </p>
 
-      <Separator className="my-4 bg-white/28" />
+      <Separator className="my-4 bg-white/25" />
       <dl>
         {p.details.gender && (
           <Row
@@ -100,7 +100,7 @@ export default function BuyerOverviewCard(p: Props) {
         <Row label="Profile Visits" value={p.profileVisits.toLocaleString()} />
       </dl>
 
-      <Separator className="my-5 bg-white/28" />
+      <Separator className="my-5 bg-white/25" />
       <h3 className="text-xl font-bold">What I&apos;m looking for</h3>
       <div className="flex flex-wrap gap-2 pt-3">
         {lookingFor.length === 0 ? (

@@ -3,12 +3,11 @@
 import { useState } from "react";
 import { useParams } from "next/navigation";
 import { useQuery } from "@/lib/backend/react.tsx";
-import { UserX } from "lucide-react";
+import { ChevronLeft, UserX } from "lucide-react";
 import { api } from "@/lib/backend/api.ts";
 import type { Id } from "@/lib/backend/types.ts";
 import { cn } from "@/lib/utils.ts";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
 import {
   Empty,
   EmptyDescription,
@@ -21,7 +20,7 @@ import SellerListings from "@/components/seller-listings.tsx";
 import ProfilePhotos from "./_components/profile-photos.tsx";
 import SellerReviews from "./_components/seller-reviews.tsx";
 import BuyerProfile from "./_components/buyer-profile.tsx";
-import ProfileSidebar from "./_components/profile-sidebar.tsx";
+import ProfileSidebar, { ProfileHeaderCard } from "./_components/profile-sidebar.tsx";
 import ProfileCompactHeader from "./_components/profile-compact-header.tsx";
 import {
   ActivitySection,
@@ -29,12 +28,11 @@ import {
   ProfilePanel,
   ShopSection,
 } from "./_components/profile-sections.tsx";
-import { TAB_PILL, TABS_BAR, TABS_PANEL, TEXT_FONT } from "./_lib/theme.ts";
+import { TEXT_FONT } from "./_lib/theme.ts";
 import { useRecordProfileVisit } from "@/hooks/use-activity.ts";
 
 const TABS = ["overview", "shop", "instant", "photos", "reviews"] as const;
 type Tab = (typeof TABS)[number];
-const isTab = (v: string): v is Tab => (TABS as readonly string[]).includes(v);
 
 function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
   const profile = useQuery(api.users.getProfile, { userId: sellerId });
@@ -67,48 +65,22 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
 
   const showTab = (next: Tab) => {
     setTab(next);
-    document.getElementById("profile-tabs")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Overview keeps the full profile card; the other tabs use a slim header above the tabs
-  const overview = tab === "overview";
-
-  // The tabs get their own panel at the top of the right column.
-  // Phones: two columns of tabs (Overview + Shop, Instant Content, Photos + Reviews).
-  // Medium screens and up: one row.
-  const tabsPanel = (
-    <div className={TABS_PANEL}>
-      <div className={TABS_BAR}>
-        <TabsList className="grid min-w-0 flex-1 grid-cols-2 gap-2 bg-transparent p-0 group-data-[orientation=horizontal]/tabs:h-auto md:flex md:flex-wrap md:justify-start md:gap-[15px]">
-          <TabsTrigger value="overview" className={TAB_PILL}>Overview</TabsTrigger>
-          <TabsTrigger value="shop" className={TAB_PILL}>Shop</TabsTrigger>
-          <TabsTrigger value="instant" className={cn(TAB_PILL, "col-span-2")}>Instant Content</TabsTrigger>
-          <TabsTrigger value="photos" className={TAB_PILL}>Photos</TabsTrigger>
-          <TabsTrigger value="reviews" className={TAB_PILL}>Reviews</TabsTrigger>
-        </TabsList>
-      </div>
-    </div>
-  );
-
-  return (
-    <div
-      className={cn(
-        TEXT_FONT,
-        "mx-auto grid items-start gap-6 px-4 py-6",
-        overview ? "max-w-[60rem] lg:grid-cols-[20rem_1fr] lg:gap-12" : "max-w-4xl",
-      )}
-    >
-      {overview ? <ProfileSidebar profile={profile} /> : <ProfileCompactHeader profile={profile} />}
-
-      <Tabs
-        id="profile-tabs"
-        value={tab}
-        onValueChange={(v) => isTab(v) && setTab(v)}
-        className="min-w-0 scroll-mt-20 gap-4"
+  // The design has no tab bar: the Overview is the profile, and the Shop and
+  // Instant Content counts open the full lists, which link back to it.
+  if (tab === "overview") {
+    return (
+      <div
+        className={cn(
+          TEXT_FONT,
+          "mx-auto grid max-w-[60rem] items-start gap-6 px-4 py-6 lg:grid-cols-[20rem_1fr] lg:gap-[52px]",
+        )}
       >
-        {tabsPanel}
-        {/* Overview: Shop, Instant Content, Latest Activity */}
-        <TabsContent value="overview" className="flex flex-col gap-4">
+        <ProfileSidebar profile={profile} />
+        <div className="flex min-w-0 flex-col gap-5">
+          <ProfileHeaderCard profile={profile} />
           <ShopSection sellerId={profile._id} count={profile.counts.listings} onViewAll={() => showTab("shop")} />
           <InstantSection
             sellerId={profile._id}
@@ -116,38 +88,51 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
             onViewAll={() => showTab("instant")}
           />
           <ActivitySection authorId={profile._id} />
-        </TabsContent>
-        <TabsContent value="shop">
-          <ProfilePanel title="Shop" count={`${profile.counts.listings} Listings`}>
-            <SellerListings sellerId={profile._id} isMe={profile.isMe} kind="items" />
-          </ProfilePanel>
-        </TabsContent>
-        <TabsContent value="instant">
-          <ProfilePanel title="Instant Content" count={`${profile.counts.instantContent} Items`}>
-            <SellerListings sellerId={profile._id} isMe={profile.isMe} kind="instant" />
-          </ProfilePanel>
-        </TabsContent>
-        <TabsContent value="photos">
-          <ProfilePanel title="Photos" count={`${profile.counts.photos} ${profile.counts.photos === 1 ? "image" : "images"}`}>
-            {profile.isMe || profile.counts.photos > 0 ? (
-              <ProfilePhotos userId={profile._id} isMe={profile.isMe} total={profile.counts.photos} />
-            ) : (
-              <p className="text-sm text-slate-400">No photos yet</p>
-            )}
-          </ProfilePanel>
-        </TabsContent>
-        <TabsContent value="reviews">
-          <ProfilePanel title="Reviews">
-            <SellerReviews
-              sellerId={profile._id}
-              sellerName={profile.name}
-              isMe={profile.isMe}
-              rating={profile.stats.rating}
-              reviewCount={profile.stats.reviewCount}
-            />
-          </ProfilePanel>
-        </TabsContent>
-      </Tabs>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn(TEXT_FONT, "mx-auto flex max-w-4xl flex-col gap-5 px-4 py-6")}>
+      <ProfileCompactHeader profile={profile} />
+      <button
+        type="button"
+        onClick={() => showTab("overview")}
+        className="flex cursor-pointer items-center gap-1.5 self-start text-sm text-violet-600 hover:underline"
+      >
+        <ChevronLeft className="size-4" /> Back to profile
+      </button>
+      {tab === "shop" && (
+        <ProfilePanel title="Shop" count={`${profile.counts.listings} Listings`}>
+          <SellerListings sellerId={profile._id} isMe={profile.isMe} kind="items" />
+        </ProfilePanel>
+      )}
+      {tab === "instant" && (
+        <ProfilePanel title="Instant Content" count={`${profile.counts.instantContent} Items`}>
+          <SellerListings sellerId={profile._id} isMe={profile.isMe} kind="instant" />
+        </ProfilePanel>
+      )}
+      {tab === "photos" && (
+        <ProfilePanel title="Photos" count={`${profile.counts.photos} ${profile.counts.photos === 1 ? "image" : "images"}`}>
+          {profile.isMe || profile.counts.photos > 0 ? (
+            <ProfilePhotos userId={profile._id} isMe={profile.isMe} total={profile.counts.photos} />
+          ) : (
+            <p className="text-sm text-slate-400">No photos yet</p>
+          )}
+        </ProfilePanel>
+      )}
+      {tab === "reviews" && (
+        <ProfilePanel title="Reviews">
+          <SellerReviews
+            sellerId={profile._id}
+            sellerName={profile.name}
+            isMe={profile.isMe}
+            rating={profile.stats.rating}
+            reviewCount={profile.stats.reviewCount}
+          />
+        </ProfilePanel>
+      )}
     </div>
   );
 }
