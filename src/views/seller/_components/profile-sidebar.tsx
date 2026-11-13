@@ -29,7 +29,7 @@ function Detail({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-baseline justify-between gap-4 text-[12px] leading-[24px]">
       <dt className="text-[#f9f9f9]">{label}:</dt>
-      <dd className="truncate text-right text-[#fdfffe]">{value}</dd>
+      <dd className="truncate text-right font-bold text-white">{value}</dd>
     </div>
   );
 }
