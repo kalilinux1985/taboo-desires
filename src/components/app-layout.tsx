@@ -20,6 +20,7 @@ import AccountTypeDialog from "./account-type-dialog.tsx";
 import UserMenu from "./user-menu.tsx";
 import MobileNav from "./mobile-nav.tsx";
 import NotificationBell from "./notification-bell.tsx";
+import MessagesMenu from "./messages-menu.tsx";
 import { usePresenceHeartbeat } from "@/hooks/use-activity.ts";
 import { SHOP_SECTIONS, shopPageHref } from "@/lib/shop-pages.ts";
 
@@ -61,21 +62,11 @@ export function LogoMark({ className }: { className?: string }) {
   );
 }
 
-function InboxLink() {
-  const unread = useQuery(api.messages.unreadCount, {});
-  return (
-    <Link href="/messages" aria-label="Messages" className={HEADER_ICON_BUTTON}>
-      <MessageSquareText className="size-5" strokeWidth={1.75} />
-      {!!unread && <span className={COUNT_BADGE}>{unread > 9 ? "9+" : unread}</span>}
-    </Link>
-  );
-}
-
 function SignedInActions() {
   usePresenceHeartbeat();
   return (
     <div className="flex items-center gap-2">
-      <InboxLink />
+      <MessagesMenu className={HEADER_ICON_BUTTON} badgeClassName={COUNT_BADGE} />
       <NotificationBell className={HEADER_ICON_BUTTON} />
       <div className="hidden md:block">
         <UserMenu />
