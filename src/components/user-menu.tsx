@@ -74,7 +74,7 @@ export default function UserMenu() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         {links.map((l) => (
-          <DropdownMenuItem key={l.to} asChild className="cursor-pointer">
+          <DropdownMenuItem key={l.to} asChild className="cursor-pointer transition-colors hover:bg-transparent hover:text-violet-600 focus:bg-transparent focus:text-violet-600 [&:hover_svg]:text-violet-600 [&:focus_svg]:text-violet-600">
             <Link href={l.to}>
               <l.icon /> {l.label}
             </Link>
@@ -82,7 +82,7 @@ export default function UserMenu() {
         ))}
         <DropdownMenuSeparator />
         {explore.map((l) => (
-          <DropdownMenuItem key={l.to} asChild className="cursor-pointer">
+          <DropdownMenuItem key={l.to} asChild className="cursor-pointer transition-colors hover:bg-transparent hover:text-violet-600 focus:bg-transparent focus:text-violet-600 [&:hover_svg]:text-violet-600 [&:focus_svg]:text-violet-600">
             <Link href={l.to}>
               <l.icon /> {l.label}
             </Link>
@@ -90,7 +90,7 @@ export default function UserMenu() {
         ))}
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          className="cursor-pointer"
+          className="cursor-pointer transition-colors hover:bg-transparent hover:text-violet-600 focus:bg-transparent focus:text-violet-600 [&:hover_svg]:text-violet-600 [&:focus_svg]:text-violet-600"
           variant="destructive"
           onSelect={() => {
             void signout();

@@ -39,14 +39,14 @@ function DropdownList({ onPick }: { onPick: () => void }) {
             href={`/messages/${c._id}`}
             onClick={onPick}
             className={cn(
-              "flex items-center gap-3 px-4 py-3 transition-colors hover:bg-white/5",
+              "flex items-center gap-3 px-4 py-3 group transition-colors",
               c.unread && "bg-primary/15",
             )}
           >
             <ProfileAvatar name={c.other.name} url={c.other.avatarUrl} className="size-10 rounded-[1px] text-lg" />
             <span className="flex min-w-0 flex-1 flex-col">
               <span className="flex items-baseline justify-between gap-2">
-                <span className={cn("truncate text-sm", c.unread ? "font-bold" : "font-medium")}>{c.other.name}</span>
+                <span className={cn("truncate text-sm transition-colors group-hover:text-violet-600", c.unread ? "font-bold" : "font-medium")}>{c.other.name}</span>
                 <span className="shrink-0 text-[10px] text-muted-foreground">
                   {formatDistanceToNowStrict(new Date(c.lastMessageAt))}
                 </span>

@@ -51,7 +51,7 @@ function DropdownList({ onPick }: { onPick: () => void }) {
               href={href}
               onClick={onPick}
               className={cn(
-                "flex items-start gap-3 px-4 py-3 transition-colors hover:bg-white/5",
+                "flex items-start gap-3 px-4 py-3 group transition-colors",
                 n.unread && "bg-primary/15",
               )}
             >
@@ -59,7 +59,7 @@ function DropdownList({ onPick }: { onPick: () => void }) {
                 <Icon className="size-4" />
               </span>
               <span className="flex min-w-0 flex-1 flex-col">
-                <span className="text-sm leading-snug">{text}</span>
+                <span className="text-sm leading-snug transition-colors group-hover:text-violet-600">{text}</span>
                 <span className="text-xs text-muted-foreground">{formatDistanceToNow(n.at, { addSuffix: true })}</span>
               </span>
               {n.unread && <span aria-label="New" className="mt-2 size-2 shrink-0 rounded-full bg-rose-500" />}
