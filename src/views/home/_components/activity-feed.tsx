@@ -36,7 +36,7 @@ import RepostDialog from "./repost-dialog.tsx";
 
 const PAGE = 10;
 const PILL_OUTLINE =
-  "h-10 cursor-pointer gap-1.5 rounded-[1px] border-2 border-violet-600 bg-transparent px-4 font-bold text-violet-300 hover:bg-violet-800/30 hover:text-violet-200";
+  "h-10 cursor-pointer gap-1.5 rounded-[1px] border-2 border-violet-600 bg-transparent px-4 font-bold text-violet-600 hover:bg-violet-600/20 hover:text-violet-600";
 
 function FeedSkeleton() {
   return (

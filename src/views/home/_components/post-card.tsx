@@ -56,7 +56,7 @@ export function ListingPreview({ listing }: { listing: NonNullable<FeedItem["lis
       )}
       <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-gradient-to-t from-black/85 to-transparent px-2.5 pb-2 pt-8 text-white">
         <span className="flex min-w-0 items-center gap-1 truncate text-xs">
-          {listing.isLocked && <Lock className="size-3 shrink-0 text-violet-300" />}
+          {listing.isLocked && <Lock className="size-3 shrink-0 text-violet-600" />}
           <span className="truncate">{listing.title}</span>
         </span>
         <span className="shrink-0 text-xs font-bold">
@@ -173,8 +173,8 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
             title={item.likedByMe ? "Unlike" : "Like"}
             className={action}
           >
-            <Heart className={cn("size-4", item.likedByMe ? "text-violet-900" : "text-violet-600")} strokeWidth={item.likedByMe ? 3 : 2} />
-            <span className={cn(item.likedByMe && "text-violet-900")}>{item.likeCount}</span>
+            <Heart className={cn("size-4", item.likedByMe ? "text-violet-600" : "text-violet-600")} strokeWidth={item.likedByMe ? 3 : 2} />
+            <span className={cn(item.likedByMe && "text-violet-600")}>{item.likeCount}</span>
           </button>
           <span className="flex min-w-0 items-center gap-1 text-xs [&>a]:size-5">
             <LikerAvatars likers={item.likers} total={item.likeCount} postId={item._id} size="sm" />

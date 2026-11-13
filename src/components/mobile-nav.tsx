@@ -265,7 +265,7 @@ export default function MobileNav() {
           variant="ghost"
           size="icon"
           aria-label="Open menu"
-          className="-ml-2 cursor-pointer text-violet-600 hover:text-violet-500 md:hidden"
+          className="-ml-2 cursor-pointer text-violet-600 hover:text-white md:hidden"
         >
           <Menu className="size-6" />
         </Button>

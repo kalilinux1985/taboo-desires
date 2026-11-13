@@ -99,7 +99,7 @@ export default function RequestCard({ request: r, role }: { request: CustomReque
           <p className="text-xs text-muted-foreground">
             {isCountered ? `Budget ${formatPrice(r.budgetCents)} · Current offer` : "Budget"}
           </p>
-          <p className="text-2xl font-bold text-violet-300">{formatPrice(r.offerCents)}</p>
+          <p className="text-2xl font-bold text-violet-600">{formatPrice(r.offerCents)}</p>
           {isCountered && r.note && (
             <p className="max-w-md pt-1 text-sm italic text-muted-foreground">
               {r.lastOfferByMe ? "You" : "They"}: "{r.note}"

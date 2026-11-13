@@ -41,7 +41,7 @@ export function Logo({ className }: { className?: string }) {
 
 /** Square dark button used for the header icons. */
 export const HEADER_ICON_BUTTON =
-  "relative flex size-[41px] shrink-0 cursor-pointer items-center justify-center rounded-[1px] bg-[#0f172a] text-violet-600 transition-colors hover:bg-[#1f2235] hover:text-violet-500";
+  "relative flex size-[41px] shrink-0 cursor-pointer items-center justify-center rounded-[1px] bg-[#0f172a] text-violet-600 transition-colors hover:bg-[#1f2235] hover:text-white";
 
 const COUNT_BADGE =
   "absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 font-sans text-[10px] font-bold text-white";
@@ -53,7 +53,7 @@ export function LogoMark({ className }: { className?: string }) {
       href="/"
       aria-label="Taboo Desires home"
       className={cn(
-        "flex size-[42px] shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 via-violet-700 to-purple-900 font-display text-lg italic leading-none text-violet-100 shadow-[0_0_0_1px_rgba(167,139,250,0.25)]",
+        "flex size-[42px] shrink-0 items-center justify-center rounded-full bg-violet-600 font-display text-lg italic leading-none text-violet-600 shadow-[0_0_0_1px_rgba(167,139,250,0.25)]",
         className,
       )}
     >

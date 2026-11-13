@@ -55,7 +55,7 @@ function DropdownList({ onPick }: { onPick: () => void }) {
                 n.unread && "bg-primary/15",
               )}
             >
-              <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/25 text-violet-300">
+              <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/25 text-violet-600">
                 <Icon className="size-4" />
               </span>
               <span className="flex min-w-0 flex-1 flex-col">

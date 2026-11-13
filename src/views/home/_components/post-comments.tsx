@@ -269,8 +269,8 @@ function CommentItem({
             title={comment.likedByMe ? "Unlike" : "Like"}
             className={LINK_ACTION}
           >
-            <Heart className={cn("size-3.5", comment.likedByMe ? "text-violet-900" : "text-violet-600")} strokeWidth={comment.likedByMe ? 3 : 2} />
-            <span className={cn(comment.likedByMe && "text-violet-900")}>{comment.likeCount}</span>
+            <Heart className={cn("size-3.5", comment.likedByMe ? "text-violet-600" : "text-violet-600")} strokeWidth={comment.likedByMe ? 3 : 2} />
+            <span className={cn(comment.likedByMe && "text-violet-600")}>{comment.likeCount}</span>
           </button>
           {isTop && comment.replyCount > 0 && (
             <button
@@ -330,9 +330,9 @@ function Replies({ postId, parentId }: { postId: Id<"posts">; parentId: Id<"post
 /** Shown instead of the comment box to sellers without Premium. */
 function PremiumNotice() {
   return (
-    <p className="rounded-[1px] border border-violet-600/40 bg-violet-600/10 px-4 py-3 text-center text-[13px] text-violet-100">
+    <p className="rounded-[1px] border border-violet-600/40 bg-violet-600/10 px-4 py-3 text-center text-[13px] text-violet-600">
       Adding comments to the activity feed is a Premium Seller feature.{" "}
-      <Link href="/pricing?for=post" className="inline-flex cursor-pointer items-center gap-1 font-bold text-violet-300 hover:underline">
+      <Link href="/pricing?for=post" className="inline-flex cursor-pointer items-center gap-1 font-bold text-violet-600 hover:underline">
         <Medal className="size-4 text-rose-400" /> Go Premium &gt;
       </Link>
     </p>

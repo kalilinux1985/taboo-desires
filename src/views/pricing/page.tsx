@@ -187,7 +187,7 @@ export default function PricingPage() {
       <div className="pointer-events-none absolute left-1/2 top-0 h-[480px] w-[900px] -translate-x-1/2 rounded-full bg-primary/15 blur-3xl" />
       {reason && (
         <p className="relative flex items-center justify-center gap-2 bg-primary/25 px-4 py-2.5 text-center text-sm font-semibold">
-          <Lock className="size-4 shrink-0 text-violet-300" /> {reason}
+          <Lock className="size-4 shrink-0 text-violet-600" /> {reason}
         </p>
       )}
       <div className="relative mx-auto flex max-w-6xl flex-col gap-8 px-4 py-10 md:py-16">

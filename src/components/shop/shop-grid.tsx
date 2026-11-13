@@ -23,7 +23,7 @@ export function ShopCard({ listing }: { listing: ListingCardData }) {
   return (
     <Link
       href={`/listing/${listing._id}`}
-      className="group flex min-w-0 cursor-pointer flex-col overflow-hidden rounded-[1px] border bg-card shadow-[0_14px_34px_-8px_rgba(0,0,0,0.3)] transition-[transform,border-color] duration-200 hover:-translate-y-0.5 hover:border-violet-400/45"
+      className="group flex min-w-0 cursor-pointer flex-col overflow-hidden rounded-[1px] border bg-card shadow-[0_14px_34px_-8px_rgba(0,0,0,0.3)] transition-[transform,border-color] duration-200 hover:-translate-y-0.5 hover:border-violet-600"
     >
       <div className="relative aspect-[5/3] bg-muted">
         <div className="absolute inset-0 overflow-hidden">
@@ -35,7 +35,7 @@ export function ShopCard({ listing }: { listing: ListingCardData }) {
               className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
           ) : (
-            <div className="size-full bg-gradient-to-br from-violet-900 to-indigo-950" />
+            <div className="size-full bg-[#0f172a]" />
           )}
         </div>
         <span className="absolute left-3 top-3 rounded-[1px] bg-background/75 px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-accent-foreground">

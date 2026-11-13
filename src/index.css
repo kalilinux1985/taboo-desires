@@ -16,6 +16,15 @@
   /* The site's violet is #7f22fe (violet-600 everywhere) */
   --color-violet-600: #7f22fe;
 
+  /* Shadows are the profile's: black at 30% */
+  --shadow-2xs: 0 1px 2px rgb(0 0 0 / 30%);
+  --shadow-xs: 0 1px 3px rgb(0 0 0 / 30%);
+  --shadow-sm: 0 2px 6px rgb(0 0 0 / 30%);
+  --shadow-md: 0 14px 34px -8px rgb(0 0 0 / 30%);
+  --shadow-lg: 0 14px 34px -8px rgb(0 0 0 / 30%);
+  --shadow-xl: 0 14px 34px -8px rgb(0 0 0 / 30%);
+  --shadow-2xl: 0 14px 34px -8px rgb(0 0 0 / 30%);
+
   --radius-sm: 1px;
   --radius-md: 1px;
   --radius-lg: 1px;

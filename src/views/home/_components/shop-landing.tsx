@@ -154,7 +154,7 @@ function CtaPanel({
       </ul>
       <Link
         href={to}
-        className="relative w-fit cursor-pointer rounded-[1px] bg-white px-8 py-3 font-extrabold text-indigo-950 transition-transform hover:-translate-y-0.5"
+        className="relative w-fit cursor-pointer rounded-[1px] bg-white px-8 py-3 font-extrabold text-[#0f172a] transition-transform hover:-translate-y-0.5"
       >
         {action}
       </Link>

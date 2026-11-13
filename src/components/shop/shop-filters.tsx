@@ -158,7 +158,7 @@ export function FilterGroups({
                       "cursor-pointer rounded-[1px] border px-3 py-1 text-xs font-semibold transition-colors",
                       on
                         ? "border-violet-600 bg-primary text-primary-foreground"
-                        : "bg-card text-muted-foreground hover:border-violet-400/50 hover:text-foreground",
+                        : "bg-card text-muted-foreground hover:border-violet-600 hover:text-foreground",
                     )}
                   >
                     {o.label}

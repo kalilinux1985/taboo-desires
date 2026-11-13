@@ -62,7 +62,7 @@ export default function FavoriteButton({
         disabled={busy}
         aria-pressed={!!saved}
         aria-label={saved ? "Remove from favorites" : "Save to favorites"}
-        className={cn("cursor-pointer text-violet-600 transition-colors hover:text-violet-400 disabled:opacity-60", className)}
+        className={cn("cursor-pointer text-violet-600 transition-colors hover:text-white disabled:opacity-60", className)}
       >
         <Icon className="size-[18px]" strokeWidth={1.5} />
       </button>
