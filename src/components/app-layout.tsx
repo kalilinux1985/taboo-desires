@@ -53,7 +53,7 @@ export function LogoMark({ className }: { className?: string }) {
       href="/"
       aria-label="Taboo Desires home"
       className={cn(
-        "flex size-[42px] shrink-0 items-center justify-center rounded-full bg-violet-600 font-display text-lg italic leading-none text-violet-600 shadow-[0_0_0_1px_rgba(167,139,250,0.25)]",
+        "flex size-[42px] shrink-0 items-center justify-center rounded-full bg-violet-600 font-display text-lg italic leading-none text-white",
         className,
       )}
     >

@@ -20,6 +20,9 @@ export const metadata: Metadata = {
   description:
     "An 18+ marketplace to buy and sell worn lingerie, panties, socks and custom requests. Zero commission for sellers.",
   icons: { icon: "/favicon.ico" },
+  // The site is already dark: ask dark-mode extensions (Dark Reader and
+  // similar) not to recolor it, which darkens the violet backgrounds.
+  other: { "darkreader-lock": "" },
 };
 
 export const viewport: Viewport = {

@@ -103,7 +103,7 @@ function CommentForm({
         type="submit"
         aria-label="Send"
         disabled={!body.trim() || sending}
-        className="absolute right-2 top-1/2 flex size-7 -translate-y-1/2 cursor-pointer items-center justify-center text-violet-600 disabled:opacity-60"
+        className="absolute right-2 top-1/2 flex size-7 -translate-y-1/2 cursor-pointer items-center justify-center text-violet-600 disabled:cursor-default"
       >
         {sending ? <Spinner /> : <Send className="size-4" />}
       </button>
