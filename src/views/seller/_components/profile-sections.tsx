@@ -218,6 +218,86 @@ export function InstantSection({
   );
 }
 
+/** Overview: the newest photos (profile photos and post photos). The count opens the Photos tab. */
+export function PhotosSection({
+  userId,
+  count,
+  onViewAll,
+}: {
+  userId: Id<"users">;
+  count: number;
+  onViewAll: () => void;
+}) {
+  const { results, status } = usePaginatedQuery(api.users.photosByUser, { userId }, { initialNumItems: 6 });
+  return (
+    <section className={cn(PANEL, "p-[18px]")}>
+      <div className={cn(INSET, "flex flex-col gap-5 px-[22px] py-[22px]")}>
+        <SectionHeading title="Photos" count={plural(count, "Image")} onCount={onViewAll} />
+        {status === "LoadingFirstPage" ? (
+          <div className="grid grid-cols-3 gap-[18px]">
+            {[0, 1, 2].map((i) => <Skeleton key={i} className="aspect-square" />)}
+          </div>
+        ) : results.length === 0 ? (
+          <p className="text-sm text-slate-400">No photos yet.</p>
+        ) : (
+          <div className="grid grid-cols-3 gap-[18px]">
+            {results.slice(0, 6).map((p) => (
+              <button
+                key={p._id}
+                type="button"
+                onClick={onViewAll}
+                aria-label="Open photos"
+                className="group aspect-square cursor-pointer overflow-hidden rounded-[1px] border border-white/25 bg-[#030917]/50 shadow-[0_14px_34px_-8px_rgba(0,0,0,0.3)]"
+              >
+                <img
+                  src={p.url}
+                  alt=""
+                  loading="lazy"
+                  className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
+                />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+/** The profile tabs: a bar of buttons in an inner card; the open tab is violet. */
+export function ProfileTabs<T extends string>({
+  tabs,
+  value,
+  onChange,
+}: {
+  tabs: { value: T; label: string }[];
+  value: T;
+  onChange: (value: T) => void;
+}) {
+  return (
+    <nav aria-label="Profile sections" className={cn(PANEL, "p-[18px]")}>
+      <div className={cn(INSET, "flex flex-wrap gap-2.5 px-3 py-3 sm:gap-3")}>
+        {tabs.map((t) => (
+          <button
+            key={t.value}
+            type="button"
+            aria-current={value === t.value ? "page" : undefined}
+            onClick={() => onChange(t.value)}
+            className={cn(
+              "h-[30px] cursor-pointer rounded-[1px] border px-4 text-[13px] transition-colors",
+              value === t.value
+                ? "border-violet-600 bg-violet-600 font-bold text-white"
+                : "border-white/25 bg-[#030917]/50 text-white hover:bg-violet-600",
+            )}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
 /** Overview: the member's own posts, each with its comments. */
 export function ActivitySection({ authorId }: { authorId: Id<"users"> }) {
   const { results, status, loadMore } = usePaginatedQuery(
