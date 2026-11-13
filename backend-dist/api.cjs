@@ -2942,7 +2942,10 @@ async function summarize2(ctx, convo, me) {
     convo.listingId ? ctx.db.get("listings", convo.listingId) : null,
     ctx.db.get("users", isBuyer ? convo.sellerId : convo.buyerId)
   ]);
-  const imageUrl = listing?.imageIds[0] ? await ctx.storage.getUrl(listing.imageIds[0]) : null;
+  const [imageUrl, avatarUrl] = await Promise.all([
+    listing?.imageIds[0] ? ctx.storage.getUrl(listing.imageIds[0]) : null,
+    other?.avatarStorageId ? ctx.storage.getUrl(other.avatarStorageId) : null
+  ]);
   return {
     _id: convo._id,
     role: isBuyer ? "buyer" : "seller",
@@ -2952,7 +2955,8 @@ async function summarize2(ctx, convo, me) {
     unread: isBuyer ? convo.buyerUnread : convo.sellerUnread,
     other: {
       _id: other?._id ?? null,
-      name: other ? publicSellerName(other) : "Deleted user"
+      name: other ? publicSellerName(other) : "Deleted user",
+      avatarUrl
     },
     listing: listing ? {
       _id: listing._id,

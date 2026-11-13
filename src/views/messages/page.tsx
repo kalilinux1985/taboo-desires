@@ -19,6 +19,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty.tsx";
 import { cn } from "@/lib/utils.ts";
+import ProfileAvatar from "@/components/profile-avatar.tsx";
 import ConversationThread from "./_components/conversation-thread.tsx";
 
 function InboxList({ activeId }: { activeId?: string }) {
@@ -64,11 +65,7 @@ function InboxList({ activeId }: { activeId?: string }) {
               activeId === c._id && "bg-secondary",
             )}
           >
-            <div className="size-12 shrink-0 overflow-hidden rounded-[1px] bg-muted">
-              {c.listing?.imageUrl && (
-                <img src={c.listing.imageUrl} alt="" className="size-full object-cover" />
-              )}
-            </div>
+            <ProfileAvatar name={c.other.name} url={c.other.avatarUrl} className="size-12 rounded-[1px] text-xl" />
             <div className="min-w-0 flex-1">
               <div className="flex items-baseline justify-between gap-2">
                 <p className={cn("truncate text-sm", c.unread ? "font-bold" : "font-medium")}>

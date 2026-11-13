@@ -17,6 +17,7 @@ import { useAccess } from "@/hooks/use-access.ts";
 import { useUpgradeGate } from "@/hooks/use-upgrade-gate.ts";
 import { deniedMessage } from "@/shared/accounts.ts";
 import UpgradeNotice from "@/components/upgrade-notice.tsx";
+import ProfileAvatar from "@/components/profile-avatar.tsx";
 
 function formatTime(ms: number) {
   return isToday(ms) ? format(ms, "h:mm a") : format(ms, "MMM d, h:mm a");
@@ -88,9 +89,12 @@ function Composer({ conversationId }: { conversationId: Id<"conversations"> }) {
 function MessageList({
   conversationId,
   meId,
+  other,
 }: {
   conversationId: Id<"conversations">;
   meId: Id<"users">;
+  /** The other person, shown beside their messages */
+  other: { name: string; avatarUrl: string | null };
 }) {
   const { results, status, loadMore } = usePaginatedQuery(
     api.messages.listMessages,
@@ -113,8 +117,8 @@ function MessageList({
     <div className="flex min-h-0 flex-1 flex-col-reverse gap-2 overflow-y-auto p-4">
       {results.map((m) => {
         const mine = m.senderId === meId;
-        return (
-          <div key={m._id} className={cn("flex max-w-[80%] flex-col gap-1", mine ? "self-end items-end" : "self-start items-start")}>
+        const bubble = (
+          <div className={cn("flex min-w-0 flex-col gap-1", mine ? "items-end" : "items-start")}>
             <div
               className={cn(
                 "whitespace-pre-wrap break-words rounded-[1px] px-3 py-2 text-sm",
@@ -126,6 +130,16 @@ function MessageList({
             <span className="px-1 text-[10px] text-muted-foreground">
               {formatTime(m._creationTime)}
             </span>
+          </div>
+        );
+        return mine ? (
+          <div key={m._id} className="flex max-w-[80%] self-end">
+            {bubble}
+          </div>
+        ) : (
+          <div key={m._id} className="flex max-w-[80%] items-start gap-2 self-start">
+            <ProfileAvatar name={other.name} url={other.avatarUrl} className="mt-0.5 size-7 rounded-[1px] text-xs" />
+            {bubble}
           </div>
         );
       })}
@@ -175,32 +189,47 @@ export default function ConversationThread({
             <ArrowLeft />
           </Link>
         </Button>
-        {convo.listing ? (
-          <Link
-            href={`/listing/${convo.listing._id}`}
-            className="flex min-w-0 flex-1 cursor-pointer items-center gap-3"
-          >
-            <div className="size-11 shrink-0 overflow-hidden rounded-[1px] bg-muted">
-              {convo.listing.imageUrl && (
-                <img src={convo.listing.imageUrl} alt="" className="size-full object-cover" />
-              )}
-            </div>
-            <div className="min-w-0">
-              <p className="truncate font-semibold">{convo.listing.title}</p>
-              <p className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span className="font-mono">{formatPrice(convo.listing.priceCents)}</span>
-                {convo.listing.status === "sold" && <Badge variant="destructive">Sold</Badge>}
-                <span className="truncate">
-                  with {convo.other.name} ({convo.role === "buyer" ? "seller" : "buyer"})
-                </span>
-              </p>
-            </div>
+        {/* Who you're talking to, then the listing it's about */}
+        {convo.other._id ? (
+          <Link href={`/seller/${convo.other._id}`} className="flex shrink-0 cursor-pointer items-center gap-2.5">
+            <ProfileAvatar name={convo.other.name} url={convo.other.avatarUrl} className="size-11 rounded-[1px] text-lg" />
           </Link>
         ) : (
-          <p className="flex-1 font-semibold text-muted-foreground">Listing removed</p>
+          <ProfileAvatar name={convo.other.name} url={convo.other.avatarUrl} className="size-11 rounded-[1px] text-lg" />
+        )}
+        <div className="flex min-w-0 flex-1 flex-col">
+          <p className="truncate font-semibold">
+            {convo.other._id ? (
+              <Link href={`/seller/${convo.other._id}`} className="cursor-pointer hover:underline">
+                {convo.other.name}
+              </Link>
+            ) : (
+              convo.other.name
+            )}{" "}
+            <span className="text-xs font-normal text-muted-foreground">
+              ({convo.role === "buyer" ? "seller" : "buyer"})
+            </span>
+          </p>
+          {convo.listing ? (
+            <Link
+              href={`/listing/${convo.listing._id}`}
+              className="flex min-w-0 cursor-pointer items-center gap-2 text-xs text-muted-foreground hover:text-foreground"
+            >
+              <span className="truncate">{convo.listing.title}</span>
+              <span className="shrink-0 font-mono">{formatPrice(convo.listing.priceCents)}</span>
+              {convo.listing.status === "sold" && <Badge variant="destructive">Sold</Badge>}
+            </Link>
+          ) : (
+            <p className="text-xs text-muted-foreground">Direct message</p>
+          )}
+        </div>
+        {convo.listing?.imageUrl && (
+          <Link href={`/listing/${convo.listing._id}`} className="size-11 shrink-0 cursor-pointer overflow-hidden rounded-[1px] bg-muted">
+            <img src={convo.listing.imageUrl} alt="" className="size-full object-cover" />
+          </Link>
         )}
       </div>
-      <MessageList conversationId={conversationId} meId={convo.meId} />
+      <MessageList conversationId={conversationId} meId={convo.meId} other={convo.other} />
       <Composer conversationId={conversationId} />
     </div>
   );

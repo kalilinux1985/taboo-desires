@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover.tsx";
 import HideOnError from "./hide-on-error.tsx";
+import ProfileAvatar from "./profile-avatar.tsx";
 
 /** How many of the latest conversations the dropdown shows. */
 const DROPDOWN_COUNT = 6;
@@ -42,9 +43,7 @@ function DropdownList({ onPick }: { onPick: () => void }) {
               c.unread && "bg-primary/15",
             )}
           >
-            <span className="size-10 shrink-0 overflow-hidden rounded-[1px] bg-muted">
-              {c.listing?.imageUrl && <img src={c.listing.imageUrl} alt="" className="size-full object-cover" />}
-            </span>
+            <ProfileAvatar name={c.other.name} url={c.other.avatarUrl} className="size-10 rounded-[1px] text-lg" />
             <span className="flex min-w-0 flex-1 flex-col">
               <span className="flex items-baseline justify-between gap-2">
                 <span className={cn("truncate text-sm", c.unread ? "font-bold" : "font-medium")}>{c.other.name}</span>
