@@ -2,7 +2,7 @@ import { createContext, useContext, useState } from "react";
 import { useBackendAuth, usePaginatedQuery, useMutation, useQuery } from "@/lib/backend/react.tsx";
 import { Authenticated, Unauthenticated } from "@/lib/backend/react.tsx";
 import Link from "next/link";
-import { Heart, Medal, MessagesSquare, Reply, Send, Trash2 } from "lucide-react";
+import { Heart, Medal, MessageCircle, MessagesSquare, Reply, Send, ThumbsUp, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/backend/api.ts";
 import type { FunctionReturnType, Id } from "@/lib/backend/types.ts";
@@ -12,6 +12,7 @@ import ProfileAvatar from "@/components/profile-avatar.tsx";
 import { getErrorMessage } from "@/lib/listings.ts";
 import { cn } from "@/lib/utils.ts";
 import { useUpgradeGate } from "@/hooks/use-upgrade-gate.ts";
+import LikerAvatars from "./liker-avatars.tsx";
 import { shortAge } from "../_lib/feed.ts";
 
 type Comment = FunctionReturnType<typeof api.posts.listComments>["page"][number];
@@ -170,20 +171,33 @@ function CommentItem({
             <p className="whitespace-pre-wrap break-words text-[12px] leading-5 text-[#f5f7f6]">{comment.body}</p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-1 pl-0.5 text-[12.5px] text-[#9da1a2]">
-            <button
-              type="button"
-              aria-pressed={comment.likedByMe}
-              onClick={like}
-              className={cn(TEXT_ACTION, comment.likedByMe && "text-violet-500")}
-            >
-              {comment.likedByMe ? "Liked" : "Like"}
-            </button>
+          {/* Same as the post's actions: outlined violet icons, reply first, then like with its count and likers */}
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-1 pl-0.5 text-[12px] text-[#9da1a2]">
             <Authenticated>
-              <button type="button" onClick={() => setReplying((r) => !r)} className={cn(TEXT_ACTION, replying && "text-violet-500")}>
-                Reply
+              <button
+                type="button"
+                onClick={() => setReplying((r) => !r)}
+                aria-label={`Reply to ${comment.author.name}`}
+                title="Reply"
+                className={TEXT_ACTION}
+              >
+                <MessageCircle className="size-4 text-violet-600" />
               </button>
             </Authenticated>
+            <div className="flex items-center gap-2.5">
+              <button
+                type="button"
+                aria-pressed={comment.likedByMe}
+                aria-label={comment.likedByMe ? "Unlike comment" : "Like comment"}
+                title={comment.likedByMe ? "Unlike" : "Like"}
+                onClick={like}
+                className={cn(TEXT_ACTION, "flex items-center gap-1.5")}
+              >
+                <ThumbsUp className="size-4 text-violet-600" />
+                <span>{comment.likeCount}</span>
+              </button>
+              <LikerAvatars likers={comment.likers} total={comment.likeCount} size="sm" />
+            </div>
             {isTop && comment.replyCount > 0 && (
               <button
                 type="button"

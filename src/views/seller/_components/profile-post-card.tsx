@@ -125,7 +125,7 @@ export default function ProfilePostCard({ item }: { item: FeedItem }) {
           title="Comments"
           className={cn(ACTION, showComments && "text-[#f9f9f9]")}
         >
-          <MessageCircle className={cn("size-4", showComments ? "text-violet-400" : "text-violet-600")} />
+          <MessageCircle className="size-4 text-violet-600" />
         </button>
         <div className="flex items-center gap-2.5">
           <button
@@ -136,10 +136,7 @@ export default function ProfilePostCard({ item }: { item: FeedItem }) {
             title={item.likedByMe ? "Unlike" : "Like"}
             className={cn(ACTION, item.likedByMe && "text-[#f9f9f9]")}
           >
-            <ThumbsUp
-              className={cn("size-4", item.likedByMe ? "text-violet-400" : "text-violet-600")}
-              strokeWidth={item.likedByMe ? 2.5 : 2}
-            />
+            <ThumbsUp className="size-4 text-violet-600" />
             <span>{item.likeCount}</span>
           </button>
           <LikerAvatars likers={item.likers} total={item.likeCount} postId={item._id} size="sm" />
