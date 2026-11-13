@@ -22,12 +22,12 @@ function LikerFace({ liker, className }: { liker: Liker; className?: string }) {
       href={`/seller/${liker._id}`}
       title={liker.name}
       aria-label={liker.name}
-      className={cn("flex shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full", className)}
+      className={cn("flex shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-[1px] bg-[#a8a9ae]", className)}
     >
       {liker.avatarUrl ? (
         <img src={liker.avatarUrl} alt="" loading="lazy" className="size-full object-cover" />
       ) : (
-        <PersonStanding className="size-5 text-muted-foreground" />
+        <PersonStanding className="size-[70%] text-[#2a2a2e]" />
       )}
     </Link>
   );
@@ -64,7 +64,7 @@ export default function LikerAvatars({
   postId?: Id<"posts">;
   size?: "sm" | "md";
 }) {
-  const face = size === "sm" ? "size-7" : "size-8";
+  const face = size === "sm" ? "size-5" : "size-6";
   return (
     <>
       {likers.map((l) => (
