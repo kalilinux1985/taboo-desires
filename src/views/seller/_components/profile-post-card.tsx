@@ -19,6 +19,7 @@ import {
 import ProfileAvatar from "@/components/profile-avatar.tsx";
 import { ListingPreview, PostImages, roleLabel } from "@/views/home/_components/post-card.tsx";
 import PostComments from "@/views/home/_components/post-comments.tsx";
+import LikerAvatars from "@/views/home/_components/liker-avatars.tsx";
 import { activityVerb, shortAge, type FeedItem } from "@/views/home/_lib/feed.ts";
 
 const ACTION = "flex cursor-pointer items-center gap-1.5 transition-colors hover:text-[#f9f9f9]";
@@ -115,25 +116,34 @@ export default function ProfilePostCard({ item }: { item: FeedItem }) {
         <p className="mt-3 text-sm text-[#66656a]">This listing is no longer available.</p>
       )}
 
-      <div className="mt-4 flex items-center gap-6 text-[12px] text-[#9fa0a2]">
-        <button
-          type="button"
-          onClick={like}
-          aria-pressed={item.likedByMe}
-          className={cn(ACTION, item.likedByMe && "text-[#f9f9f9]")}
-        >
-          <ThumbsUp className="size-3.5 text-violet-600" />
-          {item.likedByMe ? "Liked" : "Like"}
-        </button>
+      <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-[12px] text-[#9fa0a2]">
         <button
           type="button"
           onClick={() => setShowComments((s) => !s)}
           aria-expanded={showComments}
+          aria-label={showComments ? "Hide comments" : "Show comments"}
+          title="Comments"
           className={cn(ACTION, showComments && "text-[#f9f9f9]")}
         >
-          <MessageCircle className="size-3.5 text-violet-600" />
-          Comments
+          <MessageCircle className={cn("size-4", showComments ? "text-violet-400" : "text-violet-600")} />
         </button>
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={like}
+            aria-pressed={item.likedByMe}
+            aria-label={item.likedByMe ? "Unlike" : "Like"}
+            title={item.likedByMe ? "Unlike" : "Like"}
+            className={cn(ACTION, item.likedByMe && "text-[#f9f9f9]")}
+          >
+            <ThumbsUp
+              className={cn("size-4", item.likedByMe ? "text-violet-400" : "text-violet-600")}
+              strokeWidth={item.likedByMe ? 2.5 : 2}
+            />
+            <span>{item.likeCount}</span>
+          </button>
+          <LikerAvatars likers={item.likers} total={item.likeCount} postId={item._id} size="sm" />
+        </div>
         <button type="button" onClick={share} className={cn(ACTION, "ml-auto")}>
           <Forward className="size-3.5 text-violet-600" />
           Share
