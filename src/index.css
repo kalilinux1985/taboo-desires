@@ -169,10 +169,10 @@
   }
 
   /* Cards are the profile's cards: #030917 at 50%, 1px white border at 25%, 1px corners */
-  [data-slot="card"] {
+  [data-slot="card-light"] {
     border-color: rgb(255 255 255 / 25%) !important;
     border-radius: 1px !important;
-    background-color: rgb(3 9 23 / 50%) !important;
+    background-color: #03091780 !important;
     box-shadow: 0 14px 34px -8px rgba(0, 0, 0, 0.3) !important;
   }
 }
