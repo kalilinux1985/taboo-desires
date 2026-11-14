@@ -133,6 +133,7 @@ var TABLES = {
       role: c("role"),
       accountType: c("account_type"),
       verified: c("verified", "bool"),
+      ageVerified: c("age_verified", "bool"),
       sellerDetails: c("seller_details", "json"),
       settings: c("settings", "json"),
       buyerDetails: c("buyer_details", "json")
@@ -155,6 +156,19 @@ var TABLES = {
       userId: c("user_id", "uuid"),
       status: c("status"),
       photoStorageId: c("photo_storage_id"),
+      requestedAt: c("requested_at", "ts"),
+      reviewedAt: c("reviewed_at", "ts"),
+      reason: c("reason")
+    }
+  },
+  ageVerifications: {
+    sqlName: "age_verifications",
+    columns: {
+      userId: c("user_id", "uuid"),
+      status: c("status"),
+      birthDate: c("birth_date"),
+      idStorageId: c("id_storage_id"),
+      selfieStorageId: c("selfie_storage_id"),
       requestedAt: c("requested_at", "ts"),
       reviewedAt: c("reviewed_at", "ts"),
       reason: c("reason")
@@ -955,7 +969,11 @@ var deleteMyAccount = mutation({
       union all
       select storage_id from public.profile_photos where user_id = ${id}::uuid
       union all
-      select photo_storage_id from public.verifications where user_id = ${id}::uuid and photo_storage_id is not null`);
+      select photo_storage_id from public.verifications where user_id = ${id}::uuid and photo_storage_id is not null
+      union all
+      select id_storage_id from public.age_verifications where user_id = ${id}::uuid and id_storage_id is not null
+      union all
+      select selfie_storage_id from public.age_verifications where user_id = ${id}::uuid and selfie_storage_id is not null`);
     ctx.storage.delete(user.avatarStorageId);
     for (const f of files) ctx.storage.delete(f.storage_id);
     await ctx.db.rows(sql`
@@ -997,6 +1015,243 @@ var deleteMyAccount = mutation({
         from public.follows f
        where f.follower_id = ${id}::uuid and s.seller_id = f.seller_id`);
     await ctx.db.delete("users", id);
+    return null;
+  }
+});
+
+// supabase/functions/_shared/modules/ageVerification.ts
+var ageVerification_exports = {};
+__export(ageVerification_exports, {
+  adminPending: () => adminPending,
+  mine: () => mine,
+  review: () => review,
+  submit: () => submit
+});
+
+// supabase/functions/_shared/domain/plans.ts
+var PLAN_LIMITS = {
+  free: { maxPhotos: 4, auctions: false, lockedContent: false },
+  pro: { maxPhotos: 12, auctions: true, lockedContent: true }
+};
+var LOCKED_MEDIA_MAX = 10;
+var APPROVAL_MONTHS = [1, 3, 6, 12];
+function isAllowedMonths(months) {
+  return APPROVAL_MONTHS.includes(months);
+}
+function isProActive(sub, nowMs) {
+  return !!sub && (sub.status === "active" || sub.status === "pending") && !!sub.expiresAt && Date.parse(sub.expiresAt) > nowMs;
+}
+function addMonthsIso(fromMs, months) {
+  const d = new Date(fromMs);
+  const day = d.getUTCDate();
+  d.setUTCDate(1);
+  d.setUTCMonth(d.getUTCMonth() + months);
+  const lastDay = new Date(
+    Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)
+  ).getUTCDate();
+  d.setUTCDate(Math.min(day, lastDay));
+  return d.toISOString();
+}
+function nextExpiry(sub, months, nowMs) {
+  const base = isProActive(sub, nowMs) && sub?.expiresAt ? Date.parse(sub.expiresAt) : nowMs;
+  return addMonthsIso(base, months);
+}
+
+// supabase/functions/_shared/lib/subscription.ts
+async function getSubscription(ctx, userId) {
+  return await ctx.db.first(
+    "subscriptions",
+    sql`where user_id = ${userId}::uuid`
+  );
+}
+async function getPlan(ctx, userId) {
+  return isProActive(await getSubscription(ctx, userId), ctx.now()) ? "pro" : "free";
+}
+async function requireAdmin(ctx) {
+  const user = await requireUser(ctx);
+  if (user.role !== "admin")
+    throw new AppError({ code: "FORBIDDEN", message: "Admins only" });
+  return user;
+}
+
+// supabase/functions/_shared/domain/age.ts
+var MIN_AGE = 18;
+function parseBirthDate(value) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());
+  if (!m) return null;
+  const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
+  if (y < 1900) return null;
+  const date = new Date(Date.UTC(y, mo - 1, d));
+  const real = date.getUTCFullYear() === y && date.getUTCMonth() === mo - 1 && date.getUTCDate() === d;
+  return real ? m[0] : null;
+}
+var pad = (n) => String(n).padStart(2, "0");
+function isAdult(birthDate, today) {
+  const cutoff = `${today.getUTCFullYear() - MIN_AGE}-${pad(today.getUTCMonth() + 1)}-${pad(today.getUTCDate())}`;
+  return birthDate <= cutoff;
+}
+function ageOn(birthDate, today) {
+  const [y, m, d] = birthDate.split("-").map(Number);
+  let age = today.getUTCFullYear() - y;
+  const before = today.getUTCMonth() + 1 < m || today.getUTCMonth() + 1 === m && today.getUTCDate() < d;
+  if (before) age -= 1;
+  return age;
+}
+
+// supabase/functions/_shared/modules/ageVerification.ts
+var REASON_MAX = 300;
+async function getRow(ctx, userId) {
+  return await ctx.db.first(
+    "ageVerifications",
+    sql`where user_id = ${userId}::uuid`
+  );
+}
+var bad = (message) => new AppError({ code: "BAD_REQUEST", message });
+async function requireOwnImage(ctx, storageId, userId) {
+  if (!isOwnFile(storageId, userId, "private"))
+    throw new AppError({ code: "NOT_FOUND", message: "Photo not found" });
+  const contentType = await ctx.storage.getContentType(storageId);
+  if (contentType === void 0)
+    throw new AppError({ code: "NOT_FOUND", message: "Photo not found" });
+  if (contentType && !contentType.startsWith("image/"))
+    throw bad("Please upload photos only");
+}
+var mine = query({
+  args: {},
+  handler: async (ctx) => {
+    const me = await getCurrentUserDoc(ctx);
+    if (!me) return null;
+    const row = await getRow(ctx, me._id);
+    return {
+      verified: !!me.ageVerified,
+      status: row?.status ?? null,
+      reason: row?.status === "rejected" ? row.reason ?? null : null
+    };
+  }
+});
+var submit = mutation({
+  args: {
+    birthDate: v.string(),
+    // Not needed for an under-18 date of birth
+    idPhotoStorageId: v.optional(v.storageId()),
+    selfieStorageId: v.optional(v.storageId())
+  },
+  handler: async (ctx, { birthDate, idPhotoStorageId, selfieStorageId }) => {
+    const me = await requireUser(ctx);
+    const conflict = (message) => new AppError({ code: "CONFLICT", message });
+    if (me.ageVerified) throw conflict("Your age is already verified");
+    const existing = await getRow(ctx, me._id);
+    if (existing?.status === "pending")
+      throw conflict("Your documents are already in review");
+    if (existing?.status === "underage")
+      throw new AppError({
+        code: "FORBIDDEN",
+        message: `You must be ${MIN_AGE} or older to use this site`
+      });
+    const born = parseBirthDate(birthDate);
+    if (!born) throw bad("Enter your date of birth");
+    const now = new Date(ctx.now());
+    if (!isAdult(born, now)) {
+      ctx.storage.delete(idPhotoStorageId);
+      ctx.storage.delete(selfieStorageId);
+      const fields2 = {
+        status: "underage",
+        birthDate: void 0,
+        idStorageId: void 0,
+        selfieStorageId: void 0,
+        requestedAt: now.toISOString(),
+        reviewedAt: now.toISOString(),
+        reason: void 0
+      };
+      if (existing) await ctx.db.patch("ageVerifications", existing._id, fields2);
+      else await ctx.db.insert("ageVerifications", { userId: me._id, ...fields2 });
+      return { status: "underage" };
+    }
+    if (!idPhotoStorageId || !selfieStorageId)
+      throw bad("Add both photos: your ID and a selfie holding it");
+    if (idPhotoStorageId === selfieStorageId)
+      throw bad("Send two different photos: your ID and a selfie holding it");
+    await requireOwnImage(ctx, idPhotoStorageId, me._id);
+    await requireOwnImage(ctx, selfieStorageId, me._id);
+    const fields = {
+      status: "pending",
+      birthDate: born,
+      idStorageId: idPhotoStorageId,
+      selfieStorageId,
+      requestedAt: now.toISOString(),
+      reviewedAt: void 0,
+      reason: void 0
+    };
+    if (existing) {
+      ctx.storage.delete(existing.idStorageId);
+      ctx.storage.delete(existing.selfieStorageId);
+      await ctx.db.patch("ageVerifications", existing._id, fields);
+    } else {
+      await ctx.db.insert("ageVerifications", { userId: me._id, ...fields });
+    }
+    return { status: "pending" };
+  }
+});
+var adminPending = query({
+  args: { paginationOpts: paginationOptsValidator },
+  handler: async (ctx, { paginationOpts }) => {
+    await requireAdmin(ctx);
+    const result = await ctx.db.paginate(
+      "ageVerifications",
+      {
+        where: sql`status = 'pending'`,
+        order: [{ column: "requested_at", cast: "timestamptz" }],
+        direction: "asc"
+      },
+      paginationOpts
+    );
+    const now = new Date(ctx.now());
+    return {
+      ...result,
+      page: await Promise.all(
+        result.page.map(async (r) => {
+          const user = await ctx.db.get("users", r.userId);
+          return {
+            _id: r._id,
+            userId: r.userId,
+            memberName: user ? publicSellerName(user) : "Deleted user",
+            email: user?.email ?? null,
+            accountType: user?.accountType ?? null,
+            birthDate: r.birthDate ?? null,
+            age: r.birthDate ? ageOn(r.birthDate, now) : null,
+            requestedAt: r.requestedAt,
+            idUrl: r.idStorageId ? await ctx.storage.getUrl(r.idStorageId) : null,
+            selfieUrl: r.selfieStorageId ? await ctx.storage.getUrl(r.selfieStorageId) : null
+          };
+        })
+      )
+    };
+  }
+});
+var review = mutation({
+  args: {
+    verificationId: v.id("ageVerifications"),
+    approve: v.boolean(),
+    reason: v.optional(v.string())
+  },
+  handler: async (ctx, { verificationId, approve: approve2, reason }) => {
+    await requireAdmin(ctx);
+    const row = await ctx.db.get("ageVerifications", verificationId);
+    if (!row || row.status !== "pending") throw bad("Not a pending request");
+    const note = reason?.trim();
+    if (note && note.length > REASON_MAX) throw bad("Reason is too long");
+    if (approve2 && (!row.birthDate || !isAdult(row.birthDate, new Date(ctx.now()))))
+      throw bad("The date of birth shows they're under 18. Decline instead.");
+    ctx.storage.delete(row.idStorageId);
+    ctx.storage.delete(row.selfieStorageId);
+    await ctx.db.patch("ageVerifications", verificationId, {
+      status: approve2 ? "approved" : "rejected",
+      idStorageId: void 0,
+      selfieStorageId: void 0,
+      reviewedAt: new Date(ctx.now()).toISOString(),
+      reason: approve2 ? void 0 : note || void 0
+    });
+    if (approve2) await ctx.db.patch("users", row.userId, { ageVerified: true });
     return null;
   }
 });
@@ -1052,7 +1307,7 @@ async function getActivity(ctx, userId) {
 }
 var YEAR_MS = 365 * 24 * 60 * 60 * 1e3;
 async function getBadges(ctx, user) {
-  const [review2, photo] = await Promise.all([
+  const [review3, photo] = await Promise.all([
     ctx.db.first("reviews", sql`where reviewer_id = ${user._id}::uuid`),
     ctx.db.first("profilePhotos", sql`where user_id = ${user._id}::uuid`)
   ]);
@@ -1099,7 +1354,7 @@ async function getBadges(ctx, user) {
       }
     ],
     [
-      !!review2,
+      !!review3,
       {
         key: "reviewer",
         label: "Reviewer",
@@ -1138,52 +1393,6 @@ async function createAuction(ctx, args) {
     endsAt: new Date(endsAtMs).toISOString(),
     status: "live"
   });
-}
-
-// supabase/functions/_shared/domain/plans.ts
-var PLAN_LIMITS = {
-  free: { maxPhotos: 4, auctions: false, lockedContent: false },
-  pro: { maxPhotos: 12, auctions: true, lockedContent: true }
-};
-var LOCKED_MEDIA_MAX = 10;
-var APPROVAL_MONTHS = [1, 3, 6, 12];
-function isAllowedMonths(months) {
-  return APPROVAL_MONTHS.includes(months);
-}
-function isProActive(sub, nowMs) {
-  return !!sub && (sub.status === "active" || sub.status === "pending") && !!sub.expiresAt && Date.parse(sub.expiresAt) > nowMs;
-}
-function addMonthsIso(fromMs, months) {
-  const d = new Date(fromMs);
-  const day = d.getUTCDate();
-  d.setUTCDate(1);
-  d.setUTCMonth(d.getUTCMonth() + months);
-  const lastDay = new Date(
-    Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)
-  ).getUTCDate();
-  d.setUTCDate(Math.min(day, lastDay));
-  return d.toISOString();
-}
-function nextExpiry(sub, months, nowMs) {
-  const base = isProActive(sub, nowMs) && sub?.expiresAt ? Date.parse(sub.expiresAt) : nowMs;
-  return addMonthsIso(base, months);
-}
-
-// supabase/functions/_shared/lib/subscription.ts
-async function getSubscription(ctx, userId) {
-  return await ctx.db.first(
-    "subscriptions",
-    sql`where user_id = ${userId}::uuid`
-  );
-}
-async function getPlan(ctx, userId) {
-  return isProActive(await getSubscription(ctx, userId), ctx.now()) ? "pro" : "free";
-}
-async function requireAdmin(ctx) {
-  const user = await requireUser(ctx);
-  if (user.role !== "admin")
-    throw new AppError({ code: "FORBIDDEN", message: "Admins only" });
-  return user;
 }
 
 // supabase/functions/_shared/lib/listingCard.ts
@@ -1228,8 +1437,10 @@ async function toCard(ctx, listing) {
 // supabase/functions/_shared/domain/accounts.ts
 var BUYER_PHOTO_MAX = 5;
 var PROFILE_PHOTO_PREVIEW = 6;
-function capabilities(accountType, isPro, isAdmin) {
+function capabilities(accountType, isPro, isAdmin, ageVerified) {
   if (isAdmin) return { post: true, message: true, list: true, buy: true };
+  if (!ageVerified)
+    return { post: false, message: false, list: false, buy: false };
   if (accountType === "buyer")
     return { post: true, message: true, list: false, buy: true };
   if (accountType === "seller")
@@ -1258,14 +1469,21 @@ var DENIED = {
     none: "Choose an account type first"
   }
 };
-function deniedMessage(action, accountType) {
+var AGE_DENIED = "Verify your age (18+) first to do this";
+function deniedMessage(action, accountType, ageVerified = true) {
+  if (!ageVerified) return AGE_DENIED;
   return DENIED[action][accountType ?? "none"];
 }
 
 // supabase/functions/_shared/lib/access.ts
 async function getCapabilities(ctx, user) {
   const isPro = await getPlan(ctx, user._id) === "pro";
-  return capabilities(user.accountType, isPro, user.role === "admin");
+  return capabilities(
+    user.accountType,
+    isPro,
+    user.role === "admin",
+    !!user.ageVerified
+  );
 }
 async function requireCapability(ctx, action) {
   const user = await requireUser(ctx);
@@ -1273,7 +1491,7 @@ async function requireCapability(ctx, action) {
   if (!can[action]) {
     throw new AppError({
       code: "FORBIDDEN",
-      message: deniedMessage(action, user.accountType)
+      message: deniedMessage(action, user.accountType, !!user.ageVerified)
     });
   }
   return user;
@@ -1550,12 +1768,12 @@ async function canViewLocked(ctx, listing, user) {
   return (await getUnlock(ctx, listing._id, user._id))?.status === "granted";
 }
 async function validateLockedMedia(ctx, sellerId, media, previewCount, alreadyAttached = []) {
-  const bad = (message) => new AppError({ code: "BAD_REQUEST", message });
-  if (media.length < 1) throw bad("Add at least one photo or video");
+  const bad2 = (message) => new AppError({ code: "BAD_REQUEST", message });
+  if (media.length < 1) throw bad2("Add at least one photo or video");
   if (media.length > LOCKED_MEDIA_MAX)
-    throw bad(`Locked listings can hold up to ${LOCKED_MEDIA_MAX} files`);
+    throw bad2(`Locked listings can hold up to ${LOCKED_MEDIA_MAX} files`);
   if (previewCount !== media.length)
-    throw bad("Every file needs a blurred preview");
+    throw bad2("Every file needs a blurred preview");
   assertOwnFiles(
     media.map((m) => m.storageId),
     sellerId,
@@ -1567,9 +1785,9 @@ async function validateLockedMedia(ctx, sellerId, media, previewCount, alreadyAt
   );
   types.forEach((type, i) => {
     if (type === void 0)
-      throw bad("A file is missing. Please upload it again");
+      throw bad2("A file is missing. Please upload it again");
     if (type && !type.startsWith(`${media[i].kind}/`))
-      throw bad("Unsupported file type");
+      throw bad2("Unsupported file type");
   });
 }
 
@@ -2007,17 +2225,17 @@ var listingFields = {
   )
 };
 function validateListing(input) {
-  const bad = (message) => new AppError({ code: "BAD_REQUEST", message });
+  const bad2 = (message) => new AppError({ code: "BAD_REQUEST", message });
   if (input.title.trim().length < 3 || input.title.length > 80)
-    throw bad("Title must be 3-80 characters");
-  if (input.description.length > 2e3) throw bad("Description is too long");
-  if (!input.brand.trim()) throw bad("Brand is required");
-  if (!input.size.trim()) throw bad("Size is required");
+    throw bad2("Title must be 3-80 characters");
+  if (input.description.length > 2e3) throw bad2("Description is too long");
+  if (!input.brand.trim()) throw bad2("Brand is required");
+  if (!input.size.trim()) throw bad2("Size is required");
   if (!Number.isInteger(input.priceCents) || input.priceCents < 100 || input.priceCents > MAX_PRICE_CENTS)
-    throw bad("Price must be between $1 and $100,000");
-  if (input.imageIds.length < 1) throw bad("Add at least one photo");
+    throw bad2("Price must be between $1 and $100,000");
+  if (input.imageIds.length < 1) throw bad2("Add at least one photo");
   if (input.subcategory && subcategoryInfo(input.subcategory)?.category !== input.category)
-    throw bad("That type doesn't belong to the chosen category");
+    throw bad2("That type doesn't belong to the chosen category");
 }
 function checkPhotoLimit(count, maxPhotos, alreadyHad = 0) {
   if (count > Math.max(maxPhotos, alreadyHad))
@@ -2598,7 +2816,7 @@ var favorites_exports = {};
 __export(favorites_exports, {
   followedSellers: () => followedSellers,
   isFavorite: () => isFavorite,
-  mine: () => mine,
+  mine: () => mine2,
   toggle: () => toggle
 });
 async function findFavorite(ctx, userId, listingId) {
@@ -2636,7 +2854,7 @@ var toggle = mutation({
     return true;
   }
 });
-var mine = query({
+var mine2 = query({
   args: { paginationOpts: paginationOptsValidator },
   handler: async (ctx, { paginationOpts }) => {
     const me = await requireUser(ctx);
@@ -3660,14 +3878,14 @@ var myReview = query({
   handler: async (ctx, { sellerId }) => {
     const me = await getCurrentUserDoc(ctx);
     if (!me) return null;
-    const [can, eligible, review2] = await Promise.all([
+    const [can, eligible, review3] = await Promise.all([
       getCapabilities(ctx, me),
       canReview(ctx, me._id, sellerId),
       findReview(ctx, sellerId, me._id)
     ]);
     return {
       eligible: can.buy && eligible,
-      review: review2 ? { rating: review2.rating, body: review2.body } : null
+      review: review3 ? { rating: review3.rating, body: review3.body } : null
     };
   }
 });
@@ -3736,13 +3954,13 @@ __export(subscriptions_exports, {
   cancelRequest: () => cancelRequest,
   decline: () => decline,
   featured: () => featured,
-  mine: () => mine2,
+  mine: () => mine3,
   requestPro: () => requestPro,
   revoke: () => revoke
 });
 var MAX_NOTE2 = 500;
 var FEATURED_SELLERS = 8;
-var mine2 = query({
+var mine3 = query({
   args: {},
   handler: async (ctx) => {
     const me = await getCurrentUserDoc(ctx);
@@ -4152,7 +4370,8 @@ var updateCurrentUser = mutation({
       tokenIdentifier: identity.tokenIdentifier,
       name: identity.name,
       email: identity.email,
-      verified: false
+      verified: false,
+      ageVerified: false
     });
   }
 });
@@ -4195,6 +4414,7 @@ var myAccess = query({
       accountType: me.accountType ?? null,
       isPro,
       isAdmin: me.role === "admin",
+      ageVerified: !!me.ageVerified,
       can: await getCapabilities(ctx, me)
     };
   }
@@ -4491,20 +4711,20 @@ var search = query({
 // supabase/functions/_shared/modules/verification.ts
 var verification_exports = {};
 __export(verification_exports, {
-  adminPending: () => adminPending,
-  mine: () => mine3,
-  review: () => review,
+  adminPending: () => adminPending2,
+  mine: () => mine4,
+  review: () => review2,
   revoke: () => revoke2,
-  submit: () => submit
+  submit: () => submit2
 });
-var REASON_MAX = 300;
+var REASON_MAX2 = 300;
 async function getVerification(ctx, userId) {
   return await ctx.db.first(
     "verifications",
     sql`where user_id = ${userId}::uuid`
   );
 }
-var mine3 = query({
+var mine4 = query({
   args: {},
   handler: async (ctx) => {
     const me = await getCurrentUserDoc(ctx);
@@ -4517,7 +4737,7 @@ var mine3 = query({
     };
   }
 });
-var submit = mutation({
+var submit2 = mutation({
   args: { photoStorageId: v.storageId() },
   handler: async (ctx, { photoStorageId }) => {
     const me = await requireUser(ctx);
@@ -4549,7 +4769,7 @@ var submit = mutation({
     return null;
   }
 });
-var adminPending = query({
+var adminPending2 = query({
   args: { paginationOpts: paginationOptsValidator },
   handler: async (ctx, { paginationOpts }) => {
     await requireAdmin(ctx);
@@ -4580,7 +4800,7 @@ var adminPending = query({
     };
   }
 });
-var review = mutation({
+var review2 = mutation({
   args: {
     verificationId: v.id("verifications"),
     approve: v.boolean(),
@@ -4595,7 +4815,7 @@ var review = mutation({
         message: "Not a pending request"
       });
     const note = reason?.trim();
-    if (note && note.length > REASON_MAX)
+    if (note && note.length > REASON_MAX2)
       throw new AppError({
         code: "BAD_REQUEST",
         message: "Reason is too long"
@@ -4638,6 +4858,7 @@ function functionsOf(mod) {
 var registry = {
   accountDeletion: functionsOf(accountDeletion_exports),
   activity: functionsOf(activity_exports),
+  ageVerification: functionsOf(ageVerification_exports),
   auctions: functionsOf(auctions_exports),
   customRequests: functionsOf(customRequests_exports),
   favorites: functionsOf(favorites_exports),
