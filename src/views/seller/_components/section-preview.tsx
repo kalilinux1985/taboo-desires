@@ -22,14 +22,14 @@ export default function SectionPreview({
 }) {
   return (
     <section className="flex flex-col gap-4 border-b border-white/25 pb-8">
-      <h2 className="w-fit border-b-2 border-violet-600 pb-1.5 text-2xl font-bold">
+      <h2 className="w-fit border-b-2 border-violet-bright pb-1.5 text-2xl font-bold">
         {title} <span className="font-normal text-violet-600">{count} {unit}</span>
       </h2>
       <Button variant="ghost" className={OUTLINE_VIOLET} onClick={onViewAll}>
         {actionLabel}
       </Button>
       {count === 0 ? (
-        <div className="rounded-[1px] bg-accent/40 px-4 py-4 text-sm text-accent-foreground">{emptyLabel}</div>
+        <div className="rounded-[2px] bg-accent/40 px-4 py-4 text-sm text-accent-foreground">{emptyLabel}</div>
       ) : (
         children
       )}

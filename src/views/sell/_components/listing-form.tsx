@@ -148,16 +148,16 @@ export default function ListingForm({
   return (
     <Form {...form}>
       <form onSubmit={submit} className="flex flex-col gap-6">
-        <div className="flex items-start justify-between gap-4 rounded-[1px] border border-white/25 bg-card shadow-[0_14px_34px_-8px_rgba(0,0,0,0.3)] p-4">
+        <div className="flex items-start justify-between gap-4 rounded-[2px] border border-white/25 bg-card shadow-[0_14px_34px_-8px_rgba(0,0,0,0.3)] p-4">
           <div className="flex gap-3">
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-[1px] bg-accent text-accent-foreground">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-[2px] bg-accent text-accent-foreground">
               <Lock className="size-4" />
             </span>
             <div className="flex flex-col gap-0.5">
               <label htmlFor="paywall" className="flex items-center gap-2 font-semibold">
                 Paywall this listing
                 {!lockedAllowed && mine !== undefined && (
-                  <span className="flex items-center gap-1 rounded-[1px] bg-primary px-2 py-0.5 text-[10px] font-bold uppercase text-primary-foreground">
+                  <span className="flex items-center gap-1 rounded-[2px] bg-primary px-2 py-0.5 text-[10px] font-bold uppercase text-primary-foreground">
                     <Crown className="size-3" /> Pro
                   </span>
                 )}

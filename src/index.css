@@ -13,8 +13,9 @@
   --font-display: var(--font-playfair), "Playfair Display", ui-serif, Georgia, serif;
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 
-  /* The site's violet is #7f22fe (violet-600 everywhere) */
-  --color-violet-600: #7f22fe;
+  /* Violet: #5b21b6 for violet fills and text, #8200db for violet outlines and hover fills */
+  --color-violet-600: #5b21b6;
+  --color-violet-bright: #8200db;
 
   /* Shadows are the profile's: black at 30% */
   --shadow-2xs: 0 1px 2px rgb(0 0 0 / 30%);
@@ -85,7 +86,7 @@
   --destructive: oklch(0.66 0.22 18);
   --border: rgb(255 255 255 / 25%); /* white at 25% */
   --input: rgb(255 255 255 / 25%); /* white at 25% */
-  --ring: rgb(127 34 254 / 70%);
+  --ring: #8200db;
   --chart-1: #7f22fe;
   --chart-2: #8b5cf6;
   --chart-3: #6d28d9;
@@ -103,7 +104,17 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply outline-ring;
+    border-color: rgb(255 255 255 / 42%); /* white at 42% */
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-profile-heading), ui-serif, Georgia, serif;
   }
 
   body {
@@ -123,7 +134,7 @@
 @layer base {
   html,
   body {
-    background-color: var(--background) !important;
+    background-color: #09090b !important;
   }
 
   /* Comments, replies and the comment box */
@@ -150,11 +161,11 @@
   select,
   [data-slot="select-trigger"],
   [role="combobox"] {
-    background-color: var(--background) !important;
-    border-color: rgb(255 255 255 / 25%) !important;
+    background-color: rgb(9 9 11 / 83%) !important; /* #09090b at 83% */
+    border-color: rgb(255 255 255 / 14%) !important;
     box-shadow:
-      inset 0 3px 8px rgba(0, 0, 0, 0.28),
-      inset 0 0 3px rgba(0, 0, 0, 0.28) !important;
+      inset 0 3px 13px #000,
+      inset 3px 5px 4px rgb(28 28 28 / 24%) !important;
   }
 
   /* A field drawn by its container (the header search) */

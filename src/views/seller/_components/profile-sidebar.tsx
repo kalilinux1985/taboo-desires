@@ -107,7 +107,7 @@ export default function ProfileSidebar({ profile }: { profile: Profile }) {
 export function ProfileHeaderCard({ profile }: { profile: Profile }) {
   const button = cn(
     DISPLAY_FONT,
-    "inline-flex h-[34px] w-full max-w-[252px] cursor-pointer items-center justify-center rounded-[1px] bg-[#260053] px-5 text-[17px] font-semibold tracking-[0.06em] text-[#dddddd] transition-colors hover:bg-violet-600 hover:text-white",
+    "inline-flex h-[34px] w-full max-w-[252px] cursor-pointer items-center justify-center rounded-[2px] bg-[#260053] px-5 text-[17px] font-semibold tracking-[0.06em] text-[#dddddd] transition-colors hover:bg-violet-bright hover:text-white",
   );
   return (
     <section className={cn(PANEL, "p-[18px]")}>

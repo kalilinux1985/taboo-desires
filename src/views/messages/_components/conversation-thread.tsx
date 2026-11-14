@@ -121,7 +121,7 @@ function MessageList({
           <div className={cn("flex min-w-0 flex-col gap-1", mine ? "items-end" : "items-start")}>
             <div
               className={cn(
-                "whitespace-pre-wrap break-words rounded-[1px] px-3 py-2 text-sm",
+                "whitespace-pre-wrap break-words rounded-[2px] px-3 py-2 text-sm",
                 mine ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground",
               )}
             >
@@ -138,7 +138,7 @@ function MessageList({
           </div>
         ) : (
           <div key={m._id} className="flex max-w-[80%] items-start gap-2 self-start">
-            <ProfileAvatar name={other.name} url={other.avatarUrl} className="mt-0.5 size-7 rounded-[1px] text-xs" />
+            <ProfileAvatar name={other.name} url={other.avatarUrl} className="mt-0.5 size-7 rounded-[2px] text-xs" />
             {bubble}
           </div>
         );
@@ -192,10 +192,10 @@ export default function ConversationThread({
         {/* Who you're talking to, then the listing it's about */}
         {convo.other._id ? (
           <Link href={`/seller/${convo.other._id}`} className="flex shrink-0 cursor-pointer items-center gap-2.5">
-            <ProfileAvatar name={convo.other.name} url={convo.other.avatarUrl} className="size-11 rounded-[1px] text-lg" />
+            <ProfileAvatar name={convo.other.name} url={convo.other.avatarUrl} className="size-11 rounded-[2px] text-lg" />
           </Link>
         ) : (
-          <ProfileAvatar name={convo.other.name} url={convo.other.avatarUrl} className="size-11 rounded-[1px] text-lg" />
+          <ProfileAvatar name={convo.other.name} url={convo.other.avatarUrl} className="size-11 rounded-[2px] text-lg" />
         )}
         <div className="flex min-w-0 flex-1 flex-col">
           <p className="truncate font-semibold">
@@ -224,7 +224,7 @@ export default function ConversationThread({
           )}
         </div>
         {convo.listing?.imageUrl && (
-          <Link href={`/listing/${convo.listing._id}`} className="size-11 shrink-0 cursor-pointer overflow-hidden rounded-[1px] bg-muted">
+          <Link href={`/listing/${convo.listing._id}`} className="size-11 shrink-0 cursor-pointer overflow-hidden rounded-[2px] bg-muted">
             <img src={convo.listing.imageUrl} alt="" className="size-full object-cover" />
           </Link>
         )}

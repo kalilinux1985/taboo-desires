@@ -31,17 +31,17 @@ function SmallAvatar({ name, url }: { name: string; url: string | null }) {
       url={url}
       className={cn(
         "bg-[#a8a9ae] text-sm text-[#2a2a2e]",
-        profile ? "size-[27px] rounded-[1px]" : "size-[31px] rounded-full",
+        profile ? "size-[27px] rounded-[2px]" : "size-[31px] rounded-full",
       )}
     />
   );
 }
 
 /** Slate box of the design with an inner shadow (no drop shadow). */
-const COMMENT_BOX = "comment-surface rounded-[1px] bg-background shadow-[inset_0_3px_8px_rgba(0,0,0,0.28),inset_0_0_3px_rgba(0,0,0,0.28)]";
+const COMMENT_BOX = "comment-surface rounded-[2px] bg-background shadow-[inset_0_3px_8px_rgba(0,0,0,0.28),inset_0_0_3px_rgba(0,0,0,0.28)]";
 /** Navy box of the profile design with an inner shadow (the profile page keeps .comment-surface navy). */
 const PROFILE_BOX =
-  "comment-surface rounded-[1px] border border-white/25 bg-background shadow-[inset_0_3px_8px_rgba(0,0,0,0.28),inset_0_0_3px_rgba(0,0,0,0.28)]";
+  "comment-surface rounded-[2px] border border-white/25 bg-background shadow-[inset_0_3px_8px_rgba(0,0,0,0.28),inset_0_0_3px_rgba(0,0,0,0.28)]";
 const boxClass = (v: Variant) => (v === "profile" ? PROFILE_BOX : COMMENT_BOX);
 
 const LINK_ACTION = "flex cursor-pointer items-center gap-1.5 transition-colors hover:text-[#f2f6ff]";
@@ -330,7 +330,7 @@ function Replies({ postId, parentId }: { postId: Id<"posts">; parentId: Id<"post
 /** Shown instead of the comment box to sellers without Premium. */
 function PremiumNotice() {
   return (
-    <p className="rounded-[1px] border border-violet-600/40 bg-violet-600/10 px-4 py-3 text-center text-[13px] text-violet-600">
+    <p className="rounded-[2px] border border-violet-600/40 bg-violet-600/10 px-4 py-3 text-center text-[13px] text-violet-600">
       Adding comments to the activity feed is a Premium Seller feature.{" "}
       <Link href="/pricing?for=post" className="inline-flex cursor-pointer items-center gap-1 font-bold text-violet-600 hover:underline">
         <Medal className="size-4 text-rose-400" /> Go Premium &gt;

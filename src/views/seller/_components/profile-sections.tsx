@@ -82,7 +82,7 @@ function ProfileShopCard({ listing }: { listing: ListingCardData }) {
         {listing.imageUrl && (
           <img src={listing.imageUrl} alt={listing.title} loading="lazy" className="size-full object-cover" />
         )}
-        <span className="absolute -bottom-px left-[14px] flex size-[30px] items-center justify-center overflow-hidden rounded-[1px] bg-[#a8a9ae]">
+        <span className="absolute -bottom-px left-[14px] flex size-[30px] items-center justify-center overflow-hidden rounded-[2px] bg-[#a8a9ae]">
           {listing.sellerAvatarUrl ? (
             <img src={listing.sellerAvatarUrl} alt="" className="size-full object-cover" />
           ) : (
@@ -154,7 +154,7 @@ function ContentTile({
     <Link
       href={href}
       title={title}
-      className="group flex size-[73px] shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-[1px] border border-white/25 bg-[#030917]/50 text-violet-600 shadow-[0_14px_34px_-8px_rgba(0,0,0,0.3)]"
+      className="group flex size-[73px] shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-[2px] border border-white/25 bg-[#52525214] text-violet-600 shadow-[0_14px_34px_-8px_rgba(0,0,0,0.3)]"
     >
       {imageUrl ? (
         <img
@@ -247,7 +247,7 @@ export function PhotosSection({
                 type="button"
                 onClick={onViewAll}
                 aria-label="Open photos"
-                className="group aspect-square cursor-pointer overflow-hidden rounded-[1px] border border-white/25 bg-[#030917]/50 shadow-[0_14px_34px_-8px_rgba(0,0,0,0.3)]"
+                className="group aspect-square cursor-pointer overflow-hidden rounded-[2px] border border-white/25 bg-[#52525214] shadow-[0_14px_34px_-8px_rgba(0,0,0,0.3)]"
               >
                 <img
                   src={p.url}
@@ -284,10 +284,10 @@ export function ProfileTabs<T extends string>({
             aria-current={value === t.value ? "page" : undefined}
             onClick={() => onChange(t.value)}
             className={cn(
-              "h-[30px] cursor-pointer rounded-[1px] border px-4 text-[13px] transition-colors",
+              "h-[30px] cursor-pointer rounded-[2px] border px-4 text-[13px] transition-colors",
               value === t.value
-                ? "border-violet-600 bg-violet-600 font-bold text-white"
-                : "border-white/25 bg-[#030917]/50 text-white hover:bg-violet-600",
+                ? "border-violet-bright bg-violet-600 font-bold text-white"
+                : "border-white/25 bg-[#52525214] text-white hover:bg-violet-bright",
             )}
           >
             {t.label}

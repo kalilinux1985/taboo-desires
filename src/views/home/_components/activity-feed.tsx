@@ -36,7 +36,7 @@ import RepostDialog from "./repost-dialog.tsx";
 
 const PAGE = 10;
 const PILL_OUTLINE =
-  "h-10 cursor-pointer gap-1.5 rounded-[1px] border-2 border-violet-600 bg-transparent px-4 font-bold text-violet-600 hover:bg-violet-600/20 hover:text-violet-600";
+  "h-10 cursor-pointer gap-1.5 rounded-[2px] border-2 border-violet-bright bg-transparent px-4 font-bold text-violet-600 hover:bg-violet-600/20 hover:text-violet-600";
 
 function FeedSkeleton() {
   return (
@@ -115,11 +115,11 @@ export default function ActivityFeed() {
             </DropdownMenu>
           </div>
         ) : access === undefined ? (
-          <Skeleton className="h-11 w-40 rounded-[1px]" />
+          <Skeleton className="h-11 w-40 rounded-[2px]" />
         ) : access?.accountType === "seller" ? (
           <Button
             onClick={() => sendToPlans("post")}
-            className="h-11 cursor-pointer rounded-[1px] px-5 text-base font-bold"
+            className="h-11 cursor-pointer rounded-[2px] px-5 text-base font-bold"
           >
             <Plus className="size-5" /> Add Post
           </Button>

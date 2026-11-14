@@ -43,7 +43,7 @@ function DropdownList({ onPick }: { onPick: () => void }) {
               c.unread && "bg-primary/15",
             )}
           >
-            <ProfileAvatar name={c.other.name} url={c.other.avatarUrl} className="size-10 rounded-[1px] text-lg" />
+            <ProfileAvatar name={c.other.name} url={c.other.avatarUrl} className="size-10 rounded-[2px] text-lg" />
             <span className="flex min-w-0 flex-1 flex-col">
               <span className="flex items-baseline justify-between gap-2">
                 <span className={cn("truncate text-sm transition-colors group-hover:text-violet-600", c.unread ? "font-bold" : "font-medium")}>{c.other.name}</span>

@@ -65,7 +65,7 @@ function InboxList({ activeId }: { activeId?: string }) {
               activeId === c._id && "bg-secondary",
             )}
           >
-            <ProfileAvatar name={c.other.name} url={c.other.avatarUrl} className="size-12 rounded-[1px] text-xl" />
+            <ProfileAvatar name={c.other.name} url={c.other.avatarUrl} className="size-12 rounded-[2px] text-xl" />
             <div className="min-w-0 flex-1">
               <div className="flex items-baseline justify-between gap-2">
                 <p className={cn("truncate text-sm", c.unread ? "font-bold" : "font-medium")}>
@@ -95,7 +95,7 @@ function Inbox() {
   const { conversationId } = useParams<{ conversationId: Id<"conversations"> }>();
   return (
     <div className="mx-auto flex h-[calc(100dvh-3.5rem)] max-w-7xl md:px-4 md:py-6">
-      <div className="flex min-h-0 flex-1 overflow-hidden border-x md:rounded-[1px] md:border">
+      <div className="flex min-h-0 flex-1 overflow-hidden border-x md:rounded-[2px] md:border">
         <aside
           className={cn(
             "w-full shrink-0 overflow-y-auto border-r md:block md:w-80",

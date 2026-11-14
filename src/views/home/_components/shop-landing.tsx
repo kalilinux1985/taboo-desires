@@ -33,7 +33,7 @@ function FilterPanel({
         type="button"
         onClick={() => setMobileOpen((o) => !o)}
         aria-expanded={mobileOpen}
-        className="flex w-full cursor-pointer items-center justify-between rounded-[1px] border bg-card px-4 py-3 font-bold shadow-[0_14px_34px_-8px_rgba(0,0,0,0.3)] lg:hidden"
+        className="flex w-full cursor-pointer items-center justify-between rounded-[2px] border bg-card px-4 py-3 font-bold shadow-[0_14px_34px_-8px_rgba(0,0,0,0.3)] lg:hidden"
       >
         <span className="flex items-center gap-2">
           <SlidersHorizontal className="size-4 text-violet-600" /> Filters
@@ -113,7 +113,7 @@ function CtaPanel({
     <div
       className={cn(
         "relative flex min-w-0 flex-col gap-5 overflow-hidden px-6 py-8 sm:px-10 sm:py-10",
-        tone === "sell" ? "bg-primary" : "border bg-[#030917]/50",
+        tone === "sell" ? "bg-primary" : "border bg-[#52525214]",
       )}
     >
       {tone === "buy" && (
@@ -123,7 +123,7 @@ function CtaPanel({
         />
       )}
       <div className="relative flex items-start gap-4">
-        <span className="flex size-13 shrink-0 items-center justify-center rounded-[1px] bg-white/12 text-white">
+        <span className="flex size-13 shrink-0 items-center justify-center rounded-[2px] bg-white/12 text-white">
           <Icon className="size-6" />
         </span>
         <div>
@@ -154,7 +154,7 @@ function CtaPanel({
       </ul>
       <Link
         href={to}
-        className="relative w-fit cursor-pointer rounded-[1px] bg-white px-8 py-3 font-extrabold text-[#0f172a] transition-transform hover:-translate-y-0.5"
+        className="relative w-fit cursor-pointer rounded-[2px] bg-white px-8 py-3 font-extrabold text-[#0f172a] transition-transform hover:-translate-y-0.5"
       >
         {action}
       </Link>
@@ -205,7 +205,7 @@ export default function ShopLanding() {
 
       <Link
         href="/signin"
-        className="group flex cursor-pointer items-center justify-center gap-3 rounded-[1px] border border-violet-600 bg-primary px-4 py-6 text-xl font-extrabold text-primary-foreground shadow-[0_18px_40px_-18px_rgb(124_58_237/0.65)] transition-colors hover:bg-violet-600"
+        className="group flex cursor-pointer items-center justify-center gap-3 rounded-[2px] border border-violet-bright bg-primary px-4 py-6 text-xl font-extrabold text-primary-foreground shadow-[0_18px_40px_-18px_rgb(124_58_237/0.65)] transition-colors hover:bg-violet-bright"
       >
         Get Started
         <ArrowRight className="size-6 transition-transform group-hover:translate-x-1" />
