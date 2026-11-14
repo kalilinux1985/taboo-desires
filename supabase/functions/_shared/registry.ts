@@ -2,6 +2,7 @@
 // The browser imports only the *type* of this registry to get typed calls.
 
 import * as accountDeletion from "./modules/accountDeletion.ts";
+import * as ageVerification from "./modules/ageVerification.ts";
 import * as activity from "./modules/activity.ts";
 import * as auctions from "./modules/auctions.ts";
 import * as customRequests from "./modules/customRequests.ts";
@@ -42,6 +43,7 @@ function functionsOf<M extends Record<string, unknown>>(
 export const registry = {
   accountDeletion: functionsOf(accountDeletion),
   activity: functionsOf(activity),
+  ageVerification: functionsOf(ageVerification),
   auctions: functionsOf(auctions),
   customRequests: functionsOf(customRequests),
   favorites: functionsOf(favorites),

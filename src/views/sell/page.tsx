@@ -70,7 +70,7 @@ function SellForm() {
   if (access.accountType === "buyer" && !access.isAdmin) return <BecomeSeller />;
   if (!access.can.list) {
     if (access.accountType === "seller") return <RedirectToPlans />;
-    return <UpgradeNotice message={deniedMessage("list", access.accountType ?? undefined)} />;
+    return <UpgradeNotice message={deniedMessage("list", access.accountType ?? undefined, access.ageVerified)} />;
   }
 
   const onSubmit = async ({ durationHours, ...values }: ListingSubmit) => {

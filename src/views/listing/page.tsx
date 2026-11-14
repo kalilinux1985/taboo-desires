@@ -221,7 +221,7 @@ export default function ListingPage() {
   const isAuction = listing.saleType === "auction";
   const locked = listing.locked;
   // Signed-in sellers (and members without an account type) can't buy
-  const buyBlocked = access && !access.can.buy ? deniedMessage("buy", access.accountType ?? undefined) : null;
+  const buyBlocked = access && !access.can.buy ? deniedMessage("buy", access.accountType ?? undefined, access.ageVerified) : null;
   const specs = [
     { label: "Size", value: listing.size },
     { label: "Wear time", value: CONDITION_LABEL[listing.condition] },

@@ -17,6 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { cn } from "@/lib/utils.ts";
 import AgeGate from "./age-gate.tsx";
 import AccountTypeDialog from "./account-type-dialog.tsx";
+import AgeVerificationDialog, { AgeVerificationNotice } from "./age-verification-dialog.tsx";
 import UserMenu from "./user-menu.tsx";
 import MobileNav from "./mobile-nav.tsx";
 import NotificationBell from "./notification-bell.tsx";
@@ -217,6 +218,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     <div className="flex min-h-screen flex-col">
       <AgeGate>
         <AccountTypeDialog />
+        <AgeVerificationDialog />
+        <AgeVerificationNotice />
       </AgeGate>
       <Header />
       <main className="flex-1">

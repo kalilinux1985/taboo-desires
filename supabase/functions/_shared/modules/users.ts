@@ -87,6 +87,7 @@ export const updateCurrentUser = mutation({
       name: identity.name,
       email: identity.email,
       verified: false,
+      ageVerified: false,
     });
   },
 });
@@ -136,6 +137,7 @@ export const myAccess = query({
       accountType: me.accountType ?? null,
       isPro,
       isAdmin: me.role === "admin",
+      ageVerified: !!me.ageVerified,
       can: await getCapabilities(ctx, me),
     };
   },

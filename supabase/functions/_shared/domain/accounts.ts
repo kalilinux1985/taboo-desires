@@ -21,13 +21,17 @@ export type Capabilities = {
 /**
  * Buyers can post, message and buy for free but never list.
  * Sellers need Pro to post, message, or list, and never buy. Admins can do everything.
+ * Nobody else can do any of it until they've proved they're 18 or older.
  */
 export function capabilities(
   accountType: AccountType | undefined,
   isPro: boolean,
   isAdmin: boolean,
+  ageVerified: boolean,
 ): Capabilities {
   if (isAdmin) return { post: true, message: true, list: true, buy: true };
+  if (!ageVerified)
+    return { post: false, message: false, list: false, buy: false };
   if (accountType === "buyer")
     return { post: true, message: true, list: false, buy: true };
   if (accountType === "seller")
@@ -62,9 +66,14 @@ const DENIED: Record<
   },
 };
 
+export const AGE_DENIED = "Verify your age (18+) first to do this";
+
+/** Pass `ageVerified` so members who haven't proved their age get the right reason. */
 export function deniedMessage(
   action: keyof Capabilities,
   accountType: AccountType | undefined,
+  ageVerified = true,
 ): string {
+  if (!ageVerified) return AGE_DENIED;
   return DENIED[action][accountType ?? "none"];
 }

@@ -57,7 +57,7 @@ function Composer({ conversationId }: { conversationId: Id<"conversations"> }) {
   if (access && !access.can.message && access.accountType !== "seller") {
     return (
       <div className="border-t bg-card p-3">
-        <UpgradeNotice message={deniedMessage("message", access.accountType ?? undefined)} />
+        <UpgradeNotice message={deniedMessage("message", access.accountType ?? undefined, access.ageVerified)} />
       </div>
     );
   }

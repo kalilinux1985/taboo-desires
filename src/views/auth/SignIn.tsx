@@ -234,7 +234,9 @@ export default function SignInPage() {
               onChange={(e) => setPassword(e.target.value)}
             />
             <p className="text-xs text-muted-foreground">
-              By creating an account you confirm you are 18 or older.
+              You must be 18 or older. After you sign in you&apos;ll prove your age with your date of birth, a
+              photo of a government ID and a selfie holding it. Posting, messaging and buying unlock once
+              it&apos;s approved.
             </p>
             <Button
               type="submit"
@@ -259,7 +261,8 @@ export default function SignInPage() {
             />
             <p className="text-xs text-muted-foreground">
               We'll email you a one-time link. New here? The link creates your
-              account too.
+              account too. You must be 18 or older and will prove your age
+              with a government ID after signing in.
             </p>
             <Button
               type="submit"

@@ -76,7 +76,7 @@ export default function MessageSellerButton({
             <DialogDescription>Ask anything about this item.</DialogDescription>
           </DialogHeader>
           {blocked ? (
-            <UpgradeNotice message={deniedMessage("message", access.accountType ?? undefined)} />
+            <UpgradeNotice message={deniedMessage("message", access.accountType ?? undefined, access.ageVerified)} />
           ) : (
           <>
           <div className="flex flex-wrap gap-2">

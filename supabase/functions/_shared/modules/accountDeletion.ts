@@ -45,7 +45,11 @@ export const deleteMyAccount = mutation({
       union all
       select storage_id from public.profile_photos where user_id = ${id}::uuid
       union all
-      select photo_storage_id from public.verifications where user_id = ${id}::uuid and photo_storage_id is not null`);
+      select photo_storage_id from public.verifications where user_id = ${id}::uuid and photo_storage_id is not null
+      union all
+      select id_storage_id from public.age_verifications where user_id = ${id}::uuid and id_storage_id is not null
+      union all
+      select selfie_storage_id from public.age_verifications where user_id = ${id}::uuid and selfie_storage_id is not null`);
     ctx.storage.delete(user.avatarStorageId);
     for (const f of files) ctx.storage.delete(f.storage_id as Id<"_storage">);
 

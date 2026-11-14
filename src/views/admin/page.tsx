@@ -32,8 +32,9 @@ import {
 } from "@/components/ui/empty.tsx";
 import { getErrorMessage } from "@/lib/listings.ts";
 import VerificationQueue from "./_components/verification-queue.tsx";
+import AgeVerificationQueue from "./_components/age-verification-queue.tsx";
 
-type Tab = "pending" | "active" | "verify";
+type Tab = "pending" | "active" | "verify" | "age";
 
 function useRun() {
   const [busy, setBusy] = useState(false);
@@ -218,14 +219,24 @@ function AdminInner() {
 
   return (
     <div className="flex flex-col gap-6">
-      <Tabs value={tab} onValueChange={(v) => setTab(v === "active" || v === "verify" ? v : "pending")}>
+      <Tabs
+        value={tab}
+        onValueChange={(v) => setTab(v === "active" || v === "verify" || v === "age" ? v : "pending")}
+      >
         <TabsList>
           <TabsTrigger value="pending" className="cursor-pointer">Pro requests</TabsTrigger>
           <TabsTrigger value="active" className="cursor-pointer">Pro sellers</TabsTrigger>
           <TabsTrigger value="verify" className="cursor-pointer">Verification</TabsTrigger>
+          <TabsTrigger value="age" className="cursor-pointer">Age checks</TabsTrigger>
         </TabsList>
       </Tabs>
-      {tab === "verify" ? <VerificationQueue /> : <SubscriptionList tab={tab} />}
+      {tab === "age" ? (
+        <AgeVerificationQueue />
+      ) : tab === "verify" ? (
+        <VerificationQueue />
+      ) : (
+        <SubscriptionList tab={tab} />
+      )}
     </div>
   );
 }

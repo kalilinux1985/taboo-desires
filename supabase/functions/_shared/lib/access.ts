@@ -14,7 +14,12 @@ export async function getCapabilities(
   user: Doc<"users">,
 ): Promise<Capabilities> {
   const isPro = (await getPlan(ctx, user._id)) === "pro";
-  return capabilities(user.accountType, isPro, user.role === "admin");
+  return capabilities(
+    user.accountType,
+    isPro,
+    user.role === "admin",
+    !!user.ageVerified,
+  );
 }
 
 /** Throws a FORBIDDEN error with an upgrade hint unless the user may perform the action. */
@@ -27,7 +32,7 @@ export async function requireCapability(
   if (!can[action]) {
     throw new AppError({
       code: "FORBIDDEN",
-      message: deniedMessage(action, user.accountType),
+      message: deniedMessage(action, user.accountType, !!user.ageVerified),
     });
   }
   return user;

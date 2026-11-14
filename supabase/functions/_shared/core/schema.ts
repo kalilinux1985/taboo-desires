@@ -38,6 +38,8 @@ type Fields = {
     role?: "admin";
     accountType?: "buyer" | "seller";
     verified: boolean;
+    /** Proved they're 18+ (an admin approved their ID check) */
+    ageVerified: boolean;
     sellerDetails?: SellerDetails;
     /** Seller settings: payment methods, offerings, notifications and visibility */
     settings?: SellerSettings;
@@ -49,6 +51,18 @@ type Fields = {
     userId: Id<"users">;
     status: "pending" | "approved" | "rejected";
     photoStorageId?: Id<"_storage">;
+    requestedAt: string;
+    reviewedAt?: string;
+    reason?: string;
+  };
+  ageVerifications: {
+    userId: Id<"users">;
+    status: "pending" | "approved" | "rejected" | "underage";
+    /** "YYYY-MM-DD"; not kept for under-18 entries */
+    birthDate?: string;
+    /** Private photos, deleted as soon as an admin has reviewed them */
+    idStorageId?: Id<"_storage">;
+    selfieStorageId?: Id<"_storage">;
     requestedAt: string;
     reviewedAt?: string;
     reason?: string;
@@ -216,6 +230,7 @@ export const TABLES: { [T in DbTable]: TableDef<T> } = {
       role: c("role"),
       accountType: c("account_type"),
       verified: c("verified", "bool"),
+      ageVerified: c("age_verified", "bool"),
       sellerDetails: c("seller_details", "json"),
       settings: c("settings", "json"),
       buyerDetails: c("buyer_details", "json"),
@@ -238,6 +253,19 @@ export const TABLES: { [T in DbTable]: TableDef<T> } = {
       userId: c("user_id", "uuid"),
       status: c("status"),
       photoStorageId: c("photo_storage_id"),
+      requestedAt: c("requested_at", "ts"),
+      reviewedAt: c("reviewed_at", "ts"),
+      reason: c("reason"),
+    },
+  },
+  ageVerifications: {
+    sqlName: "age_verifications",
+    columns: {
+      userId: c("user_id", "uuid"),
+      status: c("status"),
+      birthDate: c("birth_date"),
+      idStorageId: c("id_storage_id"),
+      selfieStorageId: c("selfie_storage_id"),
       requestedAt: c("requested_at", "ts"),
       reviewedAt: c("reviewed_at", "ts"),
       reason: c("reason"),
