@@ -29,7 +29,7 @@ const SERIF = "[font-family:var(--font-profile-buyer),Cambria,Georgia,serif]";
 const SANS = "[font-family:Arial,Helvetica,sans-serif]";
 const OUTER = "rounded-[2px] bg-[#212227] shadow-[0_6px_14px_rgba(0,0,0,0.35)]";
 const INNER =
-  "rounded-[2px] border border-[#252b37] bg-[#141519] shadow-[0_4px_10px_rgba(0,0,0,0.3)]";
+  "rounded-[2px] border border-[#1e2129] bg-[#141519] shadow-[0_4px_10px_rgba(0,0,0,0.3)]";
 
 const NOT_SET = "Not set";
 const filled = (v: string | undefined) => !!v?.trim() && v !== "Prefer not to say";
@@ -66,7 +66,7 @@ function Header({ profile }: { profile: Profile }) {
     "inline-flex h-[29px] cursor-pointer items-center justify-center rounded-[2px] border-2 border-[#5e2faf] text-[#7b3aec] transition-colors hover:bg-[#7b3aec] hover:text-white",
   );
   return (
-    <Frame className="[grid-area:header]" innerClassName="flex min-h-[345px] flex-col px-[22px] py-[18px]">
+    <Frame className="[grid-area:header]" innerClassName="flex lg:min-h-[345px] flex-col px-[22px] py-[18px]">
       <h1 className={cn(SERIF, "truncate text-[24px] uppercase leading-tight text-white")}>{profile.name}</h1>
       <p className={cn(SERIF, "mt-1 flex flex-wrap items-center gap-x-4 text-[17px] text-[#7b3aec]")}>
         <span
@@ -159,7 +159,7 @@ function About({ profile }: { profile: Profile }) {
   const d = profile.buyerDetails as Record<string, string | undefined>;
   const value = (key: string) => (filled(d[key]) ? d[key]! : NOT_SET);
   return (
-    <Frame className="[grid-area:about]" innerClassName={cn(SANS, "min-h-[345px] px-4 pb-6 pt-[21px]")}>
+    <Frame className="[grid-area:about]" innerClassName={cn(SANS, "lg:min-h-[345px] px-4 pb-6 pt-[21px]")}>
       <p className="text-center text-[15px] text-white">
         {profile.stats.followerCount} Followers - {profile.counts.following} Following
       </p>
@@ -182,7 +182,7 @@ const imagesLabel = (n: number) => `${n} ${n === 1 ? "Image" : "Images"}`;
 function PhotosOverview({ userId, count, onOpen }: { userId: Id<"users">; count: number; onOpen: () => void }) {
   const { results, status } = usePaginatedQuery(api.users.photosByUser, { userId }, { initialNumItems: 10 });
   return (
-    <Frame className="[grid-area:content]" innerClassName="min-h-[345px] px-[22px] py-[28px]">
+    <Frame className="[grid-area:content]" innerClassName="lg:min-h-[345px] px-[22px] py-[28px]">
       <SectionTitle title="Photos" count={imagesLabel(count)} />
       <div className="mt-[30px] flex flex-wrap gap-[18px]">
         {status === "LoadingFirstPage" ? (
@@ -216,7 +216,7 @@ export default function BuyerProfile({ profile }: { profile: Profile }) {
       <div
         className={cn(
           "mx-auto grid max-w-[1170px] gap-5 px-5 py-8 lg:py-[97px]",
-          "[grid-template-areas:'avatar'_'header'_'tabs'_'about'_'content']",
+          "[grid-template-areas:'avatar'_'header'_'about'_'tabs'_'content']",
           "lg:grid-cols-[minmax(0,445fr)_minmax(0,665fr)] lg:grid-rows-[1fr_auto_auto] lg:[grid-template-areas:'avatar_header'_'avatar_tabs'_'about_content']",
         )}
       >
@@ -238,7 +238,7 @@ export default function BuyerProfile({ profile }: { profile: Profile }) {
           <PhotosOverview userId={profile._id} count={profile.counts.photos} onOpen={() => setTab("photos")} />
         )}
         {tab === "photos" && (
-          <Frame className="[grid-area:content]" innerClassName="flex min-h-[345px] flex-col gap-6 px-[22px] py-[28px]">
+          <Frame className="[grid-area:content]" innerClassName="flex lg:min-h-[345px] flex-col gap-6 px-[22px] py-[28px]">
             <SectionTitle title="Photos" count={imagesLabel(profile.counts.photos)} />
             {profile.isMe || profile.counts.photos > 0 ? (
               <ProfilePhotos
@@ -254,7 +254,7 @@ export default function BuyerProfile({ profile }: { profile: Profile }) {
           </Frame>
         )}
         {tab === "reviews" && (
-          <Frame className="[grid-area:content]" innerClassName="flex min-h-[345px] flex-col gap-6 px-[22px] py-[28px]">
+          <Frame className="[grid-area:content]" innerClassName="flex lg:min-h-[345px] flex-col gap-6 px-[22px] py-[28px]">
             <SectionTitle
               title="Reviews"
               count={`${profile.reviewsWritten?.count ?? 0} Written`}
