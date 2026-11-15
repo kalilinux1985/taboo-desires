@@ -42,6 +42,13 @@ export function describeNotification(
       return { icon: Star, text: `${who} left you a ${n.amountCents}-star review`, href: "/shop" };
     case "post_like":
       return { icon: Heart, text: `${who} liked your post`, href: post(false) };
+    case "comment_like":
+      // The post can be on someone else's profile; the backend sends its author's id as the title
+      return {
+        icon: Heart,
+        text: `${who} liked your comment`,
+        href: n.title && n.targetId ? `/seller/${n.title}?post=${n.targetId}&comments=1` : "/",
+      };
     case "post_comment":
       return { icon: MessageSquare, text: `${who} commented on your post`, href: post(true) };
   }
