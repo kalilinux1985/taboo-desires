@@ -5,10 +5,14 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Violet: #5b21b6 for violet fills and text, #8200db for violet outlines and
+/* Violet: #6d28d9 for violet fills and text, #8200db for violet outlines and
    hover fills. Kept as variables (not inline) so the profile pages can swap them. */
 @theme {
-  --color-violet-600: #5b21b6;
+  --color-violet-600: #6d28d9;
+  /* Plain hex, without the lab() versions */
+  --color-sky-400: #00bcfe;
+  --color-rose-400: #ff667f;
+  --color-rose-500: #ff2357;
   --color-violet-bright: #8200db;
 }
 
@@ -72,7 +76,7 @@
    #0a0f22 header, #1f2235 secondary surfaces, #7f22fe violet accents */
 :root {
   --radius: 1px; /* every corner is 1px (circles stay round) */
-  --background: #0f172a;
+  --background: #191a1f;
   --foreground: #f2f6ff;
   --card: rgb(3 9 23 / 50%); /* #030917 at 50% */
   --card-foreground: #f2f6ff;
@@ -89,7 +93,7 @@
   --destructive: oklch(0.66 0.22 18);
   --border: rgb(255 255 255 / 25%); /* white at 25% */
   --input: rgb(255 255 255 / 25%); /* white at 25% */
-  --ring: #8200db;
+  --ring: #6d28d9;
   --chart-1: #7f22fe;
   --chart-2: #8b5cf6;
   --chart-3: #6d28d9;
@@ -108,7 +112,7 @@
 @layer base {
   * {
     @apply outline-ring;
-    border-color: rgb(255 255 255 / 42%); /* white at 42% */
+    border-color: rgb(255 255 255 / 15%); /* white at 15% */
   }
 
   h1,
@@ -137,17 +141,16 @@
 @layer base {
   html,
   body {
-    background-color: #09090b !important;
+    background-color: #191a1f !important;
   }
 
   /* Comments, replies and the comment box */
-  /* Comment and reply boxes and the comment field: the grey page color #191a1f,
-     with the text fields' inner shadow at half strength. input/textarea are
-     listed with [class] so this beats the site-wide text field rule. */
+  /* Comment and reply boxes and the comment field: their own bg-background
+     (#191a1f) with the text fields' inner shadow at half strength. input/textarea
+     are listed with [class] so this beats the site-wide text field rule. */
   .comment-surface,
   input.comment-surface[class],
   textarea.comment-surface[class] {
-    background-color: #191a1f !important;
     box-shadow:
       inset 0 3px 13px rgb(0 0 0 / 50%),
       inset 3px 5px 4px rgb(28 28 28 / 12%) !important;
@@ -169,8 +172,7 @@
   select,
   [data-slot="select-trigger"],
   [role="combobox"] {
-    background-color: rgb(9 9 11 / 83%) !important; /* #09090b at 83% */
-    border-color: rgb(255 255 255 / 14%) !important;
+    border-color: rgb(255 255 255 / 3%) !important;
     box-shadow:
       inset 0 3px 13px #000,
       inset 3px 5px 4px rgb(28 28 28 / 24%) !important;
@@ -205,8 +207,7 @@
   }
 }
 
-/* Buyer and seller profiles: violet #7b3aec */
+/* Buyer and seller profiles: violet outlines #7b3aec */
 .profile-design {
-  --color-violet-600: #7b3aec;
   --color-violet-bright: #7b3aec;
 }

@@ -42,7 +42,7 @@ function FeedSkeleton() {
   return (
     <div className="flex flex-col">
       {Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className="flex gap-4 border-b border-white/25 py-6">
+        <div key={i} className="flex gap-4 border-b border-white/[3%] py-6">
           <Skeleton className="size-14 shrink-0 rounded-full sm:size-20" />
           <div className="flex flex-1 flex-col gap-3">
             <Skeleton className="h-5 w-40" />

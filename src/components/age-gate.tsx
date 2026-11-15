@@ -39,7 +39,7 @@ export default function AgeGate({ children }: { children?: ReactNode }) {
     <>
     {verified && children}
     <AlertDialog open={verified === false}>
-      <AlertDialogContent className="backdrop-blur">
+      <AlertDialogContent>
         <AlertDialogHeader className="items-center text-center sm:items-center sm:text-center">
           <div className="flex size-12 items-center justify-center rounded-full text-violet-600">
             <ShieldAlert className="size-6" />

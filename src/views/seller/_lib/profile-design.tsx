@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils.ts";
 
 export const SERIF = "[font-family:var(--font-profile-buyer),Cambria,Georgia,serif]";
 export const SANS = "[font-family:Arial,Helvetica,sans-serif]";
-export const OUTER = "rounded-[2px] bg-[#212227] shadow-[0_6px_14px_rgba(0,0,0,0.35)]";
+export const OUTER = "rounded-[2px] border border-white/[3%] bg-[#212227] shadow-[0_6px_14px_rgba(0,0,0,0.35)]";
 export const INNER =
   "rounded-[2px] border border-[#1e2129] bg-[#141519] shadow-[0_4px_10px_rgba(0,0,0,0.3)]";
 /** A card inside an inner card (listings, posts, tiles) */

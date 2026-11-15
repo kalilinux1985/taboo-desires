@@ -70,7 +70,7 @@ function PlanActions({ months, mine }: { months: number; mine: Mine | null }) {
     <Button
       variant="outline"
       disabled={pending}
-      className="h-9 w-full cursor-pointer rounded-[2px] border-white/25 bg-transparent text-sm font-semibold"
+      className="h-9 w-full cursor-pointer rounded-[2px] border-white/[3%] bg-transparent text-sm font-semibold"
     >
       Pay another way <ArrowRight className="size-4" />
     </Button>

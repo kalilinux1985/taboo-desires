@@ -265,7 +265,7 @@ export default function MobileNav() {
           variant="ghost"
           size="icon"
           aria-label="Open menu"
-          className="-ml-2 cursor-pointer text-violet-600 hover:text-white md:hidden"
+          className="-ml-2 cursor-pointer text-violet-600 hover:text-violet-600 md:hidden"
         >
           <Menu className="size-6" />
         </Button>
@@ -273,7 +273,7 @@ export default function MobileNav() {
       <SheetContent
         side="left"
         showCloseButton={false}
-        className="flex w-[88vw] max-w-sm flex-col gap-0 overflow-y-auto border-white/25 bg-[#0a0f22]/98 p-0 data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]"
+        className="flex w-[88vw] max-w-sm flex-col gap-0 overflow-y-auto border-white/[3%] bg-[#09090b]/90 p-0 data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]"
       >
         <SheetTitle className="sr-only">Site menu</SheetTitle>
         <SheetDescription className="sr-only">

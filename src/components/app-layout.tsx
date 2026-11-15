@@ -42,7 +42,7 @@ export function Logo({ className }: { className?: string }) {
 
 /** Square dark button used for the header icons. */
 export const HEADER_ICON_BUTTON =
-  "relative flex size-[41px] shrink-0 cursor-pointer items-center justify-center rounded-[2px] bg-[#0f172a] text-violet-600 transition-colors hover:bg-[#1f2235] hover:text-white";
+  "relative flex size-[41px] shrink-0 cursor-pointer items-center justify-center rounded-[2px] bg-[#0f172a] text-violet-600 transition-colors hover:bg-[#1f2235] hover:text-violet-600";
 
 const COUNT_BADGE =
   "absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 font-sans text-[10px] font-bold text-white";
@@ -104,7 +104,7 @@ function ShopMenu({ label, short, section }: (typeof MENUS)[number]) {
   const links = SHOP_SECTIONS.find((s) => s.label === section)?.links ?? [];
   return (
     <DropdownMenu modal={false}>
-      <DropdownMenuTrigger className="flex cursor-pointer items-center gap-1 whitespace-nowrap font-serif text-[13px] uppercase text-slate-300 outline-none transition-colors hover:text-white focus-visible:text-white data-[state=open]:text-white xl:text-[15px]">
+      <DropdownMenuTrigger className="flex cursor-pointer items-center gap-1 whitespace-nowrap font-serif text-[13px] uppercase text-slate-300 outline-none transition-colors hover:text-violet-600 focus-visible:text-white data-[state=open]:text-white xl:text-[15px]">
         <span className="xl:hidden">{short}</span>
         <span className="hidden xl:inline">{label}</span>
         <ChevronDown className="size-3.5 text-slate-300" strokeWidth={1.75} />
@@ -112,7 +112,7 @@ function ShopMenu({ label, short, section }: (typeof MENUS)[number]) {
       <DropdownMenuContent
         align="start"
         sideOffset={14}
-        className="min-w-56 rounded-[2px] border-white/25 bg-[#0a0f22]/98 font-serif"
+        className="min-w-56 rounded-[2px] border-white/[3%] bg-[#09090b]/90 font-serif"
       >
         {links.map((l) => {
           const href = "page" in l ? shopPageHref(l.page) : l.href;
@@ -158,7 +158,7 @@ function HeaderSearch() {
         <PopoverTrigger aria-label="Search" className={cn(HEADER_ICON_BUTTON, "xl:hidden")}>
           <Search className="size-5" strokeWidth={1.75} />
         </PopoverTrigger>
-        <PopoverContent align="start" sideOffset={10} className="w-72 rounded-[2px] border-white/25 bg-[#0a0f22]/98 p-2">
+        <PopoverContent align="start" sideOffset={10} className="w-72 rounded-[2px] border-white/[3%] bg-[#09090b]/90 p-2">
           {field(true)}
         </PopoverContent>
       </Popover>
@@ -168,7 +168,7 @@ function HeaderSearch() {
 
 function Header() {
   return (
-    <header className="sticky top-0 z-40 bg-[#0a0f22]/98 backdrop-blur">
+    <header className="sticky top-0 z-40 bg-[#09090b]/90">
       <div className="mx-auto flex h-[60px] max-w-[1205px] items-center justify-between gap-4 px-4 md:justify-center xl:px-0">
         {/* Phones: menu button and logo on the left, actions on the right.
             Wider screens: logo and search, shop menus and actions centred as one group. */}

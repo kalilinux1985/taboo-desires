@@ -131,13 +131,13 @@ export default function NotificationBell({
         )}
       </PopoverTrigger>
       <PopoverContent align="end" sideOffset={8} className="flex w-[min(22rem,calc(100vw-1.5rem))] flex-col p-0">
-        <p className="border-b border-white/25 px-4 py-3 text-sm font-bold">Notifications</p>
+        <p className="border-b border-white/[3%] px-4 py-3 text-sm font-bold">Notifications</p>
         <HideOnError
           fallback={<p className="px-4 py-8 text-center text-sm text-muted-foreground">Notifications aren&apos;t available yet.</p>}
         >
           <DropdownList onPick={() => onOpenChange(false)} />
         </HideOnError>
-        <div className="border-t border-white/25 p-2">
+        <div className="border-t border-white/[3%] p-2">
           <Button asChild className="w-full cursor-pointer">
             <Link href="/notifications" onClick={() => onOpenChange(false)}>
               Show all notifications

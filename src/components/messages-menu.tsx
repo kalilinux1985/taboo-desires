@@ -84,13 +84,13 @@ export default function MessagesMenu({ className, badgeClassName }: { className:
         </button>
       </PopoverTrigger>
       <PopoverContent align="end" sideOffset={8} className="flex w-[min(22rem,calc(100vw-1.5rem))] flex-col p-0">
-        <p className="border-b border-white/25 px-4 py-3 text-sm font-bold">Messages</p>
+        <p className="border-b border-white/[3%] px-4 py-3 text-sm font-bold">Messages</p>
         <HideOnError
           fallback={<p className="px-4 py-8 text-center text-sm text-muted-foreground">Messages aren&apos;t available right now.</p>}
         >
           <DropdownList onPick={close} />
         </HideOnError>
-        <div className="border-t border-white/25 p-2">
+        <div className="border-t border-white/[3%] p-2">
           <Button asChild className="w-full cursor-pointer">
             <Link href="/messages" onClick={close}>
               Show all messages

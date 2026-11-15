@@ -5,9 +5,9 @@
 const SHADOW = "shadow-[0_14px_34px_-8px_rgba(0,0,0,0.3)]";
 
 /** Lighter, outer card: a section of the page */
-export const PANEL = `rounded-[2px] border border-white/25 bg-[#52525214] ${SHADOW}`;
+export const PANEL = `rounded-[2px] border border-white/[3%] bg-[#52525214] ${SHADOW}`;
 /** Darker card inside a card (listing cards, posts, the header box) */
-export const INSET = `rounded-[2px] border border-white/25 bg-[#52525214] ${SHADOW}`;
+export const INSET = `rounded-[2px] border border-white/[3%] bg-[#52525214] ${SHADOW}`;
 /** Body text in the book serif */
 export const TEXT_FONT = "[font-family:var(--font-profile-text),ui-serif,Georgia,serif]";
 /** Old-style serif ("Latest Activity") */
