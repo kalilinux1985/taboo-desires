@@ -6,7 +6,6 @@ import { useQuery } from "@/lib/backend/react.tsx";
 import { UserX } from "lucide-react";
 import { api } from "@/lib/backend/api.ts";
 import type { Id } from "@/lib/backend/types.ts";
-import { cn } from "@/lib/utils.ts";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import {
   Empty,
@@ -20,16 +19,15 @@ import SellerListings from "@/components/seller-listings.tsx";
 import ProfilePhotos from "./_components/profile-photos.tsx";
 import SellerReviews from "./_components/seller-reviews.tsx";
 import BuyerProfile from "./_components/buyer-profile.tsx";
-import ProfileSidebar, { ProfileHeaderCard } from "./_components/profile-sidebar.tsx";
+import SellerAbout, { ProfileHeaderCard } from "./_components/profile-sidebar.tsx";
 import {
   ActivitySection,
   InstantSection,
   PhotosSection,
   ProfilePanel,
-  ProfileTabs,
   ShopSection,
 } from "./_components/profile-sections.tsx";
-import { TEXT_FONT } from "./_lib/theme.ts";
+import { imagesLabel, ProfilePage, ProfilePicture, ProfileTabBar } from "./_lib/profile-design.tsx";
 import { useRecordProfileVisit } from "@/hooks/use-activity.ts";
 
 const TABS = ["overview", "shop", "instant", "photos", "reviews"] as const;
@@ -73,17 +71,13 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
   ];
 
   return (
-    <div
-      className={cn(
-        TEXT_FONT,
-        "mx-auto grid max-w-[60rem] items-start gap-6 px-4 py-6 lg:grid-cols-[20rem_1fr] lg:gap-[52px]",
-      )}
-    >
-      <ProfileSidebar profile={profile} />
-      <div className="flex min-w-0 flex-col gap-5">
-        <ProfileHeaderCard profile={profile} />
-        <ProfileTabs tabs={tabs} value={tab} onChange={setTab} />
+    <ProfilePage>
+      <ProfilePicture url={profile.avatarUrl} name={profile.name} />
+      <ProfileHeaderCard profile={profile} onReviews={() => setTab("reviews")} />
+      <ProfileTabBar tabs={tabs} value={tab} onChange={setTab} />
+      <SellerAbout profile={profile} />
 
+      <div className="flex min-w-0 flex-col gap-5 [grid-area:content]">
         {tab === "overview" && (
           <>
             <ShopSection sellerId={profile._id} count={profile.counts.listings} onViewAll={() => setTab("shop")} />
@@ -107,14 +101,11 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
           </ProfilePanel>
         )}
         {tab === "photos" && (
-          <ProfilePanel
-            title="Photos"
-            count={`${profile.counts.photos} ${profile.counts.photos === 1 ? "image" : "images"}`}
-          >
+          <ProfilePanel title="Photos" count={imagesLabel(profile.counts.photos)}>
             {profile.isMe || profile.counts.photos > 0 ? (
               <ProfilePhotos userId={profile._id} isMe={profile.isMe} total={profile.counts.photos} />
             ) : (
-              <p className="text-sm text-slate-400">No photos yet</p>
+              <p className="text-sm text-[#a4a4a4]">No photos yet</p>
             )}
           </ProfilePanel>
         )}
@@ -130,7 +121,7 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
           </ProfilePanel>
         )}
       </div>
-    </div>
+    </ProfilePage>
   );
 }
 

@@ -5,6 +5,13 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Violet: #5b21b6 for violet fills and text, #8200db for violet outlines and
+   hover fills. Kept as variables (not inline) so the profile pages can swap them. */
+@theme {
+  --color-violet-600: #5b21b6;
+  --color-violet-bright: #8200db;
+}
+
 @theme inline {
   --font-sans: var(--font-manrope), "Manrope", ui-sans-serif, system-ui, sans-serif;
   --font-mono:
@@ -12,10 +19,6 @@
     monospace;
   --font-display: var(--font-playfair), "Playfair Display", ui-serif, Georgia, serif;
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-
-  /* Violet: #5b21b6 for violet fills and text, #8200db for violet outlines and hover fills */
-  --color-violet-600: #5b21b6;
-  --color-violet-bright: #8200db;
 
   /* Shadows are the profile's: black at 30% */
   --shadow-2xs: 0 1px 2px rgb(0 0 0 / 30%);
@@ -194,5 +197,16 @@
     border-radius: 1px !important;
     background-color: #03091780 !important;
     box-shadow: 0 14px 34px -8px rgba(0, 0, 0, 0.3) !important;
+  }
+}
+
+/* Buyer and seller profiles: violet #7b3aec and comment boxes in the page's #191a1f */
+.profile-design {
+  --color-violet-600: #7b3aec;
+  --color-violet-bright: #7b3aec;
+}
+@layer base {
+  .profile-design .comment-surface {
+    background-color: #191a1f !important;
   }
 }
