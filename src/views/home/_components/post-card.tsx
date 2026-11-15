@@ -162,8 +162,8 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
             title="Comments"
             className={cn(action, "border-r border-white/[3%] pr-3", showComments && "text-[#f2f6ff]")}
           >
-            {item.commentCount}
             <MessageCircle className="size-4 text-violet-600" />
+            <span>{item.commentCount}</span>
           </button>
           <button
             type="button"

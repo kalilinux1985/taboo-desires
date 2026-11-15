@@ -126,6 +126,7 @@ export default function ProfilePostCard({ item }: { item: FeedItem }) {
           className={cn(ACTION, showComments && "text-[#f9f9f9]")}
         >
           <MessageCircle className="size-4 text-violet-600" />
+          <span>{item.commentCount}</span>
         </button>
         <div className="flex items-center gap-2.5">
           <button
