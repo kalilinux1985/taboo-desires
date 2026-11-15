@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Forward, MessageCircle, MoreHorizontal, ThumbsUp, Trash2 } from "lucide-react";
+import { MessageCircle, MoreHorizontal, ThumbsUp, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useMutation } from "@/lib/backend/react.tsx";
 import { api } from "@/lib/backend/api.ts";
@@ -26,7 +26,7 @@ const ACTION = "flex cursor-pointer items-center gap-1.5 transition-colors hover
 
 /**
  * A post in the profile's Latest Activity, laid out like the design: square
- * avatar, seller level, "Name • 2hr", the text and photo, Like, Comments and Share,
+ * avatar, seller level, "Name • 2hr", the text and photo, Comments and Like,
  * then the comment box and comments.
  */
 export default function ProfilePostCard({
@@ -53,18 +53,6 @@ export default function ProfilePostCard({
 
   const like = () =>
     toggleLike({ postId: item._id }).catch((e) => toast.error(getErrorMessage(e, "Sign in to like posts")));
-  const share = async () => {
-    const url = `${window.location.origin}${item.listing ? `/listing/${item.listing._id}` : profile}`;
-    try {
-      if (navigator.share) await navigator.share({ url, title: item.author.name });
-      else {
-        await navigator.clipboard.writeText(url);
-        toast.success("Link copied");
-      }
-    } catch {
-      // Share sheet dismissed
-    }
-  };
   const del = () =>
     remove({ postId: item._id })
       .then(() => toast.success("Post deleted"))
@@ -153,10 +141,6 @@ export default function ProfilePostCard({
           </button>
           <LikerAvatars likers={item.likers} total={item.likeCount} postId={item._id} size="sm" />
         </div>
-        <button type="button" onClick={share} className={cn(ACTION, "ml-auto")}>
-          <Forward className="size-3.5 text-violet-600" />
-          Share
-        </button>
       </div>
 
       {showComments && <PostComments postId={item._id} variant="profile" className="mt-4" />}
