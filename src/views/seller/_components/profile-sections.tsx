@@ -32,7 +32,7 @@ export function ProfilePanel({ title, count, children }: { title: string; count?
 function ProfileShopCard({ listing }: { listing: ListingCardData }) {
   return (
     <Link href={`/listing/${listing._id}`} className={cn(CARD, SANS, "group flex min-w-0 cursor-pointer flex-col")}>
-      <div className="relative aspect-[3/2] bg-[#f4f4f5]">
+      <div className="relative aspect-[3/2] overflow-hidden bg-[#f4f4f5]">
         {listing.imageUrl && (
           <img src={listing.imageUrl} alt={listing.title} loading="lazy" className="size-full object-cover" />
         )}
