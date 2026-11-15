@@ -3373,6 +3373,7 @@ async function recentFor(ctx, userId) {
     "reviews",
     "postLikes",
     "postComments",
+    "postCommentLikes",
     "users"
   );
   const me = sql`${userId}::uuid`;
@@ -3439,6 +3440,15 @@ async function recentFor(ctx, userId) {
         join public.posts p on p.id = pc.post_id
         join public.users a on a.id = pc.author_id
        where p.author_id = ${me} and pc.author_id <> ${me} and pc.created_at > ${since}
+      union all
+      -- someone liked a comment of mine; title carries the post author's id so the link can open that profile
+      select 'comment_like', cl.created_at, a.id,
+             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'Someone'), p.author_id::text, p.id, null
+        from public.post_comment_likes cl
+        join public.post_comments pc on pc.id = cl.comment_id
+        join public.posts p on p.id = pc.post_id
+        join public.users a on a.id = cl.user_id
+       where pc.author_id = ${me} and cl.user_id <> ${me} and cl.created_at > ${since}
     ) n
     order by at desc
     limit ${LIMIT}::int`);
