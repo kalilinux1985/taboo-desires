@@ -37,9 +37,9 @@ function SmallAvatar({ name, url }: { name: string; url: string | null }) {
   );
 }
 
-/** Slate box of the design with an inner shadow (no drop shadow). */
+/** Comment box: the body color with an inner shadow (colors and shadow come from .comment-surface). */
 const COMMENT_BOX = "comment-surface rounded-[2px] bg-background shadow-[inset_0_3px_8px_rgba(0,0,0,0.28),inset_0_0_3px_rgba(0,0,0,0.28)]";
-/** Navy box of the profile design with an inner shadow (the profile page keeps .comment-surface navy). */
+/** Profile comment box: the same, with a thin border. */
 const PROFILE_BOX =
   "comment-surface rounded-[2px] border border-white/25 bg-background shadow-[inset_0_3px_8px_rgba(0,0,0,0.28),inset_0_0_3px_rgba(0,0,0,0.28)]";
 const boxClass = (v: Variant) => (v === "profile" ? PROFILE_BOX : COMMENT_BOX);
