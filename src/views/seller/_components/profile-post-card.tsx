@@ -1,6 +1,5 @@
 "use client";
 
-import { CARD } from "../_lib/profile-design.tsx";
 import { useState } from "react";
 import Link from "next/link";
 import { Forward, MessageCircle, MoreHorizontal, ThumbsUp, Trash2 } from "lucide-react";
@@ -61,7 +60,7 @@ export default function ProfilePostCard({ item }: { item: FeedItem }) {
       .catch((e) => toast.error(getErrorMessage(e, "Could not delete")));
 
   return (
-    <article className={cn(CARD, "flex flex-col px-[14px] py-[15px]")}>
+    <article className="flex flex-col py-[18px] first:pt-0 last:pb-0">
       <header className="flex items-center gap-2.5">
         <Link href={profile} className="shrink-0 cursor-pointer">
           <ProfileAvatar
