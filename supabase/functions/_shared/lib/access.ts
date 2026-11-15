@@ -1,6 +1,7 @@
 import { AppError } from "../core/errors.ts";
 import type { QueryCtx } from "../core/functions.ts";
 import type { Doc } from "../core/schema.ts";
+import { isAgeVerified } from "../domain/age.ts";
 import { requireUser } from "./auth.ts";
 import { getPlan } from "./subscription.ts";
 import {
@@ -18,7 +19,7 @@ export async function getCapabilities(
     user.accountType,
     isPro,
     user.role === "admin",
-    !!user.ageVerified,
+    isAgeVerified(user.ageVerified),
   );
 }
 
@@ -32,7 +33,7 @@ export async function requireCapability(
   if (!can[action]) {
     throw new AppError({
       code: "FORBIDDEN",
-      message: deniedMessage(action, user.accountType, !!user.ageVerified),
+      message: deniedMessage(action, user.accountType, isAgeVerified(user.ageVerified)),
     });
   }
   return user;

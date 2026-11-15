@@ -1,5 +1,16 @@
 // Pure age rules, shared by the backend and the frontend.
 
+/**
+ * Master switch for the 18+ check. While false nobody is asked to verify and
+ * nobody is blocked for it; all the verification code stays in place.
+ * Set to true to turn it back on (the dialog and the backend both read this).
+ */
+export const AGE_VERIFICATION_ENABLED = false;
+
+/** Whether a member counts as age-verified: everyone does while the check is off. */
+export const isAgeVerified = (ageVerified: boolean | null | undefined) =>
+  !AGE_VERIFICATION_ENABLED || !!ageVerified;
+
 /** Members must be at least this old. */
 export const MIN_AGE = 18;
 

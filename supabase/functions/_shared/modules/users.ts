@@ -8,6 +8,7 @@ import {
   publicSellerName,
   requireUser,
 } from "../lib/auth.ts";
+import { isAgeVerified } from "../domain/age.ts";
 import { getPlan } from "../lib/subscription.ts";
 import { getCapabilities } from "../lib/access.ts";
 import { assertOwnFiles } from "../lib/files.ts";
@@ -139,7 +140,7 @@ export const myAccess = query({
       accountType: me.accountType ?? null,
       isPro,
       isAdmin: me.role === "admin",
-      ageVerified: !!me.ageVerified,
+      ageVerified: isAgeVerified(me.ageVerified),
       can: await getCapabilities(ctx, me),
     };
   },

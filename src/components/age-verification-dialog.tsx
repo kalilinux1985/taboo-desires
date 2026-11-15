@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { useMutation, useQuery } from "@/lib/backend/react.tsx";
 import { api } from "@/lib/backend/api.ts";
 import { uploadFile } from "@/lib/backend/upload.ts";
-import { MIN_AGE, isAdult, parseBirthDate } from "@/shared/age.ts";
+import { AGE_VERIFICATION_ENABLED, MIN_AGE, isAdult, parseBirthDate } from "@/shared/age.ts";
 import { useAccess } from "@/hooks/use-access.ts";
 import { useAuth } from "@/components/providers/auth.tsx";
 import { getErrorMessage } from "@/lib/listings.ts";
@@ -93,6 +93,7 @@ export default function AgeVerificationDialog() {
 
   // Admins are exempt; new members pick an account type first; pending waits in the banner
   const needed =
+    AGE_VERIFICATION_ENABLED &&
     !!access &&
     access.ageVerified === false &&
     !access.isAdmin &&
@@ -235,7 +236,7 @@ export default function AgeVerificationDialog() {
 export function AgeVerificationNotice() {
   const access = useAccess();
   const state = useQuery(api.ageVerification.mine, access ? {} : "skip");
-  if (!access || access.ageVerified !== false || access.isAdmin || state?.status !== "pending") return null;
+  if (!AGE_VERIFICATION_ENABLED || !access || access.ageVerified !== false || access.isAdmin || state?.status !== "pending") return null;
   return (
     <div className="flex items-center justify-center gap-2 border-b border-white/[3%] bg-[#52525214] px-4 py-2 text-center text-sm">
       <Clock className="size-4 shrink-0 text-violet-600" />
