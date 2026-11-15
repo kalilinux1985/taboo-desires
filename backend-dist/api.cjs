@@ -1075,6 +1075,8 @@ async function requireAdmin(ctx) {
 }
 
 // supabase/functions/_shared/domain/age.ts
+var AGE_VERIFICATION_ENABLED = false;
+var isAgeVerified = (ageVerified) => !AGE_VERIFICATION_ENABLED || !!ageVerified;
 var MIN_AGE = 18;
 function parseBirthDate(value) {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());
@@ -1482,7 +1484,7 @@ async function getCapabilities(ctx, user) {
     user.accountType,
     isPro,
     user.role === "admin",
-    !!user.ageVerified
+    isAgeVerified(user.ageVerified)
   );
 }
 async function requireCapability(ctx, action) {
@@ -1491,7 +1493,7 @@ async function requireCapability(ctx, action) {
   if (!can[action]) {
     throw new AppError({
       code: "FORBIDDEN",
-      message: deniedMessage(action, user.accountType, !!user.ageVerified)
+      message: deniedMessage(action, user.accountType, isAgeVerified(user.ageVerified))
     });
   }
   return user;
@@ -4418,7 +4420,7 @@ var myAccess = query({
       accountType: me.accountType ?? null,
       isPro,
       isAdmin: me.role === "admin",
-      ageVerified: !!me.ageVerified,
+      ageVerified: isAgeVerified(me.ageVerified),
       can: await getCapabilities(ctx, me)
     };
   }
