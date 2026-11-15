@@ -1,8 +1,9 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import Link from "next/link";
 import { Clapperboard, Film, Images, UserRound, type LucideIcon } from "lucide-react";
+import { useSearchParams } from "@/lib/navigation.ts";
 import { usePaginatedQuery } from "@/lib/backend/react.tsx";
 import { api } from "@/lib/backend/api.ts";
 import type { Id } from "@/lib/backend/types.ts";
@@ -180,6 +181,14 @@ export function ActivitySection({ authorId }: { authorId: Id<"users"> }) {
     { filter: "all", sort: "newest", authorId },
     { initialNumItems: 3 },
   );
+  // From a notification: ?post=<id> (and &comments=1) scrolls to that post, loading more until it's there
+  const [params] = useSearchParams();
+  const target = params.get("post");
+  const openComments = params.get("comments") === "1";
+  const found = !!target && results.some((r) => r._id === target);
+  useEffect(() => {
+    if (target && !found && status === "CanLoadMore") loadMore(10);
+  }, [target, found, status, loadMore]);
   return (
     <Frame innerClassName={SECTION}>
       <SectionTitle title="Latest Activity" />
@@ -190,7 +199,7 @@ export function ActivitySection({ authorId }: { authorId: Id<"users"> }) {
       ) : (
         <div className="flex flex-col divide-y divide-[#252b37]">
           {results.map((item) => (
-            <ProfilePostCard key={item._id} item={item} />
+            <ProfilePostCard key={item._id} item={item} focus={item._id === target ? { comments: openComments } : undefined} />
           ))}
           {(status === "CanLoadMore" || status === "LoadingMore") && (
             <Button

@@ -29,6 +29,7 @@ function CountBadge() {
 /** The newest notifications, new ones highlighted, for the dropdown. */
 function DropdownList({ onPick }: { onPick: () => void }) {
   const items = useQuery(api.notifications.list, {});
+  const me = useQuery(api.users.menu, {});
   if (items === undefined) {
     return (
       <div className="flex flex-col gap-2 p-3">
@@ -44,7 +45,7 @@ function DropdownList({ onPick }: { onPick: () => void }) {
   return (
     <ul className="flex max-h-[min(24rem,60vh)] flex-col divide-y divide-white/25 overflow-y-auto">
       {items.slice(0, DROPDOWN_COUNT).map((n, i) => {
-        const { icon: Icon, text, href } = describeNotification(n);
+        const { icon: Icon, text, href } = describeNotification(n, me?._id);
         return (
           <li key={`${n.kind}-${n.targetId ?? n.actorId}-${n.at}-${i}`}>
             <Link

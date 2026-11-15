@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Forward, MessageCircle, MoreHorizontal, ThumbsUp, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -29,10 +29,21 @@ const ACTION = "flex cursor-pointer items-center gap-1.5 transition-colors hover
  * avatar, seller level, "Name • 2hr", the text and photo, Like, Comments and Share,
  * then the comment box and comments.
  */
-export default function ProfilePostCard({ item }: { item: FeedItem }) {
+export default function ProfilePostCard({
+  item,
+  focus,
+}: {
+  item: FeedItem;
+  /** Set when a notification pointed at this post: scroll to it, with its comments open for a comment */
+  focus?: { comments: boolean };
+}) {
   const toggleLike = useMutation(api.posts.toggleLike);
   const remove = useMutation(api.posts.remove);
-  const [showComments, setShowComments] = useState(false);
+  const [showComments, setShowComments] = useState(!!focus?.comments);
+  const ref = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (focus) ref.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [focus]);
   const now = useNow(30_000);
   const verb = activityVerb(item);
   const profile = `/seller/${item.author._id}`;
@@ -60,7 +71,7 @@ export default function ProfilePostCard({ item }: { item: FeedItem }) {
       .catch((e) => toast.error(getErrorMessage(e, "Could not delete")));
 
   return (
-    <article className="flex flex-col py-[18px] first:pt-0 last:pb-0">
+    <article ref={ref} id={`post-${item._id}`} className={cn("flex flex-col py-[18px] first:pt-0 last:pb-0", focus && "scroll-mt-24")}>
       <header className="flex items-center gap-2.5">
         <Link href={profile} className="shrink-0 cursor-pointer">
           <ProfileAvatar

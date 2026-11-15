@@ -21,6 +21,7 @@ import HideOnError from "@/components/hide-on-error.tsx";
 
 function NotificationList() {
   const items = useQuery(api.notifications.list, {});
+  const me = useQuery(api.users.menu, {});
   const markSeen = useMutation(api.notifications.markSeen);
   const marked = useRef(false);
 
@@ -59,7 +60,7 @@ function NotificationList() {
   return (
     <ul className="flex flex-col divide-y divide-white/25 rounded-[2px] border bg-card shadow-[0_14px_34px_-8px_rgba(0,0,0,0.3)]">
       {items.map((n, i) => {
-        const { icon: IconComponent, text, href } = describe(n);
+        const { icon: IconComponent, text, href } = describe(n, me?._id);
         return (
           <li key={`${n.kind}-${n.targetId ?? n.actorId}-${n.at}-${i}`}>
             <Link

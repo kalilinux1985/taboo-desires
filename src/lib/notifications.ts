@@ -10,8 +10,14 @@ export type Notification = NonNullable<FunctionReturnType<typeof api.notificatio
 type Icon = ComponentType<{ className?: string }>;
 
 /** Icon, sentence and link for each kind of notification. */
-export function describeNotification(n: Notification): { icon: Icon; text: string; href: string } {
+export function describeNotification(
+  n: Notification,
+  myId?: string | null,
+): { icon: Icon; text: string; href: string } {
   const who = n.actor ?? "Someone";
+  // Likes and comments are on the member's own posts: open them in Latest Activity on their profile
+  const post = (comments: boolean) =>
+    myId && n.targetId ? `/seller/${myId}?post=${n.targetId}${comments ? "&comments=1" : ""}` : "/";
   const money = n.amountCents != null ? formatPrice(n.amountCents) : "";
   switch (n.kind) {
     case "follow":
@@ -35,9 +41,9 @@ export function describeNotification(n: Notification): { icon: Icon; text: strin
     case "review":
       return { icon: Star, text: `${who} left you a ${n.amountCents}-star review`, href: "/shop" };
     case "post_like":
-      return { icon: Heart, text: `${who} liked your post`, href: "/" };
+      return { icon: Heart, text: `${who} liked your post`, href: post(false) };
     case "post_comment":
-      return { icon: MessageSquare, text: `${who} commented on your post`, href: "/" };
+      return { icon: MessageSquare, text: `${who} commented on your post`, href: post(true) };
   }
 }
 
