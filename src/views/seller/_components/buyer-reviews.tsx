@@ -31,7 +31,6 @@ export default function BuyerReviews({ buyerId, isMe }: { buyerId: Id<"users">; 
 
   return (
     <section className="flex flex-col gap-6">
-      <h2 className="font-display text-3xl">Reviews</h2>
       {results.length === 0 && status === "Exhausted" ? (
         <Empty className="border">
           <EmptyHeader>

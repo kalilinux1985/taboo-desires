@@ -1,12 +1,14 @@
 import { SELLER_DETAIL_FIELDS } from "./sellerDetails.ts";
 
-const optionsOf = (key: "gender" | "ageRange" | "country") =>
+const optionsOf = (key: "gender" | "ageRange" | "ethnicity" | "bodySize" | "country") =>
   SELLER_DETAIL_FIELDS.find((f) => f.key === key)?.options ?? [];
 
-/** Optional buyer profile answers. Gender / age / country reuse the seller option lists. */
+/** Optional buyer profile answers. They reuse the seller option lists. */
 export const BUYER_DETAIL_FIELDS = [
   { key: "gender", label: "Gender", options: optionsOf("gender") },
   { key: "ageRange", label: "Age", options: optionsOf("ageRange") },
+  { key: "ethnicity", label: "Ethnicity", options: optionsOf("ethnicity") },
+  { key: "bodySize", label: "Body Size", options: optionsOf("bodySize") },
   { key: "country", label: "Country", options: optionsOf("country") },
 ] as const;
 

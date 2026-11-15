@@ -1,7 +1,7 @@
 // Fonts of the seller profile design: an old-style serif for "Latest Activity",
 // a book serif for text, and a capital serif for the name and Message Seller.
 // Applied by the profile routes as CSS variables.
-import { Cinzel, IM_Fell_English, Libre_Baskerville } from "next/font/google";
+import { Cinzel, IM_Fell_English, Libre_Baskerville, PT_Serif } from "next/font/google";
 
 const heading = IM_Fell_English({
   weight: "400",
@@ -20,4 +20,11 @@ const display = Cinzel({
   variable: "--font-profile-display",
 });
 
-export const profileFontVars = `${heading.variable} ${text.variable} ${display.variable}`;
+/** Serif of the buyer profile design (name, tabs, section titles) */
+const buyer = PT_Serif({
+  weight: ["400", "700"],
+  subsets: ["latin"],
+  variable: "--font-profile-buyer",
+});
+
+export const profileFontVars = `${heading.variable} ${text.variable} ${display.variable} ${buyer.variable}`;

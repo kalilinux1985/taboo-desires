@@ -47,6 +47,8 @@ export const sellerDetailsValidator = v.object({
 export const buyerDetailsValidator = v.object({
   gender: opt,
   ageRange: opt,
+  ethnicity: opt,
+  bodySize: opt,
   country: opt,
   lookingFor: v.optional(v.array(v.string(), 20)),
 });
@@ -262,11 +264,24 @@ export const getProfile = query({
       paymentMethods: user.accountType === "buyer" ? [] : (user.settings?.paymentMethods ?? []),
       offerings: user.accountType === "buyer" ? [] : (user.settings?.offerings ?? []),
       counts: await profileCounts(ctx, user._id),
+      // Buyers aren't rated; their profile shows the reviews they've written
+      reviewsWritten:
+        user.accountType === "buyer" ? await reviewsWritten(ctx, user._id) : null,
       activity: await getActivity(ctx, user._id),
       badges: await getBadges(ctx, user),
     };
   },
 });
+
+/** How many reviews a member has left, and the average stars they gave. */
+async function reviewsWritten(ctx: QueryCtx, userId: Id<"users">) {
+  ctx.db.touch("reviews");
+  const [row] = await ctx.db.rows(sql`
+    select count(*)::int as n, coalesce(avg(rating), 0)::float8 as average
+    from public.reviews where reviewer_id = ${userId}::uuid`);
+  const count = Number(row.n);
+  return { count, average: count ? Math.round(Number(row.average) * 10) / 10 : 0 };
+}
 
 async function profileCounts(ctx: QueryCtx, userId: Id<"users">) {
   ctx.db.touch("listings", "follows", "profilePhotos", "posts");
