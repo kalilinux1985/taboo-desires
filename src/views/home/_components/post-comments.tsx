@@ -37,7 +37,7 @@ function SmallAvatar({ name, url }: { name: string; url: string | null }) {
   );
 }
 
-/** Comment box: the body color with an inner shadow (colors and shadow come from .comment-surface). */
+/** Comment box: the grey page color with an inner shadow (colors and shadow come from .comment-surface). */
 const COMMENT_BOX = "comment-surface rounded-[2px] bg-background shadow-[inset_0_3px_8px_rgba(0,0,0,0.28),inset_0_0_3px_rgba(0,0,0,0.28)]";
 /** Profile comment box: the same, with a thin border. */
 const PROFILE_BOX =
