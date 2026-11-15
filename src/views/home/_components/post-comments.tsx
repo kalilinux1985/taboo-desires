@@ -2,7 +2,7 @@ import { createContext, useContext, useState } from "react";
 import { useBackendAuth, usePaginatedQuery, useMutation, useQuery } from "@/lib/backend/react.tsx";
 import { Authenticated, Unauthenticated } from "@/lib/backend/react.tsx";
 import Link from "next/link";
-import { Heart, Medal, MessageCircle, MessagesSquare, Reply, Send, ThumbsUp, Trash2 } from "lucide-react";
+import { Heart, MessageCircle, MessagesSquare, Reply, Send, ThumbsUp, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/backend/api.ts";
 import type { FunctionReturnType, Id } from "@/lib/backend/types.ts";
@@ -327,18 +327,6 @@ function Replies({ postId, parentId }: { postId: Id<"posts">; parentId: Id<"post
   );
 }
 
-/** Shown instead of the comment box to sellers without Premium. */
-function PremiumNotice() {
-  return (
-    <p className="rounded-[2px] border border-violet-600/40 bg-violet-600/10 px-4 py-3 text-center text-[13px] text-violet-600">
-      Adding comments to the activity feed is a Premium Seller feature.{" "}
-      <Link href="/pricing?for=post" className="inline-flex cursor-pointer items-center gap-1 font-bold text-violet-600 hover:underline">
-        <Medal className="size-4 text-rose-400" /> Go Premium &gt;
-      </Link>
-    </p>
-  );
-}
-
 /** The signed-in member's avatar beside the comment box. */
 function MyAvatar() {
   const { isAuthenticated } = useBackendAuth();
@@ -370,15 +358,13 @@ function CommentList({ postId }: { postId: Id<"posts"> }) {
   );
 }
 
-/** Comment box (or the Premium notice), then the comments when showList is on. */
+/** Shown once a post's comment icon is opened: the comments, and the box to add one for buyers and Premium sellers (hidden for sellers without Premium). */
 export default function PostComments({
   postId,
-  showList = true,
   variant = "feed",
   className,
 }: {
   postId: Id<"posts">;
-  showList?: boolean;
   variant?: Variant;
   className?: string;
 }) {
@@ -386,27 +372,23 @@ export default function PostComments({
   return (
     <VariantContext.Provider value={variant}>
     <div className={cn("flex flex-col gap-5", className)}>
-      <div>
-        <Authenticated>
-          {needsUpgrade("post") ? (
-            <PremiumNotice />
-          ) : (
-            <div className="flex items-center gap-1.5">
-              <MyAvatar />
-              <CommentForm postId={postId} />
-            </div>
-          )}
-        </Authenticated>
-        <Unauthenticated>
-          <p className="text-[13px] text-[#61646d]">
-            <Link href="/signin" className="cursor-pointer text-violet-600 hover:underline">
-              Sign in
-            </Link>{" "}
-            to comment.
-          </p>
-        </Unauthenticated>
-      </div>
-      {showList && <CommentList postId={postId} />}
+      <Authenticated>
+        {!needsUpgrade("post") && (
+          <div className="flex items-center gap-1.5">
+            <MyAvatar />
+            <CommentForm postId={postId} />
+          </div>
+        )}
+      </Authenticated>
+      <Unauthenticated>
+        <p className="text-[13px] text-[#61646d]">
+          <Link href="/signin" className="cursor-pointer text-violet-600 hover:underline">
+            Sign in
+          </Link>{" "}
+          to comment.
+        </p>
+      </Unauthenticated>
+      <CommentList postId={postId} />
     </div>
     </VariantContext.Provider>
   );

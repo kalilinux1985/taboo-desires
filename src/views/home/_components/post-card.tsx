@@ -82,7 +82,7 @@ export function roleLabel(author: FeedItem["author"]) {
 export default function PostCard({ item, online }: { item: FeedItem; online: boolean }) {
   const toggleLike = useMutation(api.posts.toggleLike);
   const remove = useMutation(api.posts.remove);
-  const [showComments, setShowComments] = useState(item.commentCount > 0);
+  const [showComments, setShowComments] = useState(false);
   const now = useNow(30_000);
   const verb = activityVerb(item);
   const profile = `/seller/${item.author._id}`;
@@ -186,7 +186,7 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
           </div>
         </div>
 
-        <PostComments postId={item._id} showList={showComments} className="mt-1.5" />
+        {showComments && <PostComments postId={item._id} className="mt-1.5" />}
       </div>
     </article>
   );

@@ -32,7 +32,7 @@ const ACTION = "flex cursor-pointer items-center gap-1.5 transition-colors hover
 export default function ProfilePostCard({ item }: { item: FeedItem }) {
   const toggleLike = useMutation(api.posts.toggleLike);
   const remove = useMutation(api.posts.remove);
-  const [showComments, setShowComments] = useState(item.commentCount > 0);
+  const [showComments, setShowComments] = useState(false);
   const now = useNow(30_000);
   const verb = activityVerb(item);
   const profile = `/seller/${item.author._id}`;
@@ -147,7 +147,7 @@ export default function ProfilePostCard({ item }: { item: FeedItem }) {
         </button>
       </div>
 
-      <PostComments postId={item._id} showList={showComments} variant="profile" className="mt-4" />
+      {showComments && <PostComments postId={item._id} variant="profile" className="mt-4" />}
     </article>
   );
 }
