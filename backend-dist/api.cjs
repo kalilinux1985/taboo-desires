@@ -4284,6 +4284,8 @@ var optionsOf = (key) => SELLER_DETAIL_FIELDS.find((f) => f.key === key)?.option
 var BUYER_DETAIL_FIELDS = [
   { key: "gender", label: "Gender", options: optionsOf("gender") },
   { key: "ageRange", label: "Age", options: optionsOf("ageRange") },
+  { key: "ethnicity", label: "Ethnicity", options: optionsOf("ethnicity") },
+  { key: "bodySize", label: "Body Size", options: optionsOf("bodySize") },
   { key: "country", label: "Country", options: optionsOf("country") }
 ];
 var LOOKING_FOR_OPTIONS = [
@@ -4336,6 +4338,8 @@ var sellerDetailsValidator = v.object({
 var buyerDetailsValidator = v.object({
   gender: opt,
   ageRange: opt,
+  ethnicity: opt,
+  bodySize: opt,
   country: opt,
   lookingFor: v.optional(v.array(v.string(), 20))
 });
@@ -4516,11 +4520,21 @@ var getProfile = query({
       paymentMethods: user.accountType === "buyer" ? [] : user.settings?.paymentMethods ?? [],
       offerings: user.accountType === "buyer" ? [] : user.settings?.offerings ?? [],
       counts: await profileCounts(ctx, user._id),
+      // Buyers aren't rated; their profile shows the reviews they've written
+      reviewsWritten: user.accountType === "buyer" ? await reviewsWritten(ctx, user._id) : null,
       activity: await getActivity(ctx, user._id),
       badges: await getBadges(ctx, user)
     };
   }
 });
+async function reviewsWritten(ctx, userId) {
+  ctx.db.touch("reviews");
+  const [row] = await ctx.db.rows(sql`
+    select count(*)::int as n, coalesce(avg(rating), 0)::float8 as average
+    from public.reviews where reviewer_id = ${userId}::uuid`);
+  const count = Number(row.n);
+  return { count, average: count ? Math.round(Number(row.average) * 10) / 10 : 0 };
+}
 async function profileCounts(ctx, userId) {
   ctx.db.touch("listings", "follows", "profilePhotos", "posts");
   const [row] = await ctx.db.rows(sql`
