@@ -372,20 +372,8 @@ export default function ListingPage() {
 
               {isAuction && <AuctionPanel listingId={listing._id} isOwner={listing.isOwner} buyBlocked={buyBlocked} />}
 
-              <div className="flex flex-col gap-2.5">
-                <h2 className={SUBHEAD}>Payment Methods</h2>
-                {seller && seller.paymentMethods.length > 0 ? (
-                  <ul className="flex flex-wrap gap-1.5">
-                    {seller.paymentMethods.map((m) => (
-                      <li key={m} className="rounded-[2px] border border-white/[3%] bg-[#141519] px-2 py-1 text-[12px] text-white">
-                        {m}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-[13px] text-[#a4a4a4]">Ask the seller.</p>
-                )}
-              </div>
+              {/* Placeholder from the design; payment methods aren't wired up yet */}
+              <h2 className={SUBHEAD}>Payment Methods</h2>
 
               {specs.length > 0 && (
                 <div className="flex flex-col gap-1">

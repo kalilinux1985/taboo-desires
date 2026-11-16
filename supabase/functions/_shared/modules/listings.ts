@@ -359,7 +359,6 @@ export const get = query({
             avatarUrl: seller.avatarStorageId
               ? await ctx.storage.getUrl(seller.avatarStorageId)
               : null,
-            paymentMethods: seller.settings?.paymentMethods ?? [],
             activeListings: await activeListingCount(ctx, seller._id),
             ...summarize(sellerStats),
           }
