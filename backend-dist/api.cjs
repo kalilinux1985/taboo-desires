@@ -2402,6 +2402,13 @@ function browseByIndex(ctx, sort, where, paginationOpts) {
     paginationOpts
   );
 }
+async function activeListingCount(ctx, sellerId) {
+  ctx.db.touch("listings");
+  const [row] = await ctx.db.rows(sql`
+    select count(*)::int as n from public.listings
+     where seller_id = ${sellerId}::uuid and status = 'active' and paywall is null`);
+  return Number(row?.n ?? 0);
+}
 var get = query({
   args: { listingId: v.id("listings") },
   handler: async (ctx, { listingId }) => {
@@ -2431,6 +2438,8 @@ var get = query({
         isPro: await getPlan(ctx, seller._id) === "pro",
         verified: !!seller.verified,
         avatarUrl: seller.avatarStorageId ? await ctx.storage.getUrl(seller.avatarStorageId) : null,
+        paymentMethods: seller.settings?.paymentMethods ?? [],
+        activeListings: await activeListingCount(ctx, seller._id),
         ...summarize(sellerStats)
       } : null,
       isOwner: me?._id === listing.sellerId
