@@ -37,12 +37,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty.tsx";
-import {
-  CATEGORY_LABEL,
-  CONDITION_LABEL,
-  formatPrice,
-  getErrorMessage,
-} from "@/lib/listings.ts";
+import { CATEGORY_LABEL, CONDITION_LABEL, getErrorMessage } from "@/lib/listings.ts";
 import { cn } from "@/lib/utils.ts";
 import ProfileAvatar from "@/components/profile-avatar.tsx";
 import FavoriteButton from "@/components/favorite-button.tsx";
@@ -372,7 +367,7 @@ export default function ListingPage() {
               )}
 
               {!isAuction && (
-                <p className={cn(SERIF, "text-[26px] leading-none text-[#7b3aec]")}>{formatPrice(listing.priceCents)} USD</p>
+                <p className={cn(SERIF, "text-[26px] leading-none text-[#7b3aec]")}>${(listing.priceCents / 100).toFixed(2)} USD</p>
               )}
 
               {isAuction && <AuctionPanel listingId={listing._id} isOwner={listing.isOwner} buyBlocked={buyBlocked} />}
@@ -451,7 +446,7 @@ export default function ListingPage() {
                     listingId={listing._id}
                     sellerId={listing.sellerId}
                     withLabel
-                    className="h-10 self-start bg-[#141519] shadow-none"
+                    className="h-10 self-start rounded-[2px] bg-[#141519] shadow-none"
                   />
                 </div>
               )}
