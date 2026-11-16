@@ -5,16 +5,16 @@ import Link from "next/link";
 import { useNavigate } from "@/lib/navigation.ts";
 import { useParams } from "next/navigation";
 import { subcategoryInfo } from "@/shared/subcategories.ts";
-import { useMutation, useQuery } from "@/lib/backend/react.tsx";
+import { useMutation, usePaginatedQuery, useQuery } from "@/lib/backend/react.tsx";
 import { formatDistanceToNow } from "date-fns";
-import { CheckCircle2, Lock, MapPin, Pencil, ShoppingBag, Trash2 } from "lucide-react";
+import { CheckCircle2, CircleCheck, Lock, Pencil, ShoppingBag, Star, Trash2 } from "lucide-react";
 import MessageSellerButton from "./_components/message-seller-button.tsx";
 import AuctionPanel from "./_components/auction-panel.tsx";
 import RelistAuctionButton from "./_components/relist-auction-button.tsx";
 import { BuyLockedPanel, UnlockRequests, UnlockedMedia } from "./_components/locked-content.tsx";
 import { toast } from "sonner";
 import { api } from "@/lib/backend/api.ts";
-import type { Doc, Id } from "@/lib/backend/types.ts";
+import type { Doc, FunctionReturnType, Id } from "@/lib/backend/types.ts";
 import { Badge } from "@/components/ui/badge.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
@@ -44,14 +44,31 @@ import {
   getErrorMessage,
 } from "@/lib/listings.ts";
 import { cn } from "@/lib/utils.ts";
-import AccountBadge from "@/components/account-badge.tsx";
 import ProfileAvatar from "@/components/profile-avatar.tsx";
-import { RatingSummary } from "@/components/star-rating.tsx";
-import VerifiedBadge from "@/components/verified-badge.tsx";
 import FavoriteButton from "@/components/favorite-button.tsx";
 import UpgradeNotice from "@/components/upgrade-notice.tsx";
 import { useAccess } from "@/hooks/use-access.ts";
 import { deniedMessage } from "@/shared/accounts.ts";
+import ExpandableBio from "@/views/seller/_components/expandable-bio.tsx";
+import { ProfileShopCard } from "@/views/seller/_components/profile-sections.tsx";
+import { Detail, INNER, OUTER, SANS, SectionTitle, SERIF, joinedAgo } from "@/views/seller/_lib/profile-design.tsx";
+
+// The listing page in the profile design: title and picture on the left, the
+// seller card on the right (badge, name, rating, description, price, payment
+// methods, Message Seller), then "More from <seller>" across the bottom.
+
+/** Full-width violet action (Message Seller / Buy now) */
+const WIDE_ACTION = cn(
+  SERIF,
+  "flex h-[50px] w-full cursor-pointer items-center justify-center rounded-[2px] bg-[#7b3aec] text-[13px] uppercase tracking-[0.08em] text-white transition-colors hover:bg-[#8a4ff0] disabled:cursor-default disabled:opacity-60",
+);
+/** Outlined violet action (View ALL Items) */
+const WIDE_OUTLINED = cn(
+  SERIF,
+  "inline-flex h-[41px] cursor-pointer items-center justify-center rounded-[2px] border-2 border-[#5e2faf] px-6 text-[13px] tracking-[0.06em] text-[#7b3aec] transition-colors hover:bg-[#7b3aec] hover:text-white",
+);
+/** "Payment Methods" style sub-heading inside the seller card */
+const SUBHEAD = cn(SERIF, "text-[20px] leading-tight text-white");
 
 function Gallery({
   images,
@@ -66,14 +83,14 @@ function Gallery({
   const current = images[active] ?? images[0];
   return (
     <div className="flex flex-col gap-3">
-      <div className="relative aspect-square overflow-hidden rounded-[2px] bg-muted">
+      <div className="relative aspect-[8/5] overflow-hidden rounded-[2px] bg-white shadow-[0_6px_14px_rgba(0,0,0,0.35)]">
         {current && <img src={current.url} alt={title} className="size-full object-cover" />}
         {locked && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/30 text-white">
-            <span className="flex size-14 items-center justify-center rounded-full text-violet-600 drop-shadow-md">
+            <span className="flex size-14 items-center justify-center rounded-full text-[#7b3aec] drop-shadow-md">
               <Lock className="size-6" />
             </span>
-            <span className="font-display text-2xl">Locked content</span>
+            <span className={cn(SERIF, "text-2xl")}>Locked content</span>
           </div>
         )}
       </div>
@@ -86,7 +103,7 @@ function Gallery({
               onClick={() => setActive(i)}
               className={cn(
                 "aspect-square cursor-pointer overflow-hidden rounded-[2px] border-2",
-                i === active ? "border-primary" : "border-transparent opacity-70 hover:opacity-100",
+                i === active ? "border-[#7b3aec]" : "border-transparent opacity-70 hover:opacity-100",
               )}
             >
               <img src={img.url} alt="" className="size-full object-cover" />
@@ -179,6 +196,84 @@ function OwnerActions({
   );
 }
 
+type Listing = NonNullable<FunctionReturnType<typeof api.listings.get>>;
+type Seller = NonNullable<Listing["seller"]>;
+
+/** The dark card at the top of the seller panel: avatar, tier, name, rating and ID check. */
+function SellerCard({ seller }: { seller: Seller }) {
+  const { rating, reviewCount } = seller;
+  return (
+    <Link href={`/seller/${seller._id}`} className={cn(INNER, "group flex cursor-pointer items-center gap-[13px] p-[9px]")}>
+      <ProfileAvatar
+        name={seller.name}
+        url={seller.avatarUrl}
+        className="size-[90px] shrink-0 rounded-[2px] bg-white text-3xl text-[#2a2a2e]"
+      />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <span className={cn(SANS, "text-[11px] text-[#7b3aec]")}>{seller.isPro ? "Premium Seller" : "Seller"}</span>
+        <span className={cn(SERIF, "mt-0.5 truncate text-[20px] uppercase leading-tight text-white group-hover:underline")}>
+          {seller.name}
+        </span>
+        <span className={cn(SANS, "mt-1.5 flex flex-wrap items-center gap-x-8 gap-y-1 text-[13px] text-white")}>
+          <span className="flex items-center gap-1" title={`${reviewCount} review${reviewCount === 1 ? "" : "s"}`}>
+            <Star className="size-[14px] text-[#7b3aec]" strokeWidth={1.75} />
+            {(rating ?? 0).toFixed(1)} ({reviewCount})
+          </span>
+          {seller.verified && (
+            <span className="flex items-center gap-1">
+              <CircleCheck className="size-[14px] text-[#7b3aec]" strokeWidth={1.75} /> ID Verified
+            </span>
+          )}
+        </span>
+      </div>
+    </Link>
+  );
+}
+
+/** "More from <seller>": up to three other items, the count and joined line, and View ALL. */
+function MoreFromSeller({ seller, currentId }: { seller: Seller; currentId: Id<"listings"> }) {
+  const { results, status } = usePaginatedQuery(
+    api.listings.bySeller,
+    { sellerId: seller._id, status: "active", kind: "items" },
+    { initialNumItems: 4 },
+  );
+  const others = results.filter((l) => l._id !== currentId).slice(0, 3);
+  const profile = `/seller/${seller._id}`;
+  return (
+    <section className={cn(OUTER, "flex flex-col gap-[22px] px-4 pb-[26px] pt-[22px]")}>
+      <SectionTitle title={`More from ${seller.name}`} />
+      {status === "LoadingFirstPage" ? (
+        <div className="grid gap-[36px] sm:grid-cols-2 lg:grid-cols-3">
+          {[0, 1, 2].map((i) => (
+            <Skeleton key={i} className="h-[370px]" />
+          ))}
+        </div>
+      ) : others.length === 0 ? (
+        <p className={cn(SANS, "text-[13px] text-[#a4a4a4]")}>No other items for sale right now.</p>
+      ) : (
+        <div className="grid gap-[36px] sm:grid-cols-2 lg:grid-cols-3">
+          {others.map((l) => (
+            <ProfileShopCard key={l._id} listing={l} />
+          ))}
+        </div>
+      )}
+      <p className={cn(SERIF, "mt-1 text-[17px] text-white")}>
+        <Link href={profile} className="cursor-pointer font-bold hover:underline">
+          {seller.name}
+        </Link>{" "}
+        currently has{" "}
+        <span className="text-[#7b3aec]">
+          {seller.activeListings} {seller.activeListings === 1 ? "item" : "items"} available
+        </span>{" "}
+        &amp; joined Taboo Desires <span className="text-[#7b3aec]">{joinedAgo(seller.memberSince)}</span>
+      </p>
+      <Link href={profile} className={cn(WIDE_OUTLINED, "self-start")}>
+        View ALL Items from {seller.name}
+      </Link>
+    </section>
+  );
+}
+
 export default function ListingPage() {
   const { listingId } = useParams<{ listingId: Id<"listings"> }>();
   const listing = useQuery(api.listings.get, listingId ? { listingId } : "skip");
@@ -186,13 +281,13 @@ export default function ListingPage() {
 
   if (listing === undefined) {
     return (
-      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-10 md:grid-cols-2">
-        <Skeleton className="aspect-square w-full" />
-        <div className="flex flex-col gap-4">
-          <Skeleton className="h-6 w-32" />
-          <Skeleton className="h-14 w-full" />
-          <Skeleton className="h-10 w-40" />
-          <Skeleton className="h-32 w-full" />
+      <div className="profile-design min-h-[calc(100dvh-3.5rem)] bg-[#191a1f]">
+        <div className="mx-auto grid max-w-[1170px] gap-5 px-5 py-8 lg:grid-cols-[minmax(0,665fr)_minmax(0,445fr)] lg:py-[60px]">
+          <div className="flex flex-col gap-6">
+            <Skeleton className="h-10 w-2/3" />
+            <Skeleton className="aspect-[8/5] w-full" />
+          </div>
+          <Skeleton className="h-[450px] w-full" />
         </div>
       </div>
     );
@@ -220,6 +315,7 @@ export default function ListingPage() {
   const comingSoon = () => toast("Coming soon in a future milestone!");
   const isAuction = listing.saleType === "auction";
   const locked = listing.locked;
+  const seller = listing.seller;
   // Signed-in sellers (and members without an account type) can't buy
   const buyBlocked = access && !access.can.buy ? deniedMessage("buy", access.accountType ?? undefined, access.ageVerified) : null;
   const specs = [
@@ -232,140 +328,138 @@ export default function ListingPage() {
         : CATEGORY_LABEL[listing.category],
     },
     { label: "Brand", value: listing.brand },
-  ];
+    { label: "Listed", value: formatDistanceToNow(listing._creationTime, { addSuffix: true }) },
+  ].filter((s) => !!s.value);
+
+  const badges = (
+    <>
+      {isAuction && <Badge className="rounded-[2px] uppercase">Auction</Badge>}
+      {locked && (
+        <Badge className="rounded-[2px] uppercase">
+          <Lock /> Paywalled
+        </Badge>
+      )}
+      {listing.status === "sold" && <Badge variant="destructive">Sold</Badge>}
+      {listing.status === "ended" && <Badge variant="secondary">Unsold</Badge>}
+    </>
+  );
+  const hasBadges = isAuction || !!locked || listing.status === "sold" || listing.status === "ended";
 
   return (
-    <div className="mx-auto grid max-w-7xl gap-10 px-4 py-10 md:grid-cols-2">
-      <div className="flex min-w-0 flex-col gap-8">
-        <Gallery images={listing.images} title={listing.title} locked={!!locked && !locked.media} />
-        {locked?.media && <UnlockedMedia media={locked.media} />}
-      </div>
-
-      <div className="flex min-w-0 flex-col gap-6">
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <p className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-              {listing.brand}
-            </p>
-            {isAuction && <Badge className="rounded-[2px] uppercase">Auction</Badge>}
-            {locked && (
-              <Badge className="rounded-[2px] uppercase">
-                <Lock /> Paywalled
-              </Badge>
-            )}
-            {listing.status === "sold" && <Badge variant="destructive">Sold</Badge>}
-            {listing.status === "ended" && <Badge variant="secondary">Unsold</Badge>}
+    <div className="profile-design min-h-[calc(100dvh-3.5rem)] bg-[#191a1f]">
+      <div className="mx-auto flex max-w-[1170px] flex-col gap-5 px-5 py-8 lg:py-[60px]">
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,665fr)_minmax(0,445fr)]">
+          {/* Title and picture */}
+          <div className="flex min-w-0 flex-col gap-6 pt-[6px]">
+            {hasBadges && <div className="flex flex-wrap items-center gap-2">{badges}</div>}
+            <h1 className={cn(SERIF, "break-words text-[30px] leading-tight text-white")}>{listing.title}</h1>
+            <Gallery images={listing.images} title={listing.title} locked={!!locked && !locked.media} />
+            {locked?.media && <UnlockedMedia media={locked.media} />}
           </div>
-          <h1 className="font-display text-4xl leading-none break-words md:text-5xl">
-            {listing.title}
-          </h1>
-          {!isAuction && (
-            <p className="font-mono text-3xl font-bold">{formatPrice(listing.priceCents)}</p>
-          )}
-          <p className="text-xs text-muted-foreground">
-            Listed {formatDistanceToNow(listing._creationTime, { addSuffix: true })}
-          </p>
+
+          {/* Seller panel */}
+          <aside className={cn(OUTER, "flex min-w-0 flex-col p-[19px]")}>
+            {seller && <SellerCard seller={seller} />}
+
+            <div className={cn(SANS, "mt-[18px] flex flex-col gap-[18px] px-[7px]")}>
+              {listing.description ? (
+                <ExpandableBio
+                  text={listing.description}
+                  className="gap-2 text-[14px] leading-6 [&>button]:h-[14px] [&>button]:px-1.5 [&>button]:py-0 [&>button]:text-[7px] [&>button]:uppercase [&>p]:text-white"
+                />
+              ) : (
+                <p className="text-[14px] text-[#a4a4a4]">No description.</p>
+              )}
+
+              {!isAuction && (
+                <p className={cn(SERIF, "text-[26px] leading-none text-[#7b3aec]")}>{formatPrice(listing.priceCents)} USD</p>
+              )}
+
+              {isAuction && <AuctionPanel listingId={listing._id} isOwner={listing.isOwner} buyBlocked={buyBlocked} />}
+
+              <div className="flex flex-col gap-2.5">
+                <h2 className={SUBHEAD}>Payment Methods</h2>
+                {seller && seller.paymentMethods.length > 0 ? (
+                  <ul className="flex flex-wrap gap-1.5">
+                    {seller.paymentMethods.map((m) => (
+                      <li key={m} className="rounded-[2px] border border-white/[3%] bg-[#141519] px-2 py-1 text-[12px] text-white">
+                        {m}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-[13px] text-[#a4a4a4]">Ask the seller.</p>
+                )}
+              </div>
+
+              {specs.length > 0 && (
+                <div className="flex flex-col gap-1">
+                  <h2 className={SUBHEAD}>Details</h2>
+                  <dl>
+                    {specs.map((s) => (
+                      <Detail key={s.label} label={s.label} value={s.value!} />
+                    ))}
+                  </dl>
+                </div>
+              )}
+
+              {locked && !listing.isOwner && !buyBlocked && (
+                <BuyLockedPanel
+                  listingId={listing._id}
+                  locked={locked}
+                  priceCents={listing.priceCents}
+                  sellerName={seller?.name ?? "the seller"}
+                  isActive={listing.status === "active"}
+                />
+              )}
+            </div>
+
+            <div className="mt-[22px] border-t border-[#3b2a5e] pt-[22px]">
+              {listing.isOwner ? (
+                <div className="flex flex-col gap-4">
+                  <OwnerActions
+                    listingId={listing._id}
+                    status={listing.status}
+                    isAuction={isAuction}
+                    canDelete={!(isAuction && listing.auctionHasBids)}
+                  />
+                  {locked && <UnlockRequests listingId={listing._id} />}
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {buyBlocked && !isAuction && <UpgradeNotice message={buyBlocked} showUpgrade={false} />}
+                  {!isAuction && !locked && !buyBlocked && (
+                    <button
+                      type="button"
+                      className={WIDE_ACTION}
+                      disabled={listing.status !== "active"}
+                      onClick={comingSoon}
+                    >
+                      Buy now
+                    </button>
+                  )}
+                  {seller && !buyBlocked && (
+                    <MessageSellerButton
+                      listingId={listing._id}
+                      sellerName={seller.name}
+                      label="Message Seller"
+                      showIcon={false}
+                      className={WIDE_ACTION}
+                    />
+                  )}
+                  <FavoriteButton
+                    listingId={listing._id}
+                    sellerId={listing.sellerId}
+                    withLabel
+                    className="h-10 self-start bg-[#141519] shadow-none"
+                  />
+                </div>
+              )}
+            </div>
+          </aside>
         </div>
 
-        {isAuction && <AuctionPanel listingId={listing._id} isOwner={listing.isOwner} buyBlocked={buyBlocked} />}
-
-        {locked && !listing.isOwner && !buyBlocked && (
-          <BuyLockedPanel
-            listingId={listing._id}
-            locked={locked}
-            priceCents={listing.priceCents}
-            sellerName={listing.seller?.name ?? "the seller"}
-            isActive={listing.status === "active"}
-          />
-        )}
-
-        {listing.isOwner ? (
-          <>
-          <OwnerActions
-            listingId={listing._id}
-            status={listing.status}
-            isAuction={isAuction}
-            canDelete={!(isAuction && listing.auctionHasBids)}
-          />
-          {locked && <UnlockRequests listingId={listing._id} />}
-          </>
-        ) : (
-          <>
-          {buyBlocked && !isAuction && <UpgradeNotice message={buyBlocked} showUpgrade={false} />}
-          <div className="flex flex-col gap-2 sm:flex-row">
-            {!isAuction && !locked && !buyBlocked && (
-              <Button
-                size="lg"
-                className="flex-1 cursor-pointer"
-                disabled={listing.status !== "active"}
-                onClick={comingSoon}
-              >
-                <ShoppingBag /> Buy now
-              </Button>
-            )}
-            {listing.seller && !buyBlocked && (
-              <MessageSellerButton listingId={listing._id} sellerName={listing.seller.name} />
-            )}
-            <FavoriteButton
-              listingId={listing._id}
-              sellerId={listing.sellerId}
-              withLabel
-              className="h-10 bg-secondary shadow-none"
-            />
-          </div>
-          </>
-        )}
-
-        <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-[2px] border bg-border">
-          {specs.map((s) => (
-            <div key={s.label} className="bg-card p-3">
-              <dt className="text-xs uppercase tracking-wider text-muted-foreground">{s.label}</dt>
-              <dd className="truncate font-semibold">{s.value}</dd>
-            </div>
-          ))}
-        </dl>
-
-        {listing.description && (
-          <div className="flex flex-col gap-2">
-            <h2 className="font-display text-2xl">Details</h2>
-            <p className="whitespace-pre-wrap break-words text-muted-foreground">
-              {listing.description}
-            </p>
-          </div>
-        )}
-
-        {listing.seller && (
-          <Link
-            href={`/seller/${listing.seller._id}`}
-            className="flex cursor-pointer items-center gap-3 rounded-[2px] border border-white/[3%] bg-card shadow-[0_14px_34px_-8px_rgba(0,0,0,0.3)] p-4 transition-colors hover:bg-secondary"
-          >
-            <ProfileAvatar
-              name={listing.seller.name}
-              url={listing.seller.avatarUrl}
-              className="size-11 text-xl"
-            />
-            <div className="min-w-0">
-              <p className="flex min-w-0 items-center gap-2 font-semibold">
-                <span className="truncate">{listing.seller.name}</span>
-                {listing.seller.verified && <VerifiedBadge />}
-                <AccountBadge kind="seller" />
-              </p>
-              <RatingSummary
-                rating={listing.seller.rating}
-                reviewCount={listing.seller.reviewCount}
-                className="text-xs"
-              />
-              <p className="flex items-center gap-1 truncate text-xs text-muted-foreground">
-                {listing.seller.location && (
-                  <>
-                    <MapPin className="size-3" /> {listing.seller.location} ·{" "}
-                  </>
-                )}
-                Member since {new Date(listing.seller.memberSince).getFullYear()}
-              </p>
-            </div>
-          </Link>
-        )}
+        {seller && <MoreFromSeller seller={seller} currentId={listing._id} />}
       </div>
     </div>
   );

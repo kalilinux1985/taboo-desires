@@ -316,6 +316,15 @@ function browseByIndex(
   );
 }
 
+/** How many items (not Instant Content) the seller has for sale right now. */
+async function activeListingCount(ctx: QueryCtx, sellerId: Id<"users">): Promise<number> {
+  ctx.db.touch("listings");
+  const [row] = await ctx.db.rows(sql`
+    select count(*)::int as n from public.listings
+     where seller_id = ${sellerId}::uuid and status = 'active' and paywall is null`);
+  return Number(row?.n ?? 0);
+}
+
 export const get = query({
   args: { listingId: v.id("listings") },
   handler: async (ctx, { listingId }) => {
@@ -350,6 +359,8 @@ export const get = query({
             avatarUrl: seller.avatarStorageId
               ? await ctx.storage.getUrl(seller.avatarStorageId)
               : null,
+            paymentMethods: seller.settings?.paymentMethods ?? [],
+            activeListings: await activeListingCount(ctx, seller._id),
             ...summarize(sellerStats),
           }
         : null,

@@ -30,7 +30,7 @@ export function ProfilePanel({ title, count, children }: { title: string; count?
 }
 
 /** Listing card: picture, the seller's square avatar over its bottom-left, name, title, description, price. */
-function ProfileShopCard({ listing }: { listing: ListingCardData }) {
+export function ProfileShopCard({ listing }: { listing: ListingCardData }) {
   return (
     <Link href={`/listing/${listing._id}`} className={cn(CARD, SANS, "group flex min-w-0 cursor-pointer flex-col")}>
       <div className="relative aspect-[3/2] overflow-hidden bg-[#f4f4f5]">

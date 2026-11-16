@@ -31,9 +31,16 @@ const QUICK_MESSAGES = [
 export default function MessageSellerButton({
   listingId,
   sellerName,
+  className,
+  label = "Message seller",
+  showIcon = true,
 }: {
   listingId: Id<"listings">;
   sellerName: string;
+  /** Replaces the default secondary button look */
+  className?: string;
+  label?: string;
+  showIcon?: boolean;
 }) {
   const navigate = useNavigate();
   const { isAuthenticated } = useBackendAuth();
@@ -66,8 +73,13 @@ export default function MessageSellerButton({
 
   return (
     <>
-      <Button size="lg" variant="secondary" className="flex-1 cursor-pointer" onClick={openDialog}>
-        <MessageCircle /> Message seller
+      <Button
+        size={className ? undefined : "lg"}
+        variant={className ? undefined : "secondary"}
+        className={className ?? "flex-1 cursor-pointer"}
+        onClick={openDialog}
+      >
+        {showIcon && <MessageCircle />} {label}
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
