@@ -116,6 +116,10 @@ export default function SignInPage() {
       toast.error(`Use at least ${MIN_PASSWORD} characters for your password`);
       return;
     }
+    if (!name.trim()) {
+      toast.error("Choose a username");
+      return;
+    }
     if (!accountType) {
       toast.error("Choose whether you're signing up as a buyer or a seller");
       return;
@@ -245,6 +249,7 @@ export default function SignInPage() {
               name="name"
               aria-label="Username"
               autoComplete="nickname"
+              required
               maxLength={40}
               placeholder="USERNAME"
               value={name}
