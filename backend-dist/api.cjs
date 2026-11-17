@@ -1776,13 +1776,16 @@ async function canViewLocked(ctx, listing, user) {
   const expiry = unlockExpiry(await getUnlock(ctx, listing._id, user._id));
   return expiry !== null && expiry > ctx.now();
 }
-async function validateLockedMedia(ctx, sellerId, media, previewCount, alreadyAttached = []) {
+async function validateLockedMedia(ctx, sellerId, media, coverCount, alreadyAttached = []) {
   const bad2 = (message) => new AppError({ code: "BAD_REQUEST", message });
-  if (media.length < 1) throw bad2("Add at least one photo or video");
+  if (media.length < 1) throw bad2("Add at least one photo or a video");
+  const videos = media.filter((m) => m.kind === "video").length;
+  if (videos > 1) throw bad2("Add only one video");
+  if (videos === 1 && media.length > 1)
+    throw bad2("A video listing holds just the video and its thumbnail");
   if (media.length > LOCKED_MEDIA_MAX)
-    throw bad2(`Locked listings can hold up to ${LOCKED_MEDIA_MAX} files`);
-  if (previewCount !== media.length)
-    throw bad2("Every file needs a blurred preview");
+    throw bad2(`Instant Content can hold up to ${LOCKED_MEDIA_MAX} photos`);
+  if (coverCount !== 1) throw bad2("Add a cover photo");
   assertOwnFiles(
     media.map((m) => m.storageId),
     sellerId,
@@ -2466,8 +2469,7 @@ async function lockedView(ctx, listing, media, me) {
     unlockExpiresAt: canView && unlock ? unlockExpiry(unlock) : null,
     media: canView ? media.flatMap((m, i) => {
       const url = urls[i];
-      const previewId = listing.imageIds[i];
-      return url && previewId ? [{ storageId: m.storageId, kind: m.kind, url, previewId }] : [];
+      return url ? [{ storageId: m.storageId, kind: m.kind, url }] : [];
     }) : null
   };
 }
