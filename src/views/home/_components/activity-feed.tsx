@@ -78,8 +78,8 @@ export default function ActivityFeed() {
         transition={{ duration: 0.5, ease: "easeOut" }}
         className="flex flex-col gap-2"
       >
-        <h1 className="flex flex-wrap items-baseline gap-x-3 font-display text-4xl md:text-5xl">
-          Activity <span className="text-2xl italic text-violet-600 md:text-3xl">What&apos;s happening?</span>
+        <h1 className="flex flex-wrap items-baseline gap-x-3 [font-family:var(--font-nurma),Arial,sans-serif] font-normal text-4xl md:text-5xl">
+          Activity <span className="text-2xl text-violet-600 md:text-3xl">What&apos;s happening?</span>
         </h1>
         <span className="h-1 w-24 rounded-full bg-violet-600" />
       </motion.header>
