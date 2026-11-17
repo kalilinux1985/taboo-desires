@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import ZoomImage from "@/components/zoom-image.tsx";
 import { useMutation, usePaginatedQuery } from "@/lib/backend/react.tsx";
 import { ImagePlus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -100,7 +101,7 @@ export default function ProfilePhotos({
             key={p._id}
             className="group relative aspect-square overflow-hidden rounded-[2px] bg-muted"
           >
-            <img src={p.url} alt="" className="size-full object-cover" />
+            <ZoomImage src={p.url} className="size-full"><img src={p.url} alt="" className="size-full object-cover" /></ZoomImage>
             {isMe && p.photoId && (
               <button
                 type="button"

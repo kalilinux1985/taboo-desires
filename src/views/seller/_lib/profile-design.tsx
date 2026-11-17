@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import ZoomImage from "@/components/zoom-image.tsx";
 import { formatDistanceToNow } from "date-fns";
 import { ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils.ts";
@@ -53,7 +54,7 @@ export function ProfilePicture({ url, name }: { url: string | null; name: string
   return (
     <div className="relative aspect-square w-full max-w-[445px] self-start overflow-hidden rounded-[6px] bg-white shadow-[0_6px_14px_rgba(0,0,0,0.45)] [grid-area:avatar]">
       {url ? (
-        <img src={url} alt={name} className="size-full object-cover" />
+        <ZoomImage src={url} alt={name} className="size-full"><img src={url} alt={name} className="size-full object-cover" /></ZoomImage>
       ) : (
         <div className="flex size-full items-center justify-center">
           <ImageIcon className="size-[84%] text-[#adacb1]" strokeWidth={1.1} />

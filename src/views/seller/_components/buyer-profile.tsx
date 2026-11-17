@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ZoomImage from "@/components/zoom-image.tsx";
 import Link from "next/link";
 import { EllipsisVertical, Link2, Star, UserCog } from "lucide-react";
 import { usePaginatedQuery } from "@/lib/backend/react.tsx";
@@ -114,15 +115,9 @@ function PhotosOverview({ userId, count, onOpen }: { userId: Id<"users">; count:
           <p className={cn(SANS, "text-sm text-[#ffffff]")}>No photos yet.</p>
         ) : (
           results.slice(0, 10).map((p) => (
-            <button
-              key={p._id}
-              type="button"
-              onClick={onOpen}
-              aria-label="Open photos"
-              className="size-[110px] cursor-pointer overflow-hidden"
-            >
+            <ZoomImage key={p._id} src={p.url} className="size-[110px] overflow-hidden">
               <img src={p.url} alt="" loading="lazy" className="size-full object-cover" />
-            </button>
+            </ZoomImage>
           ))
         )}
       </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import ZoomImage from "@/components/zoom-image.tsx";
 import { useEffect, type ReactNode } from "react";
 import Link from "next/link";
 import { Clapperboard, Film, Images, UserRound, type LucideIcon } from "lucide-react";
@@ -153,20 +154,14 @@ export function PhotosSection({ userId, count, onViewAll }: { userId: Id<"users"
       ) : (
         <div className="flex flex-wrap gap-[18px]">
           {results.slice(0, 6).map((p) => (
-            <button
-              key={p._id}
-              type="button"
-              onClick={onViewAll}
-              aria-label="Open photos"
-              className="group size-[110px] cursor-pointer overflow-hidden"
-            >
+            <ZoomImage key={p._id} src={p.url} className="group size-[110px] overflow-hidden">
               <img
                 src={p.url}
                 alt=""
                 loading="lazy"
                 className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
               />
-            </button>
+            </ZoomImage>
           ))}
         </div>
       )}

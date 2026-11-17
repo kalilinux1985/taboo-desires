@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ZoomImage from "@/components/zoom-image.tsx";
 import Link from "next/link";
 import { useMutation } from "@/lib/backend/react.tsx";
 import { Clock, Heart, Lock, MessageCircle, MoreHorizontal, Trash2 } from "lucide-react";
@@ -25,7 +26,7 @@ export function PostImages({ images }: { images: string[] }) {
   if (images.length === 1) {
     return (
       <div className="w-full max-w-[210px] overflow-hidden rounded-[2px] bg-[#8b8b90]">
-        <img src={images[0]} alt="" loading="lazy" className="max-h-[22rem] w-full object-cover" />
+        <ZoomImage src={images[0]} className="w-full"><img src={images[0]} alt="" loading="lazy" className="max-h-[22rem] w-full object-cover" /></ZoomImage>
       </div>
     );
   }
@@ -33,7 +34,7 @@ export function PostImages({ images }: { images: string[] }) {
     <div className="grid max-w-[426px] grid-cols-2 gap-1.5">
       {images.map((url) => (
         <div key={url} className="aspect-square overflow-hidden rounded-[2px] bg-[#8b8b90]">
-          <img src={url} alt="" loading="lazy" className="size-full object-cover" />
+          <ZoomImage src={url} className="size-full"><img src={url} alt="" loading="lazy" className="size-full object-cover" /></ZoomImage>
         </div>
       ))}
     </div>
