@@ -19,6 +19,15 @@ import type { SellerSettings } from "../domain/sellerSettings.ts";
 import type { Subcategory } from "../domain/subcategories.ts";
 import type { BuyerDetails } from "../domain/buyerDetails.ts";
 
+export type ReportType =
+  | "nonconsensual_intimate"
+  | "underage"
+  | "copyright"
+  | "illegal"
+  | "harassment"
+  | "other";
+export type ReportTargetKind = "listing" | "post" | "comment" | "profile" | "other";
+
 /** Branded string id so ids of different tables can't be mixed up. */
 export type Id<T extends string> = string & { __tableName: T };
 
@@ -54,6 +63,23 @@ type Fields = {
     requestedAt: string;
     reviewedAt?: string;
     reason?: string;
+  };
+  contentReports: {
+    reportType: ReportType;
+    targetKind: ReportTargetKind;
+    targetId?: string;
+    targetUrl?: string;
+    description: string;
+    reporterName: string;
+    reporterEmail: string;
+    reporterUserId?: Id<"users">;
+    isDepicted: boolean;
+    signature: string;
+    status: "open" | "removed" | "dismissed";
+    dueAt: string;
+    resolvedAt?: string;
+    resolvedBy?: Id<"users">;
+    resolutionNote?: string;
   };
   ageVerifications: {
     userId: Id<"users">;
@@ -258,6 +284,26 @@ export const TABLES: { [T in DbTable]: TableDef<T> } = {
       requestedAt: c("requested_at", "ts"),
       reviewedAt: c("reviewed_at", "ts"),
       reason: c("reason"),
+    },
+  },
+  contentReports: {
+    sqlName: "content_reports",
+    columns: {
+      reportType: c("report_type"),
+      targetKind: c("target_kind"),
+      targetId: c("target_id"),
+      targetUrl: c("target_url"),
+      description: c("description"),
+      reporterName: c("reporter_name"),
+      reporterEmail: c("reporter_email"),
+      reporterUserId: c("reporter_user_id", "uuid"),
+      isDepicted: c("is_depicted", "bool"),
+      signature: c("signature"),
+      status: c("status"),
+      dueAt: c("due_at", "ts"),
+      resolvedAt: c("resolved_at", "ts"),
+      resolvedBy: c("resolved_by", "uuid"),
+      resolutionNote: c("resolution_note"),
     },
   },
   ageVerifications: {

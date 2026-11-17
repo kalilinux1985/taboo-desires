@@ -378,6 +378,12 @@ export default function SignInPage() {
             <span>I confirm that I am {MIN_AGE} years of age or older.</span>
           </label>
           <p className={cn(FOOTNOTE, "-mt-3 text-[11px]")}>
+            By signing up you agree to the{" "}
+            <Link href="/terms" target="_blank" className={FOOT_LINK}>Terms</Link>,{" "}
+            <Link href="/privacy" target="_blank" className={FOOT_LINK}>Privacy Policy</Link> and{" "}
+            <Link href="/content-policy" target="_blank" className={FOOT_LINK}>Content Policy</Link>.
+          </p>
+          <p className={cn(FOOTNOTE, "-mt-3 text-[11px]")}>
             Passwords need at least {MIN_PASSWORD} characters.
           </p>
           <button type="submit" className={SUBMIT} disabled={busy}>

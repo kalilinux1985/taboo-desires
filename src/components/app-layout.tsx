@@ -205,9 +205,18 @@ function Footer() {
     <footer className="border-t">
       <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-8 sm:flex-row sm:items-center sm:justify-between">
         <Logo className="text-xl" />
-        <p className="text-sm text-muted-foreground">
-          18+ only. 0% commission. &copy; {new Date().getFullYear()} Taboo Desires
-        </p>
+        <div className="flex flex-col gap-2 sm:items-end">
+          <nav aria-label="Legal" className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+            <Link href="/terms" className="transition-colors hover:text-violet-600">Terms</Link>
+            <Link href="/privacy" className="transition-colors hover:text-violet-600">Privacy</Link>
+            <Link href="/content-policy" className="transition-colors hover:text-violet-600">Content policy</Link>
+            <Link href="/copyright" className="transition-colors hover:text-violet-600">Copyright</Link>
+            <Link href="/report" className="transition-colors hover:text-violet-600">Report content</Link>
+          </nav>
+          <p className="text-sm text-muted-foreground">
+            18+ only. 0% commission. &copy; {new Date().getFullYear()} Taboo Desires
+          </p>
+        </div>
       </div>
     </footer>
   );

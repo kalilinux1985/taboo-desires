@@ -1,4 +1,5 @@
 import { createContext, useContext, useState } from "react";
+import ReportButton from "@/components/report-button.tsx";
 import { useBackendAuth, usePaginatedQuery, useMutation, useQuery } from "@/lib/backend/react.tsx";
 import { Authenticated, Unauthenticated } from "@/lib/backend/react.tsx";
 import Link from "next/link";
@@ -161,10 +162,12 @@ function CommentItem({
               </Link>
               <span className="flex shrink-0 items-center gap-2 text-[10px] text-[#e3e4e6]">
                 <span title={new Date(comment._creationTime).toLocaleString()}>{shortAge(comment._creationTime)}</span>
-                {comment.canDelete && (
+                {comment.canDelete ? (
                   <button type="button" aria-label="Delete comment" onClick={remove_} className="cursor-pointer hover:text-rose-400">
                     <Trash2 className="size-3" />
                   </button>
+                ) : (
+                  <ReportButton target={{ kind: "comment", id: comment._id }} iconOnly className="size-4 p-0 [&_svg]:size-3" />
                 )}
               </span>
             </div>
@@ -232,7 +235,7 @@ function CommentItem({
             </Link>
             <span className="flex shrink-0 items-center gap-2 text-[10px] text-[#cbd1df]">
               <span title={new Date(comment._creationTime).toLocaleString()}>{shortAge(comment._creationTime)}</span>
-              {comment.canDelete && (
+              {comment.canDelete ? (
                 <button
                   type="button"
                   aria-label="Delete comment"
@@ -241,6 +244,8 @@ function CommentItem({
                 >
                   <Trash2 className="size-3" />
                 </button>
+              ) : (
+                <ReportButton target={{ kind: "comment", id: comment._id }} iconOnly className="size-4 p-0 [&_svg]:size-3" />
               )}
             </span>
           </div>

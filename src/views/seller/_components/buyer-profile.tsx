@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ReportButton from "@/components/report-button.tsx";
 import ZoomImage from "@/components/zoom-image.tsx";
 import Link from "next/link";
 import { EllipsisVertical, Link2, Star, UserCog } from "lucide-react";
@@ -53,6 +54,7 @@ function Header({ profile }: { profile: Profile }) {
             className={FILLED_ACTION}
           />
         )}
+        {!profile.isMe && <ReportButton target={{ kind: "profile", id: profile._id }} className="px-1" />}
         {profile.isMe && (
           <Link
             href={settingsPathFor(profile.accountType)}

@@ -1,5 +1,6 @@
 "use client";
 
+import ReportButton from "@/components/report-button.tsx";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { MessageCircle, MoreHorizontal, ThumbsUp, Trash2 } from "lucide-react";
@@ -95,6 +96,9 @@ export default function ProfilePostCard({
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+        )}
+        {!item.canDelete && (
+          <ReportButton target={{ kind: "post", id: item._id }} iconOnly className="size-7 shrink-0 px-0" />
         )}
       </header>
 

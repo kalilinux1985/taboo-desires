@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ReportButton from "@/components/report-button.tsx";
 import ZoomImage from "@/components/zoom-image.tsx";
 import Link from "next/link";
 import { useMutation } from "@/lib/backend/react.tsx";
@@ -139,6 +140,9 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+          )}
+          {!item.canDelete && (
+            <ReportButton target={{ kind: "post", id: item._id }} iconOnly className="size-7 shrink-0 px-0" />
           )}
         </header>
 

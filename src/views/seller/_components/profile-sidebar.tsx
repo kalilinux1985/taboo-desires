@@ -1,5 +1,6 @@
 "use client";
 
+import ReportButton from "@/components/report-button.tsx";
 import { useState } from "react";
 import Link from "next/link";
 import { CircleCheck, Star, UserCog } from "lucide-react";
@@ -117,6 +118,7 @@ export function ProfileHeaderCard({ profile, onReviews }: { profile: Profile; on
             showIcon={false}
           />
         )}
+        {!profile.isMe && <ReportButton target={{ kind: "profile", id: profile._id }} className="px-1" />}
       </div>
       {profile.bio && (
         <div className={cn(SANS, "mt-6 text-[14px] leading-6 text-white")}>

@@ -1,5 +1,6 @@
 "use client";
 
+import ReportButton from "@/components/report-button.tsx";
 import { useState } from "react";
 import Link from "next/link";
 import { useNavigate } from "@/lib/navigation.ts";
@@ -351,6 +352,7 @@ function InstantContentView({
                     withLabel
                     className="h-10 self-start rounded-[2px] bg-[#141519] shadow-none"
                   />
+                  <ReportButton target={{ kind: "listing", id: listing._id }} className="self-start" />
                 </div>
               )}
             </div>
@@ -537,6 +539,7 @@ export default function ListingPage() {
                     withLabel
                     className="h-10 self-start rounded-[2px] bg-[#141519] shadow-none"
                   />
+                  <ReportButton target={{ kind: "listing", id: listing._id }} className="self-start" />
                 </div>
               )}
             </div>

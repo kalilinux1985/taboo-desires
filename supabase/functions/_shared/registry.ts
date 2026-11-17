@@ -12,6 +12,7 @@ import * as listings from "./modules/listings.ts";
 import * as messages from "./modules/messages.ts";
 import * as notifications from "./modules/notifications.ts";
 import * as posts from "./modules/posts.ts";
+import * as reports from "./modules/reports.ts";
 import * as reviews from "./modules/reviews.ts";
 import * as subscriptions from "./modules/subscriptions.ts";
 import * as unlocks from "./modules/unlocks.ts";
@@ -52,6 +53,7 @@ export const registry = {
   messages: functionsOf(messages),
   notifications: functionsOf(notifications),
   posts: functionsOf(posts),
+  reports: functionsOf(reports),
   reviews: functionsOf(reviews),
   subscriptions: functionsOf(subscriptions),
   unlocks: functionsOf(unlocks),
