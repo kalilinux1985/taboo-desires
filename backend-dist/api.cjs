@@ -2065,7 +2065,7 @@ var SELLER_DETAIL_FIELDS = [
   {
     key: "ageRange",
     label: "Age",
-    options: ["18-20", "21-25", "26-30", "30-40", "40-50", "50+"],
+    options: ["18-20", "21-25", "26-30", "30-40", "40-50", "50+", "60+", "70+"],
     primary: true
   },
   {
@@ -2105,11 +2105,12 @@ var SELLER_DETAIL_FIELDS = [
       "Athletic",
       "Average",
       "Curvy",
+      "Muscular",
       "Plus size",
       "BBW"
     ]
   },
-  { key: "shoeSize", label: "Shoe size (US)", options: range(4, 14, 0.5) },
+  { key: "shoeSize", label: "Shoe size (US)", options: [...range(4, 15.5, 0.5), "16+"] },
   {
     key: "showFace",
     label: "Will show face",
@@ -2131,6 +2132,9 @@ var SELLER_DETAIL_FIELDS = [
       "Model",
       "Self-employed",
       "Stay at home",
+      "Military / Police",
+      "Blue collar worker",
+      "Digital nomad / Tech",
       "Other"
     ]
   },
@@ -2150,6 +2154,11 @@ var SELLER_DETAIL_FIELDS = [
       "Red",
       "Auburn",
       "Gray",
+      "White",
+      "Blue",
+      "Pink",
+      "Purple",
+      "Green",
       "Dyed / Colorful",
       "Bald"
     ]
@@ -2157,7 +2166,7 @@ var SELLER_DETAIL_FIELDS = [
   {
     key: "eyeColor",
     label: "Eye color",
-    options: ["Brown", "Blue", "Green", "Hazel", "Gray", "Other"]
+    options: ["Brown", "Blue", "Green", "Hazel", "Gray", "Amber", "Other"]
   },
   { key: "smokes", label: "Smokes", options: YES_NO_SOMETIMES },
   { key: "drinks", label: "Drinks", options: YES_NO_SOMETIMES },
@@ -2169,6 +2178,9 @@ var SELLER_DETAIL_FIELDS = [
       "Single",
       "In a relationship",
       "Married",
+      "Divorced",
+      "Open relationship",
+      "Widowed",
       "It's complicated",
       "Prefer not to say"
     ]
