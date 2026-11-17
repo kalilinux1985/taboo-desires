@@ -249,7 +249,8 @@ var TABLES = {
       buyerId: c("buyer_id", "uuid"),
       sellerId: c("seller_id", "uuid"),
       status: c("status"),
-      requestedAt: c("requested_at", "ts")
+      requestedAt: c("requested_at", "ts"),
+      grantedAt: c("granted_at", "ts")
     }
   },
   customRequests: {
@@ -1764,10 +1765,16 @@ async function getUnlock(ctx, listingId, buyerId) {
     sql`where listing_id = ${listingId}::uuid and buyer_id = ${buyerId}::uuid`
   );
 }
+var UNLOCK_HOURS = 24;
+function unlockExpiry(unlock) {
+  if (unlock?.status !== "granted" || !unlock.grantedAt) return null;
+  return new Date(unlock.grantedAt).getTime() + UNLOCK_HOURS * 36e5;
+}
 async function canViewLocked(ctx, listing, user) {
   if (!listing.paywall || !user) return false;
   if (listing.sellerId === user._id) return true;
-  return (await getUnlock(ctx, listing._id, user._id))?.status === "granted";
+  const expiry = unlockExpiry(await getUnlock(ctx, listing._id, user._id));
+  return expiry !== null && expiry > ctx.now();
 }
 async function validateLockedMedia(ctx, sellerId, media, previewCount, alreadyAttached = []) {
   const bad2 = (message) => new AppError({ code: "BAD_REQUEST", message });
@@ -2454,7 +2461,9 @@ async function lockedView(ctx, listing, media, me) {
   return {
     photoCount: media.filter((m) => m.kind === "image").length,
     videoCount: media.filter((m) => m.kind === "video").length,
-    unlockStatus: unlock?.status ?? null,
+    // "expired" once the 24 hours are up, so the buyer can request again
+    unlockStatus: unlock?.status === "granted" && !canView ? "expired" : unlock?.status ?? null,
+    unlockExpiresAt: canView && unlock ? unlockExpiry(unlock) : null,
     media: canView ? media.flatMap((m, i) => {
       const url = urls[i];
       const previewId = listing.imageIds[i];
@@ -4226,7 +4235,7 @@ var request = mutation({
         status: "pending",
         requestedAt
       });
-    } else if (existing.status === "declined") {
+    } else if (existing.status === "declined" || existing.status === "granted" && (unlockExpiry(existing) ?? 0) <= ctx.now()) {
       await ctx.db.patch("unlocks", existing._id, {
         status: "pending",
         requestedAt
@@ -4269,7 +4278,8 @@ var respond2 = mutation({
       throw new AppError({ code: "FORBIDDEN", message: "Not your listing" });
     if (unlock.status !== "pending") return null;
     await ctx.db.patch("unlocks", unlockId, {
-      status: grant ? "granted" : "declined"
+      status: grant ? "granted" : "declined",
+      ...grant ? { grantedAt: new Date(ctx.now()).toISOString() } : {}
     });
     if (grant) await bumpStats(ctx, unlock.sellerId, { salesCount: 1 });
     return null;
