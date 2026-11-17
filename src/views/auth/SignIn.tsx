@@ -20,19 +20,11 @@ type Mode = "signin" | "signup" | "link";
 
 const MIN_PASSWORD = 8;
 const MIN_AGE = 18;
-const optionsOf = (key: "country" | "gender") => SELLER_DETAIL_FIELDS.find((f) => f.key === key)?.options ?? [];
+const optionsOf = (key: "country" | "gender" | "ageRange") => SELLER_DETAIL_FIELDS.find((f) => f.key === key)?.options ?? [];
 const COUNTRIES = optionsOf("country");
 const GENDERS = optionsOf("gender");
+const AGE_RANGES = optionsOf("ageRange");
 
-/** Profiles show an age group rather than the exact age. */
-function ageRangeOf(age: number): string {
-  if (age <= 20) return "18-20";
-  if (age <= 25) return "21-25";
-  if (age <= 30) return "26-30";
-  if (age < 40) return "30-40";
-  if (age < 50) return "40-50";
-  return "50+";
-}
 
 const ROUNDED = "[font-family:var(--font-signin-rounded),'Comfortaa',ui-rounded,sans-serif]";
 const SERIF = "[font-family:var(--font-signin-serif),Cambria,Georgia,serif]";
@@ -143,13 +135,8 @@ export default function SignInPage() {
       toast.error("Choose whether you're signing up as a buyer or a seller");
       return;
     }
-    const years = Number(age);
-    if (!Number.isInteger(years) || years < MIN_AGE || years > 99) {
-      toast.error(`You must be ${MIN_AGE} or older to sign up`);
-      return;
-    }
-    if (!country || !gender) {
-      toast.error("Choose your country and gender");
+    if (!country || !gender || !age) {
+      toast.error("Choose your country, age and gender");
       return;
     }
     if (!is18) {
@@ -164,7 +151,7 @@ export default function SignInPage() {
         password,
         options: {
           emailRedirectTo: callbackUrl(returnTo),
-          data: { accountType, name: name.trim(), country, gender, ageRange: ageRangeOf(years) },
+          data: { accountType, name: name.trim(), country, gender, ageRange: age },
         },
       });
       if (error) throw error;
@@ -329,20 +316,18 @@ export default function SignInPage() {
               {COUNTRIES.map((c) => <option key={c} value={c} className="text-[#b8b8b9]">{c}</option>)}
             </select>
             <div className="grid grid-cols-[110px_1fr] gap-3">
-              <input
+              <select
                 id="age"
                 name="age"
                 aria-label="Age"
-                type="number"
-                inputMode="numeric"
-                min={MIN_AGE}
-                max={99}
                 required
-                placeholder="AGE"
                 value={age}
                 onChange={(e) => setAge(e.target.value)}
-                className={FIELD}
-              />
+                className={cn(FIELD, "appearance-none [color-scheme:dark]", !age && "text-[#4f5051]")}
+              >
+                <option value="" disabled>AGE</option>
+                {AGE_RANGES.map((a) => <option key={a} value={a} className="text-[#b8b8b9]">{a}</option>)}
+              </select>
               <select
                 id="gender"
                 name="gender"
