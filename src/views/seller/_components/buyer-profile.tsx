@@ -18,20 +18,7 @@ import ProfilePhotos from "./profile-photos.tsx";
 import BuyerReviews from "./buyer-reviews.tsx";
 import MessageSellerButton from "./message-seller-dialog.tsx";
 import { copyProfileLink } from "../_lib/profile-share.ts";
-import {
-  Detail,
-  FILLED_ACTION,
-  Frame,
-  imagesLabel,
-  joinedAgo,
-  OUTLINED_ACTION,
-  ProfilePage,
-  ProfilePicture,
-  ProfileTabBar,
-  SANS,
-  SERIF,
-  SectionTitle,
-} from "../_lib/profile-design.tsx";
+import { Detail, FILLED_ACTION, Frame, NURMA, OUTLINED_ACTION, ProfilePage, ProfilePicture, ProfileTabBar, SANS, SERIF, SectionTitle, imagesLabel, joinedAgo } from "../_lib/profile-design.tsx";
 
 type Profile = NonNullable<FunctionReturnType<typeof api.users.getProfile>>;
 type Tab = "overview" | "photos" | "reviews";
@@ -44,7 +31,7 @@ function Header({ profile }: { profile: Profile }) {
   const written = profile.reviewsWritten ?? { count: 0, average: 0 };
   return (
     <Frame className="[grid-area:header]" innerClassName="flex flex-col px-[22px] py-[18px] lg:min-h-[345px]">
-      <h1 className={cn(SERIF, "truncate text-[24px] uppercase leading-tight text-white")}>{profile.name}</h1>
+      <h1 className={cn(NURMA, "truncate text-[24px] uppercase leading-tight tracking-[0.03em] text-white")}>{profile.name}</h1>
       <p className={cn(SERIF, "mt-1 flex flex-wrap items-center gap-x-4 text-[17px] text-[#7b3aec]")}>
         <span
           className="flex items-center gap-1"

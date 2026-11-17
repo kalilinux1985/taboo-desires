@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils.ts";
 import { SELLER_DETAIL_FIELDS } from "@/shared/sellerDetails.ts";
 import MessageSellerButton from "./message-seller-dialog.tsx";
 import ExpandableBio from "./expandable-bio.tsx";
-import { Detail, FILLED_ACTION, Frame, joinedAgo, OUTLINED_ACTION, SANS, SERIF } from "../_lib/profile-design.tsx";
+import { Detail, FILLED_ACTION, Frame, NURMA, OUTLINED_ACTION, SANS, SERIF, joinedAgo } from "../_lib/profile-design.tsx";
 
 type Profile = NonNullable<FunctionReturnType<typeof api.users.getProfile>>;
 
@@ -87,7 +87,7 @@ export function ProfileHeaderCard({ profile, onReviews }: { profile: Profile; on
       <p className={cn(SANS, "flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#7b3aec]")}>
         <CircleCheck className="size-3" /> {profile.isPro ? "Premium Seller" : "Seller"}
       </p>
-      <h1 className={cn(SERIF, "mt-1 truncate text-[24px] uppercase leading-tight text-white")}>{profile.name}</h1>
+      <h1 className={cn(NURMA, "mt-1 truncate text-[24px] uppercase leading-tight tracking-[0.03em] text-white")}>{profile.name}</h1>
       <p className={cn(SERIF, "mt-1 flex flex-wrap items-center gap-x-4 text-[17px] text-[#7b3aec]")}>
         <button
           type="button"

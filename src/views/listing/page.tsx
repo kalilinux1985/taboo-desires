@@ -46,7 +46,7 @@ import { useAccess } from "@/hooks/use-access.ts";
 import { deniedMessage } from "@/shared/accounts.ts";
 import ExpandableBio from "@/views/seller/_components/expandable-bio.tsx";
 import { ProfileShopCard } from "@/views/seller/_components/profile-sections.tsx";
-import { Detail, INNER, OUTER, SANS, SectionTitle, SERIF, joinedAgo } from "@/views/seller/_lib/profile-design.tsx";
+import { Detail, INNER, NURMA, OUTER, SANS, SERIF, SectionTitle, joinedAgo } from "@/views/seller/_lib/profile-design.tsx";
 
 // The listing page in the profile design: title and picture on the left, the
 // seller card on the right (badge, name, rating, description, price, payment
@@ -206,7 +206,7 @@ function SellerCard({ seller }: { seller: Seller }) {
       />
       <div className="flex min-w-0 flex-1 flex-col">
         <span className={cn(SANS, "text-[11px] text-[#7b3aec]")}>{seller.isPro ? "Premium Seller" : "Seller"}</span>
-        <span className={cn(SERIF, "mt-0.5 truncate text-[20px] uppercase leading-tight text-white group-hover:underline")}>
+        <span className={cn(NURMA, "mt-0.5 truncate text-[20px] uppercase leading-tight tracking-[0.03em] text-white group-hover:underline")}>
           {seller.name}
         </span>
         <span className={cn(SANS, "mt-1.5 flex flex-wrap items-center gap-x-8 gap-y-1 text-[13px] text-white")}>
@@ -347,7 +347,7 @@ export default function ListingPage() {
           {/* Title and picture */}
           <div className="flex min-w-0 flex-col gap-6 pt-[6px]">
             {hasBadges && <div className="flex flex-wrap items-center gap-2">{badges}</div>}
-            <h1 className={cn(SERIF, "break-words text-[30px] leading-tight text-white")}>{listing.title}</h1>
+            <h1 className={cn(NURMA, "break-words text-[30px] leading-tight text-white")}>{listing.title}</h1>
             <Gallery images={listing.images} title={listing.title} locked={!!locked && !locked.media} />
             {locked?.media && <UnlockedMedia media={locked.media} />}
           </div>

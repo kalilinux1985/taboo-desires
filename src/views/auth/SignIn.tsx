@@ -40,7 +40,7 @@ function Shell({ children }: { children: React.ReactNode }) {
       <div className="flex flex-col items-center justify-center px-4 py-10 sm:px-8">
         <Link href="/" className="flex flex-col items-center gap-[10px]">
           <img src="/signin/logo.png" alt="" className="size-[122px]" />
-          <span className={cn(ROUNDED, "text-[40px] leading-none text-[#69269e] sm:text-[44px]")}>Taboo Desire&apos;s</span>
+          <span className="[font-family:var(--font-nurma),Arial,sans-serif] text-[40px] leading-none text-[#69269e] sm:text-[44px]">Taboo Desire&apos;s</span>
         </Link>
         <div className="mt-[18px] w-full max-w-[498px] rounded-[2px] border border-[#202227] bg-[#1f2126] p-[10px] shadow-[0_10px_22px_rgba(0,0,0,0.6)]">
           <div className="rounded-[2px] border border-[#1b1d23] bg-[#141519] px-6 py-10 shadow-[0_6px_16px_rgba(0,0,0,0.55)] sm:px-[50px]">{children}</div>

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import type { Metadata, Viewport } from "next";
 import { JetBrains_Mono, Manrope, Playfair_Display } from "next/font/google";
+import localFont from "next/font/local";
 import { DefaultProviders } from "@/components/providers/default.tsx";
 import "../index.css";
 
@@ -11,6 +12,8 @@ const display = Playfair_Display({
 });
 const sans = Manrope({ subsets: ["latin"], variable: "--font-manrope" });
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains" });
+/** Nurma (Cometype): the display face for the wordmark, page titles and member names */
+const nurma = localFont({ src: "./fonts/Nurma-Regular.woff", variable: "--font-nurma", display: "swap" });
 
 export const metadata: Metadata = {
   title: {
@@ -35,7 +38,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="en"
-      className={`dark ${display.variable} ${sans.variable} ${mono.variable}`}
+      className={`dark ${display.variable} ${sans.variable} ${mono.variable} ${nurma.variable}`}
     >
       <body>
         <DefaultProviders>{children}</DefaultProviders>
