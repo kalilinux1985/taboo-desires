@@ -201,6 +201,31 @@
     caret-color: var(--foreground);
   }
 
+  /* Settings pages: the profile page's surfaces. Cards are the profile's outer
+     card (#202227), fields and pickers the comment box (#111317, inner shadow). */
+  .settings-design [data-slot="card-light"] {
+    border-color: rgb(255 255 255 / 6%) !important;
+    background-color: #202227 !important;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35) !important;
+  }
+  .settings-design textarea,
+  .settings-design input:not(
+      [type="checkbox"],
+      [type="radio"],
+      [type="file"],
+      [type="range"],
+      [type="color"],
+      [type="hidden"],
+      [type="submit"],
+      [type="button"]
+    ),
+  .settings-design [data-slot="select-trigger"] {
+    background-color: #111317 !important;
+    box-shadow:
+      inset 0 3px 13px rgb(0 0 0 / 50%),
+      inset 3px 5px 4px rgb(28 28 28 / 12%) !important;
+  }
+
   /* Cards are the profile's cards: #030917 at 50%, 1px white border at 25%, 1px corners */
   [data-slot="card-light"] {
     border-color: rgb(255 255 255 / 25%) !important;

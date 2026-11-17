@@ -30,7 +30,7 @@ export function DetailSelect({
         <SelectTrigger id={id} className="w-full cursor-pointer">
           <SelectValue placeholder="Choose" />
         </SelectTrigger>
-        <SelectContent className="max-h-72">
+        <SelectContent className="max-h-72 bg-[#111317] shadow-none">
           <SelectItem value={NONE} className="cursor-pointer text-muted-foreground">
             Prefer not to say
           </SelectItem>

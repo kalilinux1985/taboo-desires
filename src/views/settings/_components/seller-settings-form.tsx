@@ -185,7 +185,7 @@ function Form({
               <SelectTrigger id={`setting-${f.key}`} className="w-full cursor-pointer">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-[#111317] shadow-none">
                 {f.choices.map((c) => (
                   <SelectItem key={c.value} value={c.value} className="cursor-pointer">
                     {c.label}
