@@ -67,7 +67,7 @@ function FilterPanel({
           groups={SHOP_FILTER_GROUPS}
           selection={selection}
           onToggle={onToggle}
-          defaultOpen={["category", "saleType", "price"]}
+          defaultOpen={["saleType", "price"]}
         />
       </div>
     </aside>

@@ -35,45 +35,78 @@ export type Group = { key: string; label: string; options: Option[]; multi: bool
 const asOptions = (values: readonly string[]): Option[] =>
   values.map((x) => ({ value: x, label: x }));
 
-/** Seller-profile fields shown as filters, in the order buyers care most about. */
+const CONTINENTS: Record<string, string[]> = {
+  "North America": ["United States", "Canada", "Mexico"],
+  "South America": ["Brazil", "Argentina", "Colombia", "Chile"],
+  Europe: [
+    "United Kingdom", "Ireland", "Germany", "France", "Spain", "Italy", "Netherlands",
+    "Belgium", "Sweden", "Norway", "Denmark", "Finland", "Poland", "Portugal",
+    "Austria", "Switzerland", "Czech Republic",
+  ],
+  Asia: ["Japan", "South Korea", "Philippines", "Thailand", "India"],
+  Africa: ["South Africa"],
+  Oceania: ["Australia", "New Zealand"],
+};
+
+/** Seller-profile fields shown as filters, in the order of the filter panel. */
 const SELLER_FILTER_KEYS = [
+  "gender",
   "ageRange",
   "ethnicity",
-  "showFace",
+] as const;
+const SELLER_FILTER_KEYS_2 = [
+  "country",
+] as const;
+const SELLER_FILTER_KEYS_3 = [
   "bodySize",
   "shoeSize",
-  "occupation",
-  "gender",
-  "country",
-  "tattoos",
-  "piercings",
+  "height",
   "hairColor",
   "eyeColor",
+  "tattoos",
+  "piercings",
+  "showFace",
+  "occupation",
   "smokes",
   "drinks",
-  "height",
   "relationshipStatus",
+  "pregnant",
 ] as const;
 
-const SELLER_KEYS = new Set<string>(SELLER_FILTER_KEYS);
+const SELLER_KEYS = new Set<string>([
+  ...SELLER_FILTER_KEYS,
+  ...SELLER_FILTER_KEYS_2,
+  ...SELLER_FILTER_KEYS_3,
+]);
 
-/** Every filter the shop offers, category first. */
+const LABELS: Record<string, string> = {
+  showFace: "Will show face",
+  pregnant: "Pregnant sellers",
+  ageRange: "Age",
+};
+
+const sellerGroup = (key: string): Group => {
+  const field = SELLER_DETAIL_FIELDS.find((f) => f.key === key)!;
+  return {
+    key,
+    label: LABELS[key] ?? field.label.replace(" (US)", ""),
+    options: asOptions(field.options),
+    multi: true,
+  };
+};
+
+/** Every filter the shop offers, in the order shown in the filter panel. */
 export const SHOP_FILTER_GROUPS: Group[] = [
-  { key: "category", label: "Category", options: CATEGORIES, multi: false },
   { key: "saleType", label: "Buy it now", options: [...SALE_TYPES], multi: false },
   { key: "price", label: "Price", options: [...PRICE_BANDS], multi: false },
-  { key: "condition", label: "Wear time", options: CONDITIONS, multi: false },
-  { key: "verified", label: "Verified", options: [{ value: "yes", label: "Verified sellers only" }], multi: false },
   { key: "listed", label: "Listed date", options: [...LISTED], multi: false },
-  ...SELLER_FILTER_KEYS.map((key) => {
-    const field = SELLER_DETAIL_FIELDS.find((f) => f.key === key)!;
-    return {
-      key,
-      label: field.label.replace(" (US)", ""),
-      options: asOptions(field.options),
-      multi: true,
-    };
-  }),
+  ...SELLER_FILTER_KEYS.map(sellerGroup),
+  { key: "verified", label: "Verified", options: [{ value: "yes", label: "Verified sellers only" }], multi: false },
+  ...SELLER_FILTER_KEYS_2.map(sellerGroup),
+  { key: "continent", label: "Continent", options: asOptions(Object.keys(CONTINENTS)), multi: true },
+  ...SELLER_FILTER_KEYS_3.map(sellerGroup),
+  { key: "condition", label: "Wear time", options: CONDITIONS, multi: false },
+  { key: "category", label: "Category", options: CATEGORIES, multi: false },
 ];
 
 export type Selection = Record<string, string[]>;
@@ -86,6 +119,16 @@ export function toArgs(sel: Selection) {
   const seller = Object.entries(sel)
     .filter(([key, values]) => SELLER_KEYS.has(key) && values.length > 0)
     .map(([key, values]) => ({ key, values }));
+  // Continent narrows the country filter to that continent's countries.
+  const continentCountries = (sel.continent ?? []).flatMap((c) => CONTINENTS[c] ?? []);
+  if (continentCountries.length) {
+    const chosen = sel.country ?? [];
+    const narrowed = chosen.filter((c) => continentCountries.includes(c));
+    const values = chosen.length && narrowed.length ? narrowed : continentCountries;
+    const rest = seller.filter((f) => f.key !== "country");
+    seller.length = 0;
+    seller.push(...rest, { key: "country", values });
+  }
   return {
     sort: "newest" as const,
     category: one("category") as Category | undefined,
