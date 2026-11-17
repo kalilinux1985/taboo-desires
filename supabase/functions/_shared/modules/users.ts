@@ -235,14 +235,49 @@ export const photosByUser = query({
   },
 });
 
-/** Public shop profile, safe to show to anyone (no email). */
+/** A private profile is visible only to its owner and admins. */
+const isPrivateProfile = (user: { settings?: SellerSettings }) => user.settings?.profilePrivate === "yes";
+const canViewProfile = (user: { _id: Id<"users">; settings?: SellerSettings }, me: { _id: Id<"users">; role?: string } | null) =>
+  !isPrivateProfile(user) || me?._id === user._id || me?.role === "admin";
+
+/** Whether the profile is private to the viewer, with just enough to show a "private" page. */
+export const profileAccess = query({
+  args: { userId: v.id("users") },
+  handler: async (ctx, { userId }) => {
+    const user = await ctx.db.get("users", userId);
+    if (!user) return null;
+    const me = await getCurrentUserDoc(ctx);
+    if (canViewProfile(user, me)) return { locked: false as const, name: null, avatarUrl: null };
+    return {
+      locked: true as const,
+      name: publicSellerName(user),
+      avatarUrl: user.avatarStorageId ? await ctx.storage.getUrl(user.avatarStorageId) : null,
+    };
+  },
+});
+
+/** Any member can make their own profile private or visible to everyone. */
+export const setProfilePrivate = mutation({
+  args: { isPrivate: v.boolean() },
+  handler: async (ctx, { isPrivate }) => {
+    const user = await requireUser(ctx);
+    await ctx.db.patch("users", user._id, {
+      settings: { ...user.settings, profilePrivate: isPrivate ? "yes" : "no" },
+    });
+    return null;
+  },
+});
+
+/** Public shop profile, safe to show to anyone (no email). Null when missing or private to the viewer. */
 export const getProfile = query({
   args: { userId: v.id("users") },
   handler: async (ctx, { userId }) => {
     const user = await ctx.db.get("users", userId);
     if (!user) return null;
     const me = await getCurrentUserDoc(ctx);
+    if (!canViewProfile(user, me)) return null;
     return {
+      isPrivate: isPrivateProfile(user),
       _id: user._id,
       name: publicSellerName(user),
       bio: user.bio ?? null,

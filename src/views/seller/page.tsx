@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useParams } from "next/navigation";
 import { useQuery } from "@/lib/backend/react.tsx";
-import { UserX } from "lucide-react";
+import { Lock, UserX } from "lucide-react";
 import { api } from "@/lib/backend/api.ts";
 import type { Id } from "@/lib/backend/types.ts";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
@@ -35,15 +35,29 @@ type Tab = (typeof TABS)[number];
 
 function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
   const profile = useQuery(api.users.getProfile, { userId: sellerId });
+  const access = useQuery(api.users.profileAccess, { userId: sellerId });
   const [tab, setTab] = useState<Tab>("overview");
   useRecordProfileVisit(sellerId);
 
-  if (profile === undefined) {
+  if (profile === undefined || (profile === null && access === undefined)) {
     return (
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-6 lg:grid-cols-[20rem_1fr]">
         <Skeleton className="h-[36rem] w-full" />
         <Skeleton className="h-[28rem] w-full" />
       </div>
+    );
+  }
+  if (profile === null && access?.locked) {
+    return (
+      <Empty className="py-24">
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <Lock />
+          </EmptyMedia>
+          <EmptyTitle>This profile is private</EmptyTitle>
+          <EmptyDescription>{access.name} has chosen to keep their profile private.</EmptyDescription>
+        </EmptyHeader>
+      </Empty>
     );
   }
   if (profile === null) {

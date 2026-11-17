@@ -47,8 +47,7 @@ export const SETTING_FIELDS = [
       { value: "yes", label: "Yes - Make my profile private" },
     ],
     defaultValue: "no",
-    hint: "Setting your profile to private will limit access to your profile. To allow full access to your profile you will need to approve follow requests.",
-    comingSoon: true,
+    hint: "A private profile can only be seen by you. Everyone else sees that it's private. Your listings can still be found and bought.",
   },
   {
     key: "siteVisibility",

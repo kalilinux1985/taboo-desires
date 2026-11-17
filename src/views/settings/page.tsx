@@ -12,6 +12,7 @@ import RequireAuth from "@/components/require-auth.tsx";
 import ProfileForm from "@/components/profile-form.tsx";
 import SellerSettingsForm from "./_components/seller-settings-form.tsx";
 import BuyerDetailsForm from "./_components/buyer-details-form.tsx";
+import ProfileVisibility from "./_components/profile-visibility.tsx";
 import DeleteAccount from "./_components/delete-account.tsx";
 
 function Row({ label, value }: { label: string; value: ReactNode }) {
@@ -99,6 +100,7 @@ function SettingsInner({ kind }: { kind?: SettingsKind }) {
         </CardContent>
       </Card>
       <div className="flex flex-col gap-6 lg:col-start-2 lg:row-span-2 lg:row-start-1">
+      <ProfileVisibility initialPrivate={profile.isPrivate} />
       <Card>
         <CardHeader>
           <CardTitle className="font-display text-2xl">Account</CardTitle>
