@@ -3044,8 +3044,7 @@ var SETTING_FIELDS = [
       { value: "yes", label: "Yes - Make my profile private" }
     ],
     defaultValue: "no",
-    hint: "Setting your profile to private will limit access to your profile. To allow full access to your profile you will need to approve follow requests.",
-    comingSoon: true
+    hint: "A private profile can only be seen by you. Everyone else sees that it's private. Your listings can still be found and bought."
   },
   {
     key: "siteVisibility",
@@ -4288,10 +4287,12 @@ __export(users_exports, {
   myAccess: () => myAccess,
   mySettings: () => mySettings,
   photosByUser: () => photosByUser,
+  profileAccess: () => profileAccess,
   removeProfilePhoto: () => removeProfilePhoto,
   search: () => search,
   sellerDetailsValidator: () => sellerDetailsValidator,
   setAccountType: () => setAccountType,
+  setProfilePrivate: () => setProfilePrivate,
   updateBuyerDetails: () => updateBuyerDetails,
   updateCurrentUser: () => updateCurrentUser,
   updateProfile: () => updateProfile,
@@ -4515,13 +4516,41 @@ var photosByUser = query({
     };
   }
 });
+var isPrivateProfile = (user) => user.settings?.profilePrivate === "yes";
+var canViewProfile = (user, me) => !isPrivateProfile(user) || me?._id === user._id || me?.role === "admin";
+var profileAccess = query({
+  args: { userId: v.id("users") },
+  handler: async (ctx, { userId }) => {
+    const user = await ctx.db.get("users", userId);
+    if (!user) return null;
+    const me = await getCurrentUserDoc(ctx);
+    if (canViewProfile(user, me)) return { locked: false, name: null, avatarUrl: null };
+    return {
+      locked: true,
+      name: publicSellerName(user),
+      avatarUrl: user.avatarStorageId ? await ctx.storage.getUrl(user.avatarStorageId) : null
+    };
+  }
+});
+var setProfilePrivate = mutation({
+  args: { isPrivate: v.boolean() },
+  handler: async (ctx, { isPrivate }) => {
+    const user = await requireUser(ctx);
+    await ctx.db.patch("users", user._id, {
+      settings: { ...user.settings, profilePrivate: isPrivate ? "yes" : "no" }
+    });
+    return null;
+  }
+});
 var getProfile = query({
   args: { userId: v.id("users") },
   handler: async (ctx, { userId }) => {
     const user = await ctx.db.get("users", userId);
     if (!user) return null;
     const me = await getCurrentUserDoc(ctx);
+    if (!canViewProfile(user, me)) return null;
     return {
+      isPrivate: isPrivateProfile(user),
       _id: user._id,
       name: publicSellerName(user),
       bio: user.bio ?? null,
