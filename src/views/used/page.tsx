@@ -129,7 +129,7 @@ export default function ShopCategoryPage({ page }: { page: ShopPage }) {
               groups={PAGE_FILTER_GROUPS}
               selection={selection}
               onToggle={toggle}
-              defaultOpen={["saleType", "price", "condition"]}
+              defaultOpen={["saleType", "price"]}
             />
           </div>
           <SheetFooter className="flex-row gap-2 border-t border-white/[3%] pb-[max(1rem,env(safe-area-inset-bottom))]">

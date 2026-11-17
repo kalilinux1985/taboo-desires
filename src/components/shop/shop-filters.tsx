@@ -7,7 +7,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion.tsx";
-import { CATEGORIES, CONDITIONS, type Category, type Condition } from "@/lib/listings.ts";
+import type { Category, Condition } from "@/lib/listings.ts";
 import { SELLER_DETAIL_FIELDS } from "@/shared/sellerDetails.ts";
 import { cn } from "@/lib/utils.ts";
 
@@ -105,8 +105,6 @@ export const SHOP_FILTER_GROUPS: Group[] = [
   ...SELLER_FILTER_KEYS_2.map(sellerGroup),
   { key: "continent", label: "Continent", options: asOptions(Object.keys(CONTINENTS)), multi: true },
   ...SELLER_FILTER_KEYS_3.map(sellerGroup),
-  { key: "condition", label: "Wear time", options: CONDITIONS, multi: false },
-  { key: "category", label: "Category", options: CATEGORIES, multi: false },
 ];
 
 export type Selection = Record<string, string[]>;
