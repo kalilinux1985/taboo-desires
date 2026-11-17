@@ -48,6 +48,7 @@ const OPTIONS = [
 export default function AccountTypeDialog() {
   const access = useAccess();
   const setAccountType = useMutation(api.users.setAccountType);
+  const finishSignup = useMutation(api.users.finishSignup);
   const [choice, setChoice] = useState<AccountType>("buyer");
   const [saving, setSaving] = useState(false);
 
@@ -65,8 +66,12 @@ export default function AccountTypeDialog() {
   useEffect(() => {
     if (!needsType || !preset || applied.current) return;
     applied.current = true;
-    setAccountType({ accountType: preset }).catch(() => setPresetFailed(true));
-  }, [needsType, preset, setAccountType]);
+    const m = user?.user_metadata ?? {};
+    const text = (x: unknown) => (typeof x === "string" && x ? x : undefined);
+    finishSignup({ accountType: preset, country: text(m.country), gender: text(m.gender), ageRange: text(m.ageRange) }).catch(() =>
+      setPresetFailed(true),
+    );
+  }, [needsType, preset, finishSignup, user]);
 
   const save = async () => {
     setSaving(true);

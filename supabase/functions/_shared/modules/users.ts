@@ -166,6 +166,51 @@ export const setAccountType = mutation({
   },
 });
 
+/** Whether a username is free (case-insensitive). Open to signed-out visitors, for the sign-up form. */
+export const usernameAvailable = query({
+  args: { name: v.string() },
+  handler: async (ctx, { name }) => {
+    const wanted = name.trim().toLowerCase();
+    if (!wanted) return false;
+    ctx.db.touch("users");
+    const rows = await ctx.db.rows(sql`
+      select 1 from public.users
+       where lower(name) = ${wanted} or lower(shop_name) = ${wanted}
+       limit 1`);
+    return rows.length === 0;
+  },
+});
+
+/**
+ * Applies what the sign-up form asked for, once, on a new member's first sign-in:
+ * account type, plus country, gender and age group on their profile.
+ */
+export const finishSignup = mutation({
+  args: {
+    accountType: v.union(v.literal("buyer"), v.literal("seller")),
+    country: opt,
+    gender: opt,
+    ageRange: opt,
+  },
+  handler: async (ctx, { accountType, country, gender, ageRange }) => {
+    const user = await requireUser(ctx);
+    if (user.accountType) return null; // already set up: never overwrite
+    const details = { country, gender, ageRange };
+    const problem =
+      accountType === "buyer" ? invalidBuyerDetail(details) : invalidSellerDetail(details);
+    if (problem) throw new AppError({ code: "BAD_REQUEST", message: problem });
+    const clean = Object.fromEntries(Object.entries(details).filter(([, x]) => x));
+    await ctx.db.patch("users", user._id, {
+      accountType,
+      ...(country && !user.location ? { location: country } : {}),
+      ...(accountType === "buyer"
+        ? { buyerDetails: { ...user.buyerDetails, ...clean } }
+        : { sellerDetails: { ...user.sellerDetails, ...clean } }),
+    });
+    return null;
+  },
+});
+
 type ProfilePhotoRow = { _id: Id<"profilePhotos">; storageId: Id<"_storage"> };
 
 async function withPhotoUrls(ctx: QueryCtx, rows: ProfilePhotoRow[]) {

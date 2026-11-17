@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useNavigate, useSearchParams } from "@/lib/navigation.ts";
 import { toast } from "sonner";
 import { Mail } from "lucide-react";
-import { supabase } from "@/lib/backend/client.ts";
+import { callBackend, supabase } from "@/lib/backend/client.ts";
+import { SELLER_DETAIL_FIELDS } from "@/shared/sellerDetails.ts";
 import { useAuth } from "@/components/providers/auth.tsx";
 import { Spinner } from "@/components/ui/spinner.tsx";
 import { cn } from "@/lib/utils.ts";
@@ -18,6 +19,20 @@ import { callbackUrl, resolveReturnTo } from "./return-to.ts";
 type Mode = "signin" | "signup" | "link";
 
 const MIN_PASSWORD = 8;
+const MIN_AGE = 18;
+const optionsOf = (key: "country" | "gender") => SELLER_DETAIL_FIELDS.find((f) => f.key === key)?.options ?? [];
+const COUNTRIES = optionsOf("country");
+const GENDERS = optionsOf("gender");
+
+/** Profiles show an age group rather than the exact age. */
+function ageRangeOf(age: number): string {
+  if (age <= 20) return "18-20";
+  if (age <= 25) return "21-25";
+  if (age <= 30) return "26-30";
+  if (age < 40) return "30-40";
+  if (age < 50) return "40-50";
+  return "50+";
+}
 
 const ROUNDED = "[font-family:var(--font-signin-rounded),'Comfortaa',ui-rounded,sans-serif]";
 const SERIF = "[font-family:var(--font-signin-serif),Cambria,Georgia,serif]";
@@ -79,6 +94,10 @@ export default function SignInPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [country, setCountry] = useState("");
+  const [gender, setGender] = useState("");
+  const [age, setAge] = useState("");
+  const [is18, setIs18] = useState(false);
   const [accountType, setAccountType] = useState<"buyer" | "seller" | null>(null);
   const [busy, setBusy] = useState(false);
   const [sentTo, setSentTo] = useState<string | null>(null);
@@ -124,13 +143,28 @@ export default function SignInPage() {
       toast.error("Choose whether you're signing up as a buyer or a seller");
       return;
     }
+    const years = Number(age);
+    if (!Number.isInteger(years) || years < MIN_AGE || years > 99) {
+      toast.error(`You must be ${MIN_AGE} or older to sign up`);
+      return;
+    }
+    if (!country || !gender) {
+      toast.error("Choose your country and gender");
+      return;
+    }
+    if (!is18) {
+      toast.error(`Confirm that you are ${MIN_AGE} or older`);
+      return;
+    }
     void run(async () => {
+      const free = await callBackend<boolean>("users.usernameAvailable", { name: name.trim() }, null);
+      if (!free.value) throw new Error("That username is taken. Please choose another.");
       const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
         password,
         options: {
           emailRedirectTo: callbackUrl(returnTo),
-          data: { accountType, ...(name.trim() ? { name: name.trim() } : {}) },
+          data: { accountType, name: name.trim(), country, gender, ageRange: ageRangeOf(years) },
         },
       });
       if (error) throw error;
@@ -281,6 +315,47 @@ export default function SignInPage() {
               onChange={(e) => setPassword(e.target.value)}
               className={FIELD}
             />
+            <select
+              id="country"
+              name="country"
+              aria-label="Country"
+              autoComplete="country-name"
+              required
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+              className={cn(FIELD, "appearance-none [color-scheme:dark]", !country && "text-[#4f5051]")}
+            >
+              <option value="" disabled>COUNTRY</option>
+              {COUNTRIES.map((c) => <option key={c} value={c} className="text-[#b8b8b9]">{c}</option>)}
+            </select>
+            <div className="grid grid-cols-[110px_1fr] gap-3">
+              <input
+                id="age"
+                name="age"
+                aria-label="Age"
+                type="number"
+                inputMode="numeric"
+                min={MIN_AGE}
+                max={99}
+                required
+                placeholder="AGE"
+                value={age}
+                onChange={(e) => setAge(e.target.value)}
+                className={FIELD}
+              />
+              <select
+                id="gender"
+                name="gender"
+                aria-label="Gender"
+                required
+                value={gender}
+                onChange={(e) => setGender(e.target.value)}
+                className={cn(FIELD, "appearance-none [color-scheme:dark]", !gender && "text-[#4f5051]")}
+              >
+                <option value="" disabled>GENDER</option>
+                {GENDERS.map((g) => <option key={g} value={g} className="text-[#b8b8b9]">{g}</option>)}
+              </select>
+            </div>
           </div>
           <div role="radiogroup" aria-label="Account type" className="flex flex-col gap-2">
             <p className={cn(FOOTNOTE, "text-[13px]")}>I want to join as a</p>
@@ -305,8 +380,20 @@ export default function SignInPage() {
               ))}
             </div>
           </div>
+          <label className={cn(SERIF, "flex cursor-pointer items-start gap-3 text-[14px] text-[#b8b8b9]")}>
+            <input
+              id="confirm-18"
+              name="confirm-18"
+              type="checkbox"
+              required
+              checked={is18}
+              onChange={(e) => setIs18(e.target.checked)}
+              className="mt-0.5 size-4 shrink-0 cursor-pointer accent-[#4c1d95]"
+            />
+            <span>I confirm that I am {MIN_AGE} years of age or older.</span>
+          </label>
           <p className={cn(FOOTNOTE, "-mt-3 text-[11px]")}>
-            You must be 18 or older. Passwords need at least {MIN_PASSWORD} characters.
+            Passwords need at least {MIN_PASSWORD} characters.
           </p>
           <button type="submit" className={SUBMIT} disabled={busy}>
             {busy && <Spinner />} Sign-up
