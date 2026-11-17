@@ -99,7 +99,7 @@ export default function ProfilePostCard({
       </header>
 
       {text && (
-        <p className="mt-4 whitespace-pre-wrap break-words text-[15px] leading-[1.55] text-[#a1a2a4]">{text}</p>
+        <p className="mt-4 whitespace-pre-wrap break-words text-[15px] leading-[1.55] text-[#fcfdfd]">{text}</p>
       )}
       {item.images.length > 0 && (
         <div className="mt-3 [&>div]:max-w-[185px]">

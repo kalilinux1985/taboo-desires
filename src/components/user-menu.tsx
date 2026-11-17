@@ -62,7 +62,7 @@ export default function UserMenu() {
         aria-label="Account menu"
         className="cursor-pointer rounded-[2px] outline-none ring-offset-2 ring-offset-[#0a0f22] transition hover:ring-2 hover:ring-violet-600/60 focus-visible:ring-2 focus-visible:ring-violet-600"
       >
-        <ProfileAvatar name={me.name} url={me.avatarUrl} className="size-[41px] rounded-[2px] bg-[#0f172a] text-lg text-violet-600" />
+        <ProfileAvatar name={me.name} url={me.avatarUrl} className="size-[41px] rounded-[2px] text-lg text-violet-600" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-60">
         <DropdownMenuLabel className="flex items-center gap-3 py-2">

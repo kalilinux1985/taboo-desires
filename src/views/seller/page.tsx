@@ -105,7 +105,7 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
             {profile.isMe || profile.counts.photos > 0 ? (
               <ProfilePhotos userId={profile._id} isMe={profile.isMe} total={profile.counts.photos} />
             ) : (
-              <p className="text-sm text-[#a4a4a4]">No photos yet</p>
+              <p className="text-sm text-[#ffffff]">No photos yet</p>
             )}
           </ProfilePanel>
         )}

@@ -17,7 +17,7 @@ import { CARD, Frame, imagesLabel, SANS, SERIF, SectionTitle } from "../_lib/pro
 
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 const SECTION = "flex flex-col gap-[30px] px-[22px] py-[28px]";
-const EMPTY = cn(SANS, "text-sm text-[#a4a4a4]");
+const EMPTY = cn(SANS, "text-sm text-[#ffffff]");
 
 /** A titled section (the full Shop / Instant Content / Photos / Reviews views). */
 export function ProfilePanel({ title, count, children }: { title: string; count?: string; children: ReactNode }) {
@@ -48,7 +48,7 @@ export function ProfileShopCard({ listing }: { listing: ListingCardData }) {
       <div className="flex min-h-[156px] flex-col px-[15px] pb-4 pt-[18px]">
         <span className="truncate text-[11px] text-[#7b3aec]">{listing.sellerName}</span>
         <h3 className={cn(SERIF, "mt-2.5 truncate text-[15px] text-white group-hover:underline")}>{listing.title}</h3>
-        <p className="mt-2 line-clamp-2 text-[13px] leading-[18px] text-[#a4a4a4]">{listing.description}</p>
+        <p className="mt-2 line-clamp-2 text-[13px] leading-[18px] text-[#ffffff]">{listing.description}</p>
         <span className="mt-auto pt-4 text-[13px] text-[#7b3aec]">${(listing.priceCents / 100).toFixed(2)} USD</span>
       </div>
     </Link>

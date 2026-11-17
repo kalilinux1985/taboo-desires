@@ -244,7 +244,7 @@ function MoreFromSeller({ seller, currentId }: { seller: Seller; currentId: Id<"
           ))}
         </div>
       ) : others.length === 0 ? (
-        <p className={cn(SANS, "text-[13px] text-[#a4a4a4]")}>No other items for sale right now.</p>
+        <p className={cn(SANS, "text-[13px] text-[#ffffff]")}>No other items for sale right now.</p>
       ) : (
         <div className="grid gap-[36px] sm:grid-cols-2 lg:grid-cols-3">
           {others.map((l) => (
@@ -276,7 +276,7 @@ export default function ListingPage() {
 
   if (listing === undefined) {
     return (
-      <div className="profile-design min-h-[calc(100dvh-3.5rem)] bg-[#191a1f]">
+      <div className="profile-design min-h-[calc(100dvh-3.5rem)] bg-[#0C0F15]">
         <div className="mx-auto grid max-w-[1170px] gap-5 px-5 py-8 lg:grid-cols-[minmax(0,665fr)_minmax(0,445fr)] lg:py-[60px]">
           <div className="flex flex-col gap-6">
             <Skeleton className="h-10 w-2/3" />
@@ -341,7 +341,7 @@ export default function ListingPage() {
   const hasBadges = isAuction || !!locked || listing.status === "sold" || listing.status === "ended";
 
   return (
-    <div className="profile-design min-h-[calc(100dvh-3.5rem)] bg-[#191a1f]">
+    <div className="profile-design min-h-[calc(100dvh-3.5rem)] bg-[#0C0F15]">
       <div className="mx-auto flex max-w-[1170px] flex-col gap-5 px-5 py-8 lg:py-[60px]">
         <div className="grid gap-5 lg:grid-cols-[minmax(0,665fr)_minmax(0,445fr)]">
           {/* Title and picture */}
@@ -363,7 +363,7 @@ export default function ListingPage() {
                   className="gap-2 text-[14px] leading-6 [&>button]:h-[14px] [&>button]:px-1.5 [&>button]:py-0 [&>button]:text-[7px] [&>button]:uppercase [&>p]:text-white"
                 />
               ) : (
-                <p className="text-[14px] text-[#a4a4a4]">No description.</p>
+                <p className="text-[14px] text-[#ffffff]">No description.</p>
               )}
 
               {!isAuction && (

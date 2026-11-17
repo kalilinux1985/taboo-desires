@@ -125,7 +125,7 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply text-foreground font-sans antialiased;
   }
 
   button:not(:disabled),
@@ -141,7 +141,7 @@
 @layer base {
   html,
   body {
-    background-color: #191a1f !important;
+    background-color: #0c0f15 !important;
   }
 
   /* Comments, replies and the comment box */
@@ -213,4 +213,15 @@
 /* Buyer and seller profiles: violet outlines #7b3aec */
 .profile-design {
   --color-violet-bright: #7b3aec;
+}
+
+/* Overrides matching the supplied stylesheet */
+.bg-background,
+.bg-background\/50 {
+  background-color: #111317;
+}
+@supports (color: color-mix(in lab, red, red)) {
+  .border-white\/\[3\%\] {
+    border-color: color-mix(in oklab, var(--color-white) 3%, #4948483b);
+  }
 }

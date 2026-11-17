@@ -63,7 +63,7 @@ export default function SellerAbout({ profile }: { profile: Profile }) {
         type="button"
         aria-expanded={more}
         onClick={() => setMore((m) => !m)}
-        className="mt-1 cursor-pointer text-[11px] uppercase tracking-[0.06em] text-[#a4a4a4] hover:text-[#7b3aec]"
+        className="mt-1 cursor-pointer text-[11px] uppercase tracking-[0.06em] text-[#ffffff] hover:text-[#7b3aec]"
       >
         {more ? "Less" : "More"}
       </button>

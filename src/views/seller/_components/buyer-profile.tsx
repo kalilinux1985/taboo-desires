@@ -111,7 +111,7 @@ function PhotosOverview({ userId, count, onOpen }: { userId: Id<"users">; count:
         {status === "LoadingFirstPage" ? (
           [0, 1, 2].map((i) => <Skeleton key={i} className="size-[110px]" />)
         ) : results.length === 0 ? (
-          <p className={cn(SANS, "text-sm text-[#a4a4a4]")}>No photos yet.</p>
+          <p className={cn(SANS, "text-sm text-[#ffffff]")}>No photos yet.</p>
         ) : (
           results.slice(0, 10).map((p) => (
             <button
@@ -164,7 +164,7 @@ export default function BuyerProfile({ profile }: { profile: Profile }) {
               limit={BUYER_PHOTO_MAX}
             />
           ) : (
-            <p className={cn(SANS, "text-sm text-[#a4a4a4]")}>No photos yet.</p>
+            <p className={cn(SANS, "text-sm text-[#ffffff]")}>No photos yet.</p>
           )}
         </Frame>
       )}

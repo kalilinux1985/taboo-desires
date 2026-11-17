@@ -35,7 +35,7 @@ export function ShopCard({ listing }: { listing: ListingCardData }) {
               className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
           ) : (
-            <div className="size-full bg-[#0f172a]" />
+            <div className="size-full" />
           )}
         </div>
         <span className="absolute left-3 top-3 rounded-[2px] bg-background/75 px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-accent-foreground">

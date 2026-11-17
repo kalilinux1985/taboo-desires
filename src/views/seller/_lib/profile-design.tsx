@@ -11,12 +11,12 @@ export const SERIF = "[font-family:var(--font-profile-buyer),Cambria,Georgia,ser
 export const SANS = "[font-family:Arial,Helvetica,sans-serif]";
 /** Nurma display face: member names and page titles */
 export const NURMA = "[font-family:var(--font-nurma),Arial,sans-serif]";
-export const OUTER = "rounded-[2px] border border-white/[3%] bg-[#212227] shadow-[0_6px_14px_rgba(0,0,0,0.35)]";
+export const OUTER = "rounded-[2px] border border-white/[3%] bg-[#202227] shadow-[0_6px_14px_rgba(0,0,0,0.35)]";
 export const INNER =
-  "rounded-[2px] border border-[#1e2129] bg-[#141519] shadow-[0_4px_10px_rgba(0,0,0,0.3)]";
+  "rounded-[2px] border border-[#59595b4f] bg-[#141519] shadow-[0_4px_10px_rgba(0,0,0,0.3)]";
 /** A card inside an inner card (listings, posts, tiles) */
 export const CARD =
-  "rounded-[2px] border border-[#2a2c33] bg-[#212227] shadow-[0_4px_10px_rgba(0,0,0,0.3)]";
+  "rounded-[2px] border border-[#2a2c33] bg-[#202227] shadow-[0_4px_10px_rgba(0,0,0,0.3)]";
 /** "1 year ago", without date-fns' "about"/"over"/"almost". */
 export const joinedAgo = (date: string | number) =>
   formatDistanceToNow(new Date(date), { addSuffix: true }).replace(/^(about|over|almost) /, "");
@@ -34,7 +34,7 @@ export const OUTLINED_ACTION =
 /** Page background and the two-column grid: picture | header, picture | tabs, about | content. */
 export function ProfilePage({ children }: { children: ReactNode }) {
   return (
-    <div className="profile-design min-h-[calc(100dvh-3.5rem)] bg-[#191a1f]">
+    <div className="profile-design min-h-[calc(100dvh-3.5rem)] bg-[#0C0F15]">
       <div
         className={cn(
           "mx-auto grid max-w-[1170px] gap-5 px-5 py-8 lg:py-[97px]",
@@ -135,7 +135,7 @@ export function ProfileTabBar<T extends string>({
 export function Detail({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-baseline justify-between gap-4 text-[15px] leading-[32px]">
-      <dt className="shrink-0 text-[#a4a4a4]">{label}:</dt>
+      <dt className="shrink-0 text-[#ffffff]">{label}:</dt>
       <dd className="truncate text-right text-white">{value}</dd>
     </div>
   );

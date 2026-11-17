@@ -42,7 +42,7 @@ export function Logo({ className }: { className?: string }) {
 
 /** Square dark button used for the header icons. */
 export const HEADER_ICON_BUTTON =
-  "relative flex size-[41px] shrink-0 cursor-pointer items-center justify-center rounded-[2px] bg-[#0f172a] text-violet-600 transition-colors hover:bg-[#1f2235] hover:text-violet-600";
+  "relative flex size-[41px] shrink-0 cursor-pointer items-center justify-center rounded-[2px] text-violet-600 transition-colors hover:text-violet-600";
 
 const COUNT_BADGE =
   "absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 font-sans text-[10px] font-bold text-white";
