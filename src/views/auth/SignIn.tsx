@@ -243,10 +243,10 @@ export default function SignInPage() {
             <input
               id="name"
               name="name"
-              aria-label="Display name (optional)"
+              aria-label="Username"
               autoComplete="nickname"
               maxLength={40}
-              placeholder="DISPLAY NAME (OPTIONAL)"
+              placeholder="USERNAME"
               value={name}
               onChange={(e) => setName(e.target.value)}
               className={FIELD}
