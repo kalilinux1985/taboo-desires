@@ -358,7 +358,7 @@ export default function SignInPage() {
             </div>
           </div>
           <div role="radiogroup" aria-label="Account type" className="flex flex-col gap-2">
-            <p className={cn(FOOTNOTE, "text-[13px]")}>I want to join as a</p>
+            <p className={cn(FOOTNOTE, "text-[13px]")}>Choose what type of profile do you want to signup for?</p>
             <div className="grid grid-cols-2 gap-3">
               {(["buyer", "seller"] as const).map((t) => (
                 <button
