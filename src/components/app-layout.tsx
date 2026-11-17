@@ -112,7 +112,7 @@ function ShopMenu({ label, short, section }: (typeof MENUS)[number]) {
       <DropdownMenuContent
         align="start"
         sideOffset={14}
-        className="w-max min-w-0 rounded-[2px] border-white/[3%] bg-[#09090b]/90 px-1.5 py-1 font-serif"
+        className="w-max min-w-0 rounded-[2px] border-white/[3%] bg-[#09090b] px-1.5 py-1 font-serif"
       >
         {links.map((l) => {
           const href = "page" in l ? shopPageHref(l.page) : l.href;
