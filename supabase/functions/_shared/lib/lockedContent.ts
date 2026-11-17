@@ -18,7 +18,16 @@ export async function getUnlock(
   );
 }
 
-/** Only the seller and buyers with a granted unlock may see the original files. */
+/** How long a buyer can view Instant Content after the seller grants access. */
+export const UNLOCK_HOURS = 24;
+
+/** When a granted unlock stops working (ms since epoch), or null if it isn't granted. */
+export function unlockExpiry(unlock: Doc<"unlocks"> | null): number | null {
+  if (unlock?.status !== "granted" || !unlock.grantedAt) return null;
+  return new Date(unlock.grantedAt).getTime() + UNLOCK_HOURS * 3_600_000;
+}
+
+/** Only the seller and buyers with a granted, unexpired unlock may see the original files. */
 export async function canViewLocked(
   ctx: QueryCtx,
   listing: Doc<"listings">,
@@ -26,7 +35,8 @@ export async function canViewLocked(
 ): Promise<boolean> {
   if (!listing.paywall || !user) return false;
   if (listing.sellerId === user._id) return true;
-  return (await getUnlock(ctx, listing._id, user._id))?.status === "granted";
+  const expiry = unlockExpiry(await getUnlock(ctx, listing._id, user._id));
+  return expiry !== null && expiry > ctx.now();
 }
 
 /**

@@ -28,6 +28,7 @@ import { PLAN_LIMITS } from "../domain/plans.ts";
 import {
   canViewLocked,
   getUnlock,
+  unlockExpiry,
   validateLockedMedia,
   type LockedMedia,
 } from "../lib/lockedContent.ts";
@@ -387,7 +388,10 @@ async function lockedView(
   return {
     photoCount: media.filter((m) => m.kind === "image").length,
     videoCount: media.filter((m) => m.kind === "video").length,
-    unlockStatus: unlock?.status ?? null,
+    // "expired" once the 24 hours are up, so the buyer can request again
+    unlockStatus:
+      unlock?.status === "granted" && !canView ? ("expired" as const) : (unlock?.status ?? null),
+    unlockExpiresAt: canView && unlock ? unlockExpiry(unlock) : null,
     media: canView
       ? media.flatMap((m, i) => {
           const url = urls[i];

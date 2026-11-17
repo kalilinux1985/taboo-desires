@@ -124,6 +124,8 @@ type Fields = {
     sellerId: Id<"users">;
     status: UnlockStatus;
     requestedAt: string;
+    /** When the seller granted access; it lasts UNLOCK_HOURS from then */
+    grantedAt?: string;
   };
   customRequests: {
     buyerId: Id<"users">;
@@ -347,6 +349,7 @@ export const TABLES: { [T in DbTable]: TableDef<T> } = {
       sellerId: c("seller_id", "uuid"),
       status: c("status"),
       requestedAt: c("requested_at", "ts"),
+      grantedAt: c("granted_at", "ts"),
     },
   },
   customRequests: {

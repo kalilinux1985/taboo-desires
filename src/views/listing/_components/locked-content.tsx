@@ -102,11 +102,12 @@ export function BuyLockedPanel({
           {status === "declined" && (
             <p className="text-sm text-destructive">Your last request was declined. You can try again.</p>
           )}
+          {status === "expired" && <p className="text-sm">Your 24-hour access has ended. Buy again to view it.</p>}
           <Button size="lg" onClick={buy} disabled={!isActive} className="cursor-pointer">
             <Unlock /> Buy to unlock · {formatPrice(priceCents)}
           </Button>
           <p className="text-xs text-muted-foreground">
-            You pay {sellerName} directly. They unlock the full photos and videos once paid.
+            You pay {sellerName} directly. They unlock the full photos and videos once paid, and access lasts 24 hours.
           </p>
         </>
       )}
@@ -212,6 +213,7 @@ export function UnlockBox({
       ) : (
         <>
           {status === "declined" && <p className="text-center text-[13px] text-destructive">Your last request was declined. You can try again.</p>}
+          {status === "expired" && <p className="text-center text-[13px] text-white">Your 24-hour access has ended. Unlock again to view it.</p>}
           <button
             type="button"
             onClick={unlock}
@@ -235,6 +237,16 @@ export function UnlockBox({
 }
 
 const TILE = "flex aspect-square items-center justify-center overflow-hidden rounded-[2px] bg-[#30333e]";
+
+/** Instant Content: shown to a buyer while their 24 hours are running. */
+export function AccessNotice({ expiresAt }: { expiresAt: number | null }) {
+  return (
+    <p className={cn(SERIF, "flex items-center justify-center gap-2 rounded-[2px] border border-[#5e2faf] bg-[#202227] px-4 py-3 text-[15px] text-white shadow-[0_6px_14px_rgba(0,0,0,0.35)]")}>
+      <Unlock className="size-5 text-[#7b3aec]" />
+      {expiresAt ? `Unlocked. Your access ends in ${formatDistanceToNow(expiresAt)}.` : "Unlocked."}
+    </p>
+  );
+}
 
 /** Instant Content: the "Included Content" tiles. Locked items show an icon; unlocked ones the real media. */
 export function IncludedContent({ locked }: { locked: Locked }) {

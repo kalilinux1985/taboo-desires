@@ -11,7 +11,7 @@ import { CheckCircle2, CircleCheck, Lock, MessageSquareText, Pencil, ShoppingBag
 import MessageSellerButton from "./_components/message-seller-button.tsx";
 import AuctionPanel from "./_components/auction-panel.tsx";
 import RelistAuctionButton from "./_components/relist-auction-button.tsx";
-import { BuyLockedPanel, IncludedContent, UnlockBox, UnlockRequests, UnlockedMedia } from "./_components/locked-content.tsx";
+import { AccessNotice, BuyLockedPanel, IncludedContent, UnlockBox, UnlockRequests, UnlockedMedia } from "./_components/locked-content.tsx";
 import { toast } from "sonner";
 import { api } from "@/lib/backend/api.ts";
 import type { Doc, FunctionReturnType, Id } from "@/lib/backend/types.ts";
@@ -308,6 +308,7 @@ function InstantContentView({
                 isActive={listing.status === "active"}
               />
             )}
+            {!listing.isOwner && locked.media && <AccessNotice expiresAt={locked.unlockExpiresAt} />}
             {!listing.isOwner && buyBlocked && <UpgradeNotice message={buyBlocked} showUpgrade={false} />}
             {listing.isOwner && <UnlockRequests listingId={listing._id} />}
             <div className="mt-4">

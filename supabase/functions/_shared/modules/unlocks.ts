@@ -7,7 +7,7 @@ import {
   publicSellerName,
   requireUser,
 } from "../lib/auth.ts";
-import { getUnlock } from "../lib/lockedContent.ts";
+import { getUnlock, unlockExpiry } from "../lib/lockedContent.ts";
 import { bumpStats } from "../lib/sellerStats.ts";
 import { requireCapability } from "../lib/access.ts";
 
@@ -48,7 +48,11 @@ export const request = mutation({
         status: "pending",
         requestedAt,
       });
-    } else if (existing.status === "declined") {
+    } else if (
+      existing.status === "declined" ||
+      (existing.status === "granted" && (unlockExpiry(existing) ?? 0) <= ctx.now())
+    ) {
+      // Declined, or the 24 hours ran out: ask again
       await ctx.db.patch("unlocks", existing._id, {
         status: "pending",
         requestedAt,
@@ -95,6 +99,7 @@ export const respond = mutation({
     if (unlock.status !== "pending") return null;
     await ctx.db.patch("unlocks", unlockId, {
       status: grant ? "granted" : "declined",
+      ...(grant ? { grantedAt: new Date(ctx.now()).toISOString() } : {}),
     });
     // Each granted paywall purchase counts as a sale
     if (grant) await bumpStats(ctx, unlock.sellerId, { salesCount: 1 });
