@@ -117,7 +117,7 @@ function ShopMenu({ label, short, section }: (typeof MENUS)[number]) {
         {links.map((l) => {
           const href = "page" in l ? shopPageHref(l.page) : l.href;
           return (
-            <DropdownMenuItem key={href} asChild className="cursor-pointer px-2 py-[3px] text-[13px] leading-tight text-slate-300 transition-colors hover:bg-transparent hover:text-violet-600 focus:bg-transparent focus:text-violet-600">
+            <DropdownMenuItem key={href} asChild className="cursor-pointer rounded-none border-b border-white/10 px-2 py-[5px] text-[13px] leading-tight text-slate-300 transition-colors last:border-b-0 hover:bg-transparent hover:text-violet-600 focus:bg-transparent focus:text-violet-600">
               <Link href={href}>{l.label}</Link>
             </DropdownMenuItem>
           );
@@ -179,7 +179,7 @@ function Header() {
             <HeaderSearch />
           </div>
         </div>
-        <nav aria-label="Shop" className="hidden items-center justify-center gap-5 md:flex lg:gap-7 xl:gap-[34px] xl:px-3">
+        <nav aria-label="Shop" className="hidden items-center justify-center gap-3 md:flex lg:gap-4 xl:gap-5 xl:px-2">
           {MENUS.map((m) => (
             <ShopMenu key={m.label} {...m} />
           ))}
