@@ -4281,6 +4281,7 @@ var users_exports = {};
 __export(users_exports, {
   addProfilePhoto: () => addProfilePhoto,
   buyerDetailsValidator: () => buyerDetailsValidator,
+  finishSignup: () => finishSignup,
   getCurrentUser: () => getCurrentUser,
   getProfile: () => getProfile,
   menu: () => menu,
@@ -4297,7 +4298,8 @@ __export(users_exports, {
   updateCurrentUser: () => updateCurrentUser,
   updateProfile: () => updateProfile,
   updateSellerDetails: () => updateSellerDetails,
-  updateSettings: () => updateSettings
+  updateSettings: () => updateSettings,
+  usernameAvailable: () => usernameAvailable
 });
 
 // supabase/functions/_shared/domain/buyerDetails.ts
@@ -4456,6 +4458,41 @@ var setAccountType = mutation({
       });
     }
     await ctx.db.patch("users", user._id, { accountType });
+    return null;
+  }
+});
+var usernameAvailable = query({
+  args: { name: v.string() },
+  handler: async (ctx, { name }) => {
+    const wanted = name.trim().toLowerCase();
+    if (!wanted) return false;
+    ctx.db.touch("users");
+    const rows = await ctx.db.rows(sql`
+      select 1 from public.users
+       where lower(name) = ${wanted} or lower(shop_name) = ${wanted}
+       limit 1`);
+    return rows.length === 0;
+  }
+});
+var finishSignup = mutation({
+  args: {
+    accountType: v.union(v.literal("buyer"), v.literal("seller")),
+    country: opt,
+    gender: opt,
+    ageRange: opt
+  },
+  handler: async (ctx, { accountType, country, gender, ageRange }) => {
+    const user = await requireUser(ctx);
+    if (user.accountType) return null;
+    const details = { country, gender, ageRange };
+    const problem = accountType === "buyer" ? invalidBuyerDetail(details) : invalidSellerDetail(details);
+    if (problem) throw new AppError({ code: "BAD_REQUEST", message: problem });
+    const clean = Object.fromEntries(Object.entries(details).filter(([, x]) => x));
+    await ctx.db.patch("users", user._id, {
+      accountType,
+      ...country && !user.location ? { location: country } : {},
+      ...accountType === "buyer" ? { buyerDetails: { ...user.buyerDetails, ...clean } } : { sellerDetails: { ...user.sellerDetails, ...clean } }
+    });
     return null;
   }
 });
