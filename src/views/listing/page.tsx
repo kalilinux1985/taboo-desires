@@ -409,7 +409,7 @@ export default function ListingPage() {
 
   const comingSoon = () => toast("Coming soon in a future milestone!");
   const isAuction = listing.saleType === "auction";
-  const locked = listing.locked;
+  const locked = listing.locked as Listing["locked"];
   const seller = listing.seller;
   // Signed-in sellers (and members without an account type) can't buy
   const buyBlocked = access && !access.can.buy ? deniedMessage("buy", access.accountType ?? undefined, access.ageVerified) : null;
