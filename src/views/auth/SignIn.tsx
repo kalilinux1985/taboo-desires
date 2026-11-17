@@ -79,6 +79,7 @@ export default function SignInPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [accountType, setAccountType] = useState<"buyer" | "seller" | null>(null);
   const [busy, setBusy] = useState(false);
   const [sentTo, setSentTo] = useState<string | null>(null);
 
@@ -115,13 +116,17 @@ export default function SignInPage() {
       toast.error(`Use at least ${MIN_PASSWORD} characters for your password`);
       return;
     }
+    if (!accountType) {
+      toast.error("Choose whether you're signing up as a buyer or a seller");
+      return;
+    }
     void run(async () => {
       const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
         password,
         options: {
           emailRedirectTo: callbackUrl(returnTo),
-          data: name.trim() ? { name: name.trim() } : undefined,
+          data: { accountType, ...(name.trim() ? { name: name.trim() } : {}) },
         },
       });
       if (error) throw error;
@@ -271,6 +276,29 @@ export default function SignInPage() {
               onChange={(e) => setPassword(e.target.value)}
               className={FIELD}
             />
+          </div>
+          <div role="radiogroup" aria-label="Account type" className="flex flex-col gap-2">
+            <p className={cn(FOOTNOTE, "text-[13px]")}>I want to join as a</p>
+            <div className="grid grid-cols-2 gap-3">
+              {(["buyer", "seller"] as const).map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  role="radio"
+                  aria-checked={accountType === t}
+                  onClick={() => setAccountType(t)}
+                  className={cn(
+                    ROUNDED,
+                    "h-[42px] cursor-pointer rounded-[2px] border text-[15px] font-bold capitalize transition-colors",
+                    accountType === t
+                      ? "border-[#4c1d95] bg-[#4c1d95]/30 text-white"
+                      : "border-[#33333355] text-[#b8b8b9] hover:border-[#4c1d95]",
+                  )}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
           </div>
           <p className={cn(FOOTNOTE, "-mt-3 text-[11px]")}>
             You must be 18 or older. Passwords need at least {MIN_PASSWORD} characters.

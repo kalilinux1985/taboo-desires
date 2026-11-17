@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation } from "@/lib/backend/react.tsx";
 import { Check, ShoppingBag, Store } from "lucide-react";
 import { toast } from "sonner";
@@ -16,6 +16,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog.tsx";
 import { useAccess } from "@/hooks/use-access.ts";
+import { useAuth } from "@/components/providers/auth.tsx";
 import { getErrorMessage } from "@/lib/listings.ts";
 import { cn } from "@/lib/utils.ts";
 
@@ -50,8 +51,22 @@ export default function AccountTypeDialog() {
   const [choice, setChoice] = useState<AccountType>("buyer");
   const [saving, setSaving] = useState(false);
 
+  const { user } = useAuth();
+  // The type picked on the sign-up form, saved automatically after the first sign-in
+  const meta = user?.user_metadata?.accountType;
+  const preset: AccountType | null = meta === "buyer" || meta === "seller" ? meta : null;
+  const [presetFailed, setPresetFailed] = useState(false);
+  const applied = useRef(false);
+
   // Admins already have full access, so they're never asked
-  const open = !!access && !access.accountType && !access.isAdmin;
+  const needsType = !!access && !access.accountType && !access.isAdmin;
+  const open = needsType && (!preset || presetFailed);
+
+  useEffect(() => {
+    if (!needsType || !preset || applied.current) return;
+    applied.current = true;
+    setAccountType({ accountType: preset }).catch(() => setPresetFailed(true));
+  }, [needsType, preset, setAccountType]);
 
   const save = async () => {
     setSaving(true);
