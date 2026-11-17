@@ -34,6 +34,7 @@ export default function MessageSellerButton({
   className,
   label = "Message seller",
   showIcon = true,
+  icon,
 }: {
   listingId: Id<"listings">;
   sellerName: string;
@@ -41,6 +42,8 @@ export default function MessageSellerButton({
   className?: string;
   label?: string;
   showIcon?: boolean;
+  /** Replaces the default chat icon */
+  icon?: React.ReactNode;
 }) {
   const navigate = useNavigate();
   const { isAuthenticated } = useBackendAuth();
@@ -79,7 +82,7 @@ export default function MessageSellerButton({
         className={className ?? "flex-1 cursor-pointer"}
         onClick={openDialog}
       >
-        {showIcon && <MessageCircle />} {label}
+        {showIcon && (icon ?? <MessageCircle />)} {label}
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>

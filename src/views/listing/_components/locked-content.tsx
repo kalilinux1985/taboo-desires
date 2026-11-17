@@ -1,6 +1,6 @@
 import { useBackendAuth, useMutation, useQuery } from "@/lib/backend/react.tsx";
 import { formatDistanceToNow } from "date-fns";
-import { Check, Clock, Film, Image, Lock, Unlock, X } from "lucide-react";
+import { CameraOff, Check, Clock, Film, Image, Lock, Unlock, VideoOff, X, Zap } from "lucide-react";
 import { toast } from "sonner";
 import type { FunctionReturnType } from "@/lib/backend/types.ts";
 import { api } from "@/lib/backend/api.ts";
@@ -9,6 +9,9 @@ import { Button } from "@/components/ui/button.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { useAuth } from "@/hooks/use-auth.ts";
 import { formatPrice, getErrorMessage } from "@/lib/listings.ts";
+import { cn } from "@/lib/utils.ts";
+import ZoomImage from "@/components/zoom-image.tsx";
+import { NURMA, SERIF } from "@/views/seller/_lib/profile-design.tsx";
 
 type Locked = NonNullable<NonNullable<FunctionReturnType<typeof api.listings.get>>["locked"]>;
 
@@ -160,6 +163,117 @@ export function UnlockRequests({ listingId }: { listingId: Id<"listings"> }) {
             </li>
           ))}
         </ul>
+      )}
+    </section>
+  );
+}
+
+/** Instant Content: the price box under the picture, with Unlock Now (the buyer's request flow). */
+export function UnlockBox({
+  listingId,
+  locked,
+  priceCents,
+  sellerName,
+  isActive,
+}: {
+  listingId: Id<"listings">;
+  locked: Locked;
+  priceCents: number;
+  sellerName: string;
+  isActive: boolean;
+}) {
+  const { isAuthenticated } = useBackendAuth();
+  const { signin } = useAuth();
+  const request = useMutation(api.unlocks.request);
+  const status = locked.unlockStatus;
+  const [dollars, cents] = (priceCents / 100).toFixed(2).split(".");
+
+  const unlock = async () => {
+    if (!isAuthenticated) return void signin();
+    try {
+      await request({ listingId });
+      toast.success("Request sent. Message the seller to arrange payment.");
+    } catch (e) {
+      toast.error(getErrorMessage(e, "Could not send request"));
+    }
+  };
+
+  return (
+    <div className={cn(SERIF, "flex flex-col gap-3 rounded-[2px] border border-[#5e2faf] bg-[#202227] px-[18px] pb-4 pt-3 shadow-[0_6px_14px_rgba(0,0,0,0.35)]")}>
+      <p className="text-center text-[32px] leading-none text-[#7b3aec]">
+        ${dollars}.{cents}
+        <span className="ml-0.5 text-[20px]">USD</span>
+      </p>
+      {status === "pending" ? (
+        <p className="flex items-start justify-center gap-2 text-center text-[14px] text-white">
+          <Clock className="mt-0.5 size-4 shrink-0 text-[#7b3aec]" />
+          Waiting for {sellerName} to confirm your payment. Message them to arrange it.
+        </p>
+      ) : (
+        <>
+          {status === "declined" && <p className="text-center text-[13px] text-destructive">Your last request was declined. You can try again.</p>}
+          <button
+            type="button"
+            onClick={unlock}
+            disabled={!isActive}
+            className="flex h-[50px] w-full cursor-pointer items-center justify-center gap-2 rounded-[2px] bg-[#7b3aec] text-[26px] text-white transition-colors hover:bg-[#8a4ff0] disabled:cursor-default disabled:opacity-60"
+          >
+            <Unlock className="size-6" /> Unlock Now
+          </button>
+        </>
+      )}
+      <p className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-[13px] text-white">
+        <span className="flex items-center gap-1.5">
+          <Zap className="size-[18px] text-[#7b3aec]" strokeWidth={1.5} /> Instant access
+        </span>
+        <span className="flex items-center gap-1.5">
+          <Clock className="size-[18px] text-[#7b3aec]" strokeWidth={1.5} /> 24-hour access
+        </span>
+      </p>
+    </div>
+  );
+}
+
+const TILE = "flex aspect-square items-center justify-center overflow-hidden rounded-[2px] bg-[#30333e]";
+
+/** Instant Content: the "Included Content" tiles. Locked items show an icon; unlocked ones the real media. */
+export function IncludedContent({ locked }: { locked: Locked }) {
+  const total = locked.photoCount + locked.videoCount;
+  return (
+    <section className="flex flex-col gap-[26px]">
+      <div className="flex flex-col gap-2">
+        <h2 className={cn(NURMA, "text-[28px] leading-tight text-white")}>Included Content</h2>
+        <span className="h-0.5 w-[60px] bg-[#7b3aec]/55" />
+      </div>
+      {total === 0 ? (
+        <p className={cn(SERIF, "text-[14px] text-white")}>No content has been added yet.</p>
+      ) : (
+        <div className="grid grid-cols-2 gap-5 sm:grid-cols-4">
+          {locked.media
+            ? locked.media.map((m) =>
+                m.kind === "video" ? (
+                  <div key={m.storageId} className={TILE}>
+                    <video src={m.url} controls playsInline className="size-full object-cover" />
+                  </div>
+                ) : (
+                  <ZoomImage key={m.storageId} src={m.url} className={cn(TILE, "w-full")}>
+                    <img src={m.url} alt="" className="size-full object-cover" />
+                  </ZoomImage>
+                ),
+              )
+            : [
+                ...Array.from({ length: locked.photoCount }, (_, i) => (
+                  <div key={`p${i}`} className={TILE} title="Photo (locked)">
+                    <CameraOff className="size-[64px] text-[#7b3aec]" strokeWidth={1.5} />
+                  </div>
+                )),
+                ...Array.from({ length: locked.videoCount }, (_, i) => (
+                  <div key={`v${i}`} className={TILE} title="Video (locked)">
+                    <VideoOff className="size-[64px] text-[#7b3aec]" strokeWidth={1.5} />
+                  </div>
+                )),
+              ]}
+        </div>
       )}
     </section>
   );

@@ -7,11 +7,11 @@ import { useParams } from "next/navigation";
 import { subcategoryInfo } from "@/shared/subcategories.ts";
 import { useMutation, usePaginatedQuery, useQuery } from "@/lib/backend/react.tsx";
 import { formatDistanceToNow } from "date-fns";
-import { CheckCircle2, CircleCheck, Lock, Pencil, ShoppingBag, Star, Trash2 } from "lucide-react";
+import { CheckCircle2, CircleCheck, Lock, MessageSquareText, Pencil, ShoppingBag, Star, Trash2 } from "lucide-react";
 import MessageSellerButton from "./_components/message-seller-button.tsx";
 import AuctionPanel from "./_components/auction-panel.tsx";
 import RelistAuctionButton from "./_components/relist-auction-button.tsx";
-import { BuyLockedPanel, UnlockRequests, UnlockedMedia } from "./_components/locked-content.tsx";
+import { BuyLockedPanel, IncludedContent, UnlockBox, UnlockRequests, UnlockedMedia } from "./_components/locked-content.tsx";
 import { toast } from "sonner";
 import { api } from "@/lib/backend/api.ts";
 import type { Doc, FunctionReturnType, Id } from "@/lib/backend/types.ts";
@@ -269,6 +269,99 @@ function MoreFromSeller({ seller, currentId }: { seller: Seller; currentId: Id<"
   );
 }
 
+/**
+ * Instant Content (a listing with locked photos and videos): title, cover picture and
+ * the Unlock Now box on the left with the included content below, the seller panel on
+ * the right, then "More from <seller>".
+ */
+function InstantContentView({
+  listing,
+  locked,
+  buyBlocked,
+}: {
+  listing: Listing;
+  locked: NonNullable<Listing["locked"]>;
+  buyBlocked: string | null;
+}) {
+  const seller = listing.seller;
+  const cover = listing.images.slice(0, 1);
+  return (
+    <div className="profile-design min-h-[calc(100dvh-3.5rem)] bg-[#0C0F15]">
+      <div className="mx-auto flex max-w-[1170px] flex-col gap-5 px-5 py-8 lg:py-[60px]">
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,665fr)_minmax(0,445fr)]">
+          <div className="flex min-w-0 flex-col gap-6 pt-[6px]">
+            {(listing.status === "sold" || listing.status === "ended") && (
+              <div className="flex gap-2">
+                <Badge variant={listing.status === "sold" ? "destructive" : "secondary"}>
+                  {listing.status === "sold" ? "Sold" : "Unsold"}
+                </Badge>
+              </div>
+            )}
+            <h1 className={cn(NURMA, "break-words text-[30px] leading-tight text-white")}>{listing.title}</h1>
+            <Gallery images={cover} title={listing.title} />
+            {!listing.isOwner && !locked.media && !buyBlocked && (
+              <UnlockBox
+                listingId={listing._id}
+                locked={locked}
+                priceCents={listing.priceCents}
+                sellerName={seller?.name ?? "the seller"}
+                isActive={listing.status === "active"}
+              />
+            )}
+            {!listing.isOwner && buyBlocked && <UpgradeNotice message={buyBlocked} showUpgrade={false} />}
+            {listing.isOwner && <UnlockRequests listingId={listing._id} />}
+            <div className="mt-4">
+              <IncludedContent locked={locked} />
+            </div>
+          </div>
+
+          <aside className={cn(OUTER, "flex min-w-0 flex-col self-start p-[19px]")}>
+            {seller && <SellerCard seller={seller} />}
+            <div className={cn(SANS, "mt-[18px] flex flex-col gap-[18px] px-[7px]")}>
+              {listing.description ? (
+                <ExpandableBio
+                  text={listing.description}
+                  className="gap-2 text-[14px] leading-6 [&>button]:h-[14px] [&>button]:px-1.5 [&>button]:py-0 [&>button]:text-[7px] [&>button]:uppercase [&>p]:text-white"
+                />
+              ) : (
+                <p className="text-[14px] text-[#ffffff]">No description.</p>
+              )}
+              <p className={cn(SERIF, "text-[26px] leading-none text-[#7b3aec]")}>${(listing.priceCents / 100).toFixed(2)} USD</p>
+              {/* Placeholder from the design; payment methods aren't wired up yet */}
+              <h2 className={SUBHEAD}>Payment Methods</h2>
+            </div>
+            <div className="mt-[22px] border-t border-[#3b2a5e] pt-[22px]">
+              {listing.isOwner ? (
+                <OwnerActions listingId={listing._id} status={listing.status} isAuction={false} canDelete />
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {seller && !buyBlocked && (
+                    <MessageSellerButton
+                      listingId={listing._id}
+                      sellerName={seller.name}
+                      label="Message Seller"
+                      icon={<MessageSquareText className="size-[22px]" strokeWidth={1.5} />}
+                      className={cn(WIDE_ACTION, "gap-2")}
+                    />
+                  )}
+                  <FavoriteButton
+                    listingId={listing._id}
+                    sellerId={listing.sellerId}
+                    withLabel
+                    className="h-10 self-start rounded-[2px] bg-[#141519] shadow-none"
+                  />
+                </div>
+              )}
+            </div>
+          </aside>
+        </div>
+
+        {seller && <MoreFromSeller seller={seller} currentId={listing._id} />}
+      </div>
+    </div>
+  );
+}
+
 export default function ListingPage() {
   const { listingId } = useParams<{ listingId: Id<"listings"> }>();
   const listing = useQuery(api.listings.get, listingId ? { listingId } : "skip");
@@ -305,6 +398,13 @@ export default function ListingPage() {
         </EmptyContent>
       </Empty>
     );
+  }
+
+  // Listings with locked photos and videos are Instant Content and have their own page
+  if (listing.locked) {
+    const instantBlocked =
+      access && !access.can.buy ? deniedMessage("buy", access.accountType ?? undefined, access.ageVerified) : null;
+    return <InstantContentView listing={listing} locked={listing.locked} buyBlocked={instantBlocked} />;
   }
 
   const comingSoon = () => toast("Coming soon in a future milestone!");
