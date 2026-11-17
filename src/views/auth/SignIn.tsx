@@ -24,7 +24,7 @@ const SERIF = "[font-family:var(--font-signin-serif),Cambria,Georgia,serif]";
 
 const FIELD = cn(
   SERIF,
-  "signin-field h-[42px] w-full rounded-[2px] border border-[#101114] bg-[#121418] px-4 text-[17px] uppercase tracking-[0.02em] text-[#b8b8b9] outline-none placeholder:text-[#4f5051] focus:border-[#4c1d95]",
+  "signin-field h-[42px] w-full rounded-[2px] border px-4 text-[17px] tracking-[0.02em] text-[#b8b8b9] outline-none placeholder:text-[#4f5051] focus:border-[#4c1d95]",
 );
 const SUBMIT = cn(
   ROUNDED,
@@ -192,6 +192,8 @@ export default function SignInPage() {
           <div className="flex flex-col gap-[26px]">
             {/* Accounts are by email, so the field takes an email where the design says username */}
             <input
+              id="email"
+              name="email"
               aria-label="Email"
               type="email"
               autoComplete="email"
@@ -202,6 +204,8 @@ export default function SignInPage() {
               className={FIELD}
             />
             <input
+              id="password"
+              name="password"
               aria-label="Password"
               type="password"
               autoComplete="current-password"
@@ -232,6 +236,8 @@ export default function SignInPage() {
           <Heading title="Create Account" sub="Sign up for an account" />
           <div className="flex flex-col gap-[26px]">
             <input
+              id="name"
+              name="name"
               aria-label="Display name (optional)"
               autoComplete="nickname"
               maxLength={40}
@@ -241,6 +247,8 @@ export default function SignInPage() {
               className={FIELD}
             />
             <input
+              id="new-email"
+              name="email"
               aria-label="Email"
               type="email"
               autoComplete="email"
@@ -251,6 +259,8 @@ export default function SignInPage() {
               className={FIELD}
             />
             <input
+              id="new-password"
+              name="new-password"
               aria-label={`Password (at least ${MIN_PASSWORD} characters)`}
               type="password"
               autoComplete="new-password"
@@ -276,6 +286,8 @@ export default function SignInPage() {
         <form onSubmit={sendLink} className="flex flex-col gap-[26px]">
           <Heading title="Email Link" sub="We'll email you a one-time sign-in link" />
           <input
+            id="link-email"
+            name="email"
             aria-label="Email"
             type="email"
             autoComplete="email"
