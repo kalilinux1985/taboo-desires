@@ -59,6 +59,8 @@ function EditForm({ listingId }: { listingId: Id<"listings"> }) {
       priceLocked={listing.auctionHasBids}
       defaultPhotos={listing.images}
       defaultLocked={listing.locked?.media ?? undefined}
+      // Older listings had one blurred preview per file; they need a fresh cover
+      defaultCover={listing.locked && listing.images.length === 1 ? listing.images[0] : null}
       defaultValues={{
         saleType: listing.saleType ?? "fixed",
         title: listing.title,

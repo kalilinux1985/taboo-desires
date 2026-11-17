@@ -40,24 +40,28 @@ export async function canViewLocked(
 }
 
 /**
- * Each locked file needs exactly one blurred public preview, the originals
- * must be private uploads, and the file type must match what the client
- * claims (checked against the type recorded at upload).
+ * Instant Content is either up to LOCKED_MEDIA_MAX photos or a single video.
+ * The listing shows one public, unblurred cover (the first photo, or the video's
+ * thumbnail); the originals must be private uploads, and the file type must
+ * match what the client claims (checked against the type recorded at upload).
  */
 export async function validateLockedMedia(
   ctx: QueryCtx,
   sellerId: Id<"users">,
   media: LockedMedia[],
-  previewCount: number,
+  coverCount: number,
   alreadyAttached: readonly string[] = [],
 ) {
   const bad = (message: string) =>
     new AppError({ code: "BAD_REQUEST", message });
-  if (media.length < 1) throw bad("Add at least one photo or video");
+  if (media.length < 1) throw bad("Add at least one photo or a video");
+  const videos = media.filter((m) => m.kind === "video").length;
+  if (videos > 1) throw bad("Add only one video");
+  if (videos === 1 && media.length > 1)
+    throw bad("A video listing holds just the video and its thumbnail");
   if (media.length > LOCKED_MEDIA_MAX)
-    throw bad(`Locked listings can hold up to ${LOCKED_MEDIA_MAX} files`);
-  if (previewCount !== media.length)
-    throw bad("Every file needs a blurred preview");
+    throw bad(`Instant Content can hold up to ${LOCKED_MEDIA_MAX} photos`);
+  if (coverCount !== 1) throw bad("Add a cover photo");
   assertOwnFiles(
     media.map((m) => m.storageId),
     sellerId,

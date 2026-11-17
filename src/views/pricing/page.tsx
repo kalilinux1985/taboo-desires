@@ -34,7 +34,7 @@ const FEATURES = [
   "Post and comment on the activity feed",
   `Up to ${PLAN_LIMITS.pro.maxPhotos} photos per listing`,
   "Run auctions",
-  `Paywalled photo and video listings (up to ${LOCKED_MEDIA_MAX} files)`,
+  `Instant Content listings (up to ${LOCKED_MEDIA_MAX} photos, or 1 video)`,
   "Featured on the home page",
   "Zero commission on every sale",
 ];

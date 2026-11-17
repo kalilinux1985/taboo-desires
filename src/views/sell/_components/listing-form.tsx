@@ -29,7 +29,7 @@ import Link from "next/link";
 import { api } from "@/lib/backend/api.ts";
 import PhotoUploader, { type Photo } from "@/components/photo-uploader.tsx";
 import SaleTypePicker from "./sale-type-picker.tsx";
-import LockedMediaUploader, { type LockedItem } from "./locked-media-uploader.tsx";
+import LockedMediaUploader, { type LockedCover, type LockedItem } from "./locked-media-uploader.tsx";
 import { Switch } from "@/components/ui/switch.tsx";
 import { Crown, Lock } from "lucide-react";
 import { LOCKED_MEDIA_MAX } from "@/shared/plans.ts";
@@ -71,6 +71,7 @@ export default function ListingForm({
   defaultValues,
   defaultPhotos = [],
   defaultLocked,
+  defaultCover,
   submitLabel,
   onSubmit,
   isEdit = false,
@@ -80,6 +81,8 @@ export default function ListingForm({
   defaultPhotos?: Photo[];
   /** Set when editing a locked listing */
   defaultLocked?: LockedItem[];
+  /** The public cover picture of a locked listing being edited */
+  defaultCover?: LockedCover | null;
   submitLabel: string;
   onSubmit: (values: ListingSubmit) => Promise<void>;
   /** Sale type and auction length can't change after publishing */
@@ -91,6 +94,9 @@ export default function ListingForm({
   const [photoError, setPhotoError] = useState(false);
   const [isLocked, setIsLocked] = useState(!!defaultLocked);
   const [lockedItems, setLockedItems] = useState<LockedItem[]>(defaultLocked ?? []);
+  const [lockedCover, setLockedCover] = useState<LockedCover | null>(
+    defaultCover ? { ...defaultCover, forItem: defaultLocked?.[0]?.storageId } : null,
+  );
   const form = useForm<ListingFormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -128,7 +134,7 @@ export default function ListingForm({
   const sectionItems = SELL_SECTIONS.find((s) => s.key === sectionKey)?.items ?? [];
 
   const submit = form.handleSubmit(async ({ price, durationHours, subcategory, ...values }) => {
-    if ((isLocked ? lockedItems.length : photos.length) === 0) {
+    if ((isLocked ? lockedItems.length : photos.length) === 0 || (isLocked && !lockedCover)) {
       setPhotoError(true);
       return;
     }
@@ -137,8 +143,8 @@ export default function ListingForm({
       subcategory: (subcategory || undefined) as Subcategory | undefined,
       priceCents: Math.round(Number(price) * 100),
       durationHours: Number(durationHours),
-      // Locked listings show only the blurred previews publicly
-      imageIds: isLocked ? lockedItems.map((m) => m.previewId) : photos.map((p) => p.id),
+      // Locked listings show one public cover (the first photo, or the video's thumbnail)
+      imageIds: isLocked && lockedCover ? [lockedCover.id] : photos.map((p) => p.id),
       locked: isLocked ? lockedItems.map(({ storageId, kind }) => ({ storageId, kind })) : undefined,
     });
   });
@@ -163,7 +169,7 @@ export default function ListingForm({
                 )}
               </label>
               <p className="text-xs text-muted-foreground">
-                Sell photos or videos. Buyers only see blurred previews until they purchase.
+                Sell up to 10 photos or one video. Buyers see the cover until they unlock the rest.
                 {!lockedAllowed && mine !== undefined && (
                   <>
                     {" "}
@@ -189,20 +195,24 @@ export default function ListingForm({
             <div className="flex items-baseline justify-between gap-2">
               <p className="text-sm font-medium">Locked photos and videos</p>
               <p className="text-xs text-muted-foreground">
-                {lockedItems.length}/{LOCKED_MEDIA_MAX}
+                {lockedItems.some((m) => m.kind === "video") ? "1 video" : `${lockedItems.length}/${LOCKED_MEDIA_MAX} photos`}
               </p>
             </div>
             <LockedMediaUploader
-              items={lockedItems}
-              onChange={(items) => {
+              value={{ items: lockedItems, cover: lockedCover }}
+              onChange={({ items, cover }) => {
                 setLockedItems(items);
+                setLockedCover(cover);
                 setPhotoError(false);
               }}
             />
             <p className="text-xs text-muted-foreground">
-              We create a blurred preview of each file automatically. Originals stay hidden until you approve a purchase.
+              Photos: the first one is the cover. Video: add one video and a thumbnail photo. The cover shows to everyone
+              (not blurred), the rest stays hidden until a buyer unlocks it.
             </p>
-            {photoError && <p className="text-sm text-destructive">Add at least one photo or video</p>}
+            {photoError && (
+              <p className="text-sm text-destructive">Add at least one photo, or a video with a thumbnail photo</p>
+            )}
           </div>
         ) : (
         <div className="flex flex-col gap-2">

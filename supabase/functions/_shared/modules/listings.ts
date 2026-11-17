@@ -395,11 +395,7 @@ async function lockedView(
     media: canView
       ? media.flatMap((m, i) => {
           const url = urls[i];
-          const previewId = listing.imageIds[i];
-          // imageIds[i] is the blurred preview of media[i]
-          return url && previewId
-            ? [{ storageId: m.storageId, kind: m.kind, url, previewId }]
-            : [];
+          return url ? [{ storageId: m.storageId, kind: m.kind, url }] : [];
         })
       : null,
   };

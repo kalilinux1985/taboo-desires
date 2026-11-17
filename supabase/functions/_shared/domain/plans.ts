@@ -29,7 +29,7 @@ export const PLAN_LIMITS = {
   pro: { maxPhotos: 12, auctions: true, lockedContent: true },
 } as const;
 
-/** Max photos/videos in one paywalled listing. */
+/** Max photos in one Instant Content listing (or a single video). */
 export const LOCKED_MEDIA_MAX = 10;
 
 export type PlanId = keyof typeof PLAN_LIMITS;
