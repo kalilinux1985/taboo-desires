@@ -122,14 +122,14 @@ export default function ShopCategoryPage({ page }: { page: ShopPage }) {
             <SheetTitle className="flex items-center gap-2 text-lg">
               <SlidersHorizontal className="size-5 text-violet-600" /> Filter
             </SheetTitle>
-            <SheetDescription>Narrow {page.shopFor.toLowerCase()} by price, wear time and seller.</SheetDescription>
+            <SheetDescription>Narrow {page.shopFor.toLowerCase()} by price, listed date and seller details.</SheetDescription>
           </SheetHeader>
           <div className="flex-1 overflow-y-auto px-4">
             <FilterGroups
               groups={PAGE_FILTER_GROUPS}
               selection={selection}
               onToggle={toggle}
-              defaultOpen={["saleType", "price"]}
+
             />
           </div>
           <SheetFooter className="flex-row gap-2 border-t border-white/[3%] pb-[max(1rem,env(safe-area-inset-bottom))]">
