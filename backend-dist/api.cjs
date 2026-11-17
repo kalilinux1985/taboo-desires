@@ -161,6 +161,26 @@ var TABLES = {
       reason: c("reason")
     }
   },
+  contentReports: {
+    sqlName: "content_reports",
+    columns: {
+      reportType: c("report_type"),
+      targetKind: c("target_kind"),
+      targetId: c("target_id"),
+      targetUrl: c("target_url"),
+      description: c("description"),
+      reporterName: c("reporter_name"),
+      reporterEmail: c("reporter_email"),
+      reporterUserId: c("reporter_user_id", "uuid"),
+      isDepicted: c("is_depicted", "bool"),
+      signature: c("signature"),
+      status: c("status"),
+      dueAt: c("due_at", "ts"),
+      resolvedAt: c("resolved_at", "ts"),
+      resolvedBy: c("resolved_by", "uuid"),
+      resolutionNote: c("resolution_note")
+    }
+  },
   ageVerifications: {
     sqlName: "age_verifications",
     columns: {
@@ -688,7 +708,7 @@ var Storage = class {
     if (!parts) return Promise.resolve(null);
     if (parts.bucket !== BUCKETS.private)
       return Promise.resolve(this.backend.publicUrl(parts.bucket, parts.path));
-    return new Promise((resolve) => {
+    return new Promise((resolve2) => {
       if (!this.signBatch) {
         const batch = {
           ids: [],
@@ -711,7 +731,7 @@ var Storage = class {
         });
       }
       this.signBatch.ids.push(id);
-      this.signBatch.resolvers.push(resolve);
+      this.signBatch.resolvers.push(resolve2);
     });
   }
   /** Content type recorded at upload, null if unknown, undefined if the file doesn't exist. */
@@ -1777,15 +1797,15 @@ async function canViewLocked(ctx, listing, user) {
   return expiry !== null && expiry > ctx.now();
 }
 async function validateLockedMedia(ctx, sellerId, media, coverCount, alreadyAttached = []) {
-  const bad2 = (message) => new AppError({ code: "BAD_REQUEST", message });
-  if (media.length < 1) throw bad2("Add at least one photo or a video");
+  const bad3 = (message) => new AppError({ code: "BAD_REQUEST", message });
+  if (media.length < 1) throw bad3("Add at least one photo or a video");
   const videos = media.filter((m) => m.kind === "video").length;
-  if (videos > 1) throw bad2("Add only one video");
+  if (videos > 1) throw bad3("Add only one video");
   if (videos === 1 && media.length > 1)
-    throw bad2("A video listing holds just the video and its thumbnail");
+    throw bad3("A video listing holds just the video and its thumbnail");
   if (media.length > LOCKED_MEDIA_MAX)
-    throw bad2(`Instant Content can hold up to ${LOCKED_MEDIA_MAX} photos`);
-  if (coverCount !== 1) throw bad2("Add a cover photo");
+    throw bad3(`Instant Content can hold up to ${LOCKED_MEDIA_MAX} photos`);
+  if (coverCount !== 1) throw bad3("Add a cover photo");
   assertOwnFiles(
     media.map((m) => m.storageId),
     sellerId,
@@ -1797,9 +1817,9 @@ async function validateLockedMedia(ctx, sellerId, media, coverCount, alreadyAtta
   );
   types.forEach((type, i) => {
     if (type === void 0)
-      throw bad2("A file is missing. Please upload it again");
+      throw bad3("A file is missing. Please upload it again");
     if (type && !type.startsWith(`${media[i].kind}/`))
-      throw bad2("Unsupported file type");
+      throw bad3("Unsupported file type");
   });
 }
 
@@ -2237,17 +2257,17 @@ var listingFields = {
   )
 };
 function validateListing(input) {
-  const bad2 = (message) => new AppError({ code: "BAD_REQUEST", message });
+  const bad3 = (message) => new AppError({ code: "BAD_REQUEST", message });
   if (input.title.trim().length < 3 || input.title.length > 80)
-    throw bad2("Title must be 3-80 characters");
-  if (input.description.length > 2e3) throw bad2("Description is too long");
-  if (!input.brand.trim()) throw bad2("Brand is required");
-  if (!input.size.trim()) throw bad2("Size is required");
+    throw bad3("Title must be 3-80 characters");
+  if (input.description.length > 2e3) throw bad3("Description is too long");
+  if (!input.brand.trim()) throw bad3("Brand is required");
+  if (!input.size.trim()) throw bad3("Size is required");
   if (!Number.isInteger(input.priceCents) || input.priceCents < 100 || input.priceCents > MAX_PRICE_CENTS)
-    throw bad2("Price must be between $1 and $100,000");
-  if (input.imageIds.length < 1) throw bad2("Add at least one photo");
+    throw bad3("Price must be between $1 and $100,000");
+  if (input.imageIds.length < 1) throw bad3("Add at least one photo");
   if (input.subcategory && subcategoryInfo(input.subcategory)?.category !== input.category)
-    throw bad2("That type doesn't belong to the chosen category");
+    throw bad3("That type doesn't belong to the chosen category");
 }
 function checkPhotoLimit(count, maxPhotos, alreadyHad = 0) {
   if (count > Math.max(maxPhotos, alreadyHad))
@@ -3821,6 +3841,201 @@ var toggleCommentLike = mutation({
   }
 });
 
+// supabase/functions/_shared/modules/reports.ts
+var reports_exports = {};
+__export(reports_exports, {
+  adminCounts: () => adminCounts,
+  adminOpen: () => adminOpen,
+  resolve: () => resolve,
+  submit: () => submit2
+});
+var HOUR = 36e5;
+var URGENT_HOURS = 48;
+var NORMAL_HOURS = 24 * 7;
+var URGENT_TYPES = ["nonconsensual_intimate", "underage"];
+var HOURLY_LIMIT = 5;
+var typeValidator = v.union(
+  v.literal("nonconsensual_intimate"),
+  v.literal("underage"),
+  v.literal("copyright"),
+  v.literal("illegal"),
+  v.literal("harassment"),
+  v.literal("other")
+);
+var targetValidator = v.union(
+  v.literal("listing"),
+  v.literal("post"),
+  v.literal("comment"),
+  v.literal("profile"),
+  v.literal("other")
+);
+var UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+var EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+var bad2 = (message) => new AppError({ code: "BAD_REQUEST", message });
+var submit2 = mutation({
+  args: {
+    reportType: typeValidator,
+    targetKind: targetValidator,
+    targetId: v.optional(v.string()),
+    targetUrl: v.optional(v.string()),
+    description: v.string(),
+    reporterName: v.string(),
+    reporterEmail: v.string(),
+    isDepicted: v.boolean(),
+    signature: v.string()
+  },
+  handler: async (ctx, args) => {
+    const me = await getCurrentUserDoc(ctx);
+    const description = args.description.trim();
+    const reporterName = args.reporterName.trim();
+    const reporterEmail = args.reporterEmail.trim().toLowerCase();
+    const signature = args.signature.trim();
+    const targetId = args.targetId?.trim() || void 0;
+    const targetUrl = args.targetUrl?.trim() || void 0;
+    if (description.length < 10) throw bad2("Please describe the problem (at least 10 characters)");
+    if (description.length > 2e3) throw bad2("The description is too long");
+    if (!reporterName || reporterName.length > 100) throw bad2("Enter your name");
+    if (!EMAIL.test(reporterEmail) || reporterEmail.length > 200) throw bad2("Enter a valid email address");
+    if (!signature || signature.length > 100) throw bad2("Type your full name as your signature");
+    if (targetId && !UUID.test(targetId)) throw bad2("That link isn't valid");
+    if (targetUrl && (targetUrl.length > 500 || !/^https?:\/\//i.test(targetUrl)))
+      throw bad2("Enter the full link (starting with https://)");
+    if (!targetId && !targetUrl) throw bad2("Tell us where the content is: add its link");
+    const recent = await ctx.db.rows(sql`
+      select count(*)::int as n from public.content_reports
+       where reporter_email = ${reporterEmail}
+         and created_at > ${new Date(ctx.now() - HOUR).toISOString()}::timestamptz`);
+    if (Number(recent[0]?.n ?? 0) >= HOURLY_LIMIT)
+      throw bad2("Too many reports from this email. Please try again later.");
+    const hours = URGENT_TYPES.includes(args.reportType) ? URGENT_HOURS : NORMAL_HOURS;
+    await ctx.db.insert("contentReports", {
+      reportType: args.reportType,
+      targetKind: args.targetKind,
+      targetId,
+      targetUrl,
+      description,
+      reporterName,
+      reporterEmail,
+      reporterUserId: me?._id,
+      isDepicted: args.isDepicted,
+      signature,
+      status: "open",
+      dueAt: new Date(ctx.now() + hours * HOUR).toISOString()
+    });
+    return null;
+  }
+});
+async function describeTarget(ctx, kind, id) {
+  if (!id) return null;
+  if (kind === "listing") {
+    const l = await ctx.db.get("listings", id);
+    if (!l) return { exists: false, label: "Listing (already removed)", path: null };
+    return { exists: true, label: `Listing: ${l.title}`, path: `/listing/${l._id}` };
+  }
+  if (kind === "post") {
+    const p = await ctx.db.get("posts", id);
+    if (!p) return { exists: false, label: "Post (already removed)", path: null };
+    const a = await ctx.db.get("users", p.authorId);
+    return {
+      exists: true,
+      label: `Post by ${a ? publicSellerName(a) : "a deleted user"}: ${p.body.slice(0, 80)}`,
+      path: `/seller/${p.authorId}?post=${p._id}`
+    };
+  }
+  if (kind === "comment") {
+    const c2 = await ctx.db.get("postComments", id);
+    if (!c2) return { exists: false, label: "Comment (already removed)", path: null };
+    const p = await ctx.db.get("posts", c2.postId);
+    return {
+      exists: true,
+      label: `Comment: ${c2.body.slice(0, 80)}`,
+      path: p ? `/seller/${p.authorId}?post=${p._id}&comments=1` : null
+    };
+  }
+  if (kind === "profile") {
+    const u = await ctx.db.get("users", id);
+    if (!u) return { exists: false, label: "Profile (deleted)", path: null };
+    return { exists: true, label: `Profile: ${publicSellerName(u)}`, path: `/seller/${u._id}` };
+  }
+  return null;
+}
+var adminOpen = query({
+  args: { paginationOpts: paginationOptsValidator },
+  handler: async (ctx, { paginationOpts }) => {
+    await requireAdmin(ctx);
+    const result = await ctx.db.paginate(
+      "contentReports",
+      { where: sql`status = 'open'`, order: [{ column: "due_at", cast: "timestamptz" }], direction: "asc" },
+      paginationOpts
+    );
+    return {
+      ...result,
+      page: await Promise.all(
+        result.page.map(async (r) => ({
+          _id: r._id,
+          reportType: r.reportType,
+          targetKind: r.targetKind,
+          targetUrl: r.targetUrl ?? null,
+          description: r.description,
+          reporterName: r.reporterName,
+          reporterEmail: r.reporterEmail,
+          isDepicted: r.isDepicted,
+          signature: r.signature,
+          createdAt: r._creationTime,
+          dueAt: new Date(r.dueAt).getTime(),
+          target: await describeTarget(ctx, r.targetKind, r.targetId)
+        }))
+      )
+    };
+  }
+});
+var adminCounts = query({
+  args: {},
+  handler: async (ctx) => {
+    const me = await getCurrentUserDoc(ctx);
+    if (me?.role !== "admin") return null;
+    ctx.db.touch("contentReports");
+    const rows = await ctx.db.rows(sql`
+      select count(*)::int as open,
+             count(*) filter (where due_at < ${new Date(ctx.now()).toISOString()}::timestamptz)::int as overdue
+        from public.content_reports where status = 'open'`);
+    const r = rows[0];
+    return { open: Number(r?.open ?? 0), overdue: Number(r?.overdue ?? 0) };
+  }
+});
+var resolve = mutation({
+  args: {
+    reportId: v.id("contentReports"),
+    remove: v.boolean(),
+    note: v.optional(v.string())
+  },
+  handler: async (ctx, { reportId, remove: remove4, note }) => {
+    const admin2 = await requireAdmin(ctx);
+    const report = await ctx.db.get("contentReports", reportId);
+    if (!report || report.status !== "open") throw bad2("This report is already closed");
+    const text = note?.trim();
+    if (text && text.length > 500) throw bad2("The note is too long");
+    if (remove4 && report.targetId) {
+      if (report.targetKind === "listing") {
+        const listing = await ctx.db.get("listings", report.targetId);
+        if (listing) await deleteListingCascade(ctx, listing);
+      } else if (report.targetKind === "post") {
+        const post = await ctx.db.get("posts", report.targetId);
+        if (post) await deletePostCascade(ctx, post);
+      } else if (report.targetKind === "comment") {
+        await ctx.db.delete("postComments", report.targetId);
+      }
+    }
+    await ctx.db.patch("contentReports", reportId, {
+      status: remove4 ? "removed" : "dismissed",
+      resolvedAt: new Date(ctx.now()).toISOString(),
+      resolvedBy: admin2._id,
+      resolutionNote: text || void 0
+    });
+    return null;
+  }
+});
+
 // supabase/functions/_shared/modules/reviews.ts
 var reviews_exports = {};
 __export(reviews_exports, {
@@ -4827,7 +5042,7 @@ __export(verification_exports, {
   mine: () => mine4,
   review: () => review2,
   revoke: () => revoke2,
-  submit: () => submit2
+  submit: () => submit3
 });
 var REASON_MAX2 = 300;
 async function getVerification(ctx, userId) {
@@ -4849,7 +5064,7 @@ var mine4 = query({
     };
   }
 });
-var submit2 = mutation({
+var submit3 = mutation({
   args: { photoStorageId: v.storageId() },
   handler: async (ctx, { photoStorageId }) => {
     const me = await requireUser(ctx);
@@ -4979,6 +5194,7 @@ var registry = {
   messages: functionsOf(messages_exports),
   notifications: functionsOf(notifications_exports),
   posts: functionsOf(posts_exports),
+  reports: functionsOf(reports_exports),
   reviews: functionsOf(reviews_exports),
   subscriptions: functionsOf(subscriptions_exports),
   unlocks: functionsOf(unlocks_exports),
