@@ -1,8 +1,0 @@
-import type { Metadata } from "next";
-import Screen from "@/views/auth/SignIn.tsx";
-
-export const metadata: Metadata = { title: "Sign in" };
-
-export default function Page() {
-  return <Screen />;
-}

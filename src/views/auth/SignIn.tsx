@@ -7,31 +7,62 @@ import { toast } from "sonner";
 import { Mail } from "lucide-react";
 import { supabase } from "@/lib/backend/client.ts";
 import { useAuth } from "@/components/providers/auth.tsx";
-import { Button } from "@/components/ui/button.tsx";
-import { Input } from "@/components/ui/input.tsx";
-import { Label } from "@/components/ui/label.tsx";
 import { Spinner } from "@/components/ui/spinner.tsx";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs.tsx";
+import { cn } from "@/lib/utils.ts";
 import { callbackUrl, resolveReturnTo } from "./return-to.ts";
+
+// The sign-in design: logo and wordmark over a framed card on the left, the
+// tiled portrait filling the right half. Sign-up and the email link use the
+// same card. Page #0c0f15, frame #1f2126, card #141519, violet #4c1d95.
 
 type Mode = "signin" | "signup" | "link";
 
 const MIN_PASSWORD = 8;
 
-function Field({
-  id,
-  label,
-  ...props
-}: { id: string; label: string } & React.ComponentProps<"input">) {
+const ROUNDED = "[font-family:var(--font-signin-rounded),'Comfortaa',ui-rounded,sans-serif]";
+const SERIF = "[font-family:var(--font-signin-serif),Cambria,Georgia,serif]";
+
+const FIELD = cn(
+  SERIF,
+  "signin-field h-[42px] w-full rounded-[2px] border border-[#101114] bg-[#121418] px-4 text-[17px] uppercase tracking-[0.02em] text-[#b8b8b9] outline-none placeholder:text-[#4f5051] focus:border-[#4c1d95]",
+);
+const SUBMIT = cn(
+  ROUNDED,
+  "flex h-[38px] w-full cursor-pointer items-center justify-center gap-2 rounded-[2px] bg-[#4c1d95] text-[16px] font-bold text-white transition-colors hover:bg-[#5b24b3] disabled:cursor-default disabled:opacity-60",
+);
+const FOOTNOTE = cn(ROUNDED, "text-center text-[12px] text-[#b8b8b9]");
+const FOOT_LINK = "cursor-pointer text-[#7c3aed] underline underline-offset-2 hover:text-[#9d5cff]";
+
+/** The two-column page: the card on the left, the portrait on the right. */
+function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="space-y-1.5">
-      <Label htmlFor={id}>{label}</Label>
-      <Input id={id} {...props} />
+    <div className="grid min-h-dvh bg-[#0c0f15] text-[#b8b8b9] lg:grid-cols-2">
+      <div className="flex flex-col items-center justify-center px-4 py-10 sm:px-8">
+        <Link href="/" className="flex flex-col items-center gap-[10px]">
+          <img src="/signin/logo.png" alt="" className="size-[122px]" />
+          <span className={cn(ROUNDED, "text-[40px] leading-none text-[#69269e] sm:text-[44px]")}>Taboo Desire&apos;s</span>
+        </Link>
+        <div className="mt-[18px] w-full max-w-[498px] rounded-[2px] border border-[#202227] bg-[#1f2126] p-[10px]">
+          <div className="rounded-[2px] bg-[#141519] px-6 py-10 sm:px-[50px]">{children}</div>
+        </div>
+      </div>
+      {/* The grid in the picture is transparent, so the page shows through the gaps */}
+      <div className="relative hidden min-h-dvh lg:block">
+        <img
+          src="/signin/right.webp"
+          alt=""
+          className="absolute inset-0 size-full object-cover object-[center_top]"
+        />
+      </div>
+    </div>
+  );
+}
+
+function Heading({ title, sub }: { title: string; sub: string }) {
+  return (
+    <div className={cn(SERIF, "flex flex-col items-center gap-[10px] text-center")}>
+      <h1 className="text-[40px] leading-none text-[#b8b8b9] sm:text-[44px]">{title}</h1>
+      <p className="text-[16px] text-[#b8b8b9]">{sub}</p>
     </div>
   );
 }
@@ -130,155 +161,139 @@ export default function SignInPage() {
 
   if (sentTo) {
     return (
-      <div className="mx-auto flex min-h-[70vh] max-w-md flex-col items-center justify-center gap-4 px-4 text-center">
-        <div className="flex size-12 items-center justify-center rounded-full bg-primary/15 text-primary">
-          <Mail className="size-6" />
+      <Shell>
+        <div className="flex flex-col items-center gap-4 text-center">
+          <div className="flex size-12 items-center justify-center rounded-full bg-[#4c1d95]/20 text-[#7c3aed]">
+            <Mail className="size-6" />
+          </div>
+          <Heading title="Check your email" sub="Open the link on this device to finish signing in" />
+          <p className={cn(SERIF, "text-[14px]")}>
+            We sent it to <span className="text-white">{sentTo}</span>.
+          </p>
+          <button type="button" onClick={() => setSentTo(null)} className={cn(FOOTNOTE, FOOT_LINK, "mt-2")}>
+            Use a different email
+          </button>
         </div>
-        <h1 className="font-display text-3xl">Check your email</h1>
-        <p className="text-muted-foreground">
-          We sent a link to{" "}
-          <span className="font-medium text-foreground">{sentTo}</span>. Open it
-          on this device to finish signing in.
-        </p>
-        <Button
-          variant="secondary"
-          onClick={() => setSentTo(null)}
-          className="cursor-pointer"
-        >
-          Use a different email
-        </Button>
-      </div>
+      </Shell>
     );
   }
 
-  return (
-    <div className="mx-auto flex min-h-[70vh] max-w-md flex-col justify-center gap-6 px-4 py-12">
-      <div className="space-y-1 text-center">
-        <h1 className="font-display text-4xl">Welcome</h1>
-        <p className="text-sm text-muted-foreground">
-          Sign in or create an account to buy and sell.
-        </p>
-      </div>
-      <Tabs value={mode} onValueChange={(v) => setMode(v as Mode)}>
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="signin">Sign in</TabsTrigger>
-          <TabsTrigger value="signup">Create account</TabsTrigger>
-          <TabsTrigger value="link">Email link</TabsTrigger>
-        </TabsList>
+  const switchTo = (next: Mode) => (
+    <button type="button" onClick={() => setMode(next)} className={FOOT_LINK}>
+      HERE
+    </button>
+  );
 
-        <TabsContent value="signin">
-          <form onSubmit={signIn} className="space-y-4 pt-4">
-            <Field
-              id="email"
-              label="Email"
+  return (
+    <Shell>
+      {mode === "signin" && (
+        <form onSubmit={signIn} className="flex flex-col gap-[26px]">
+          <Heading title="Welcome Back" sub="Log into your account" />
+          <div className="flex flex-col gap-[26px]">
+            {/* Accounts are by email, so the field takes an email where the design says username */}
+            <input
+              aria-label="Email"
               type="email"
               autoComplete="email"
               required
+              placeholder="EMAIL"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              className={FIELD}
             />
-            <Field
-              id="password"
-              label="Password"
+            <input
+              aria-label="Password"
               type="password"
               autoComplete="current-password"
               required
+              placeholder="PASSWORD"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              className={FIELD}
             />
-            <Button
-              type="submit"
-              className="w-full cursor-pointer"
-              disabled={busy}
-            >
-              {busy && <Spinner />} Sign in
-            </Button>
-            <button
-              type="button"
-              onClick={resetPassword}
-              disabled={busy}
-              className="w-full cursor-pointer text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
-            >
+          </div>
+          <button type="submit" className={SUBMIT} disabled={busy}>
+            {busy && <Spinner />} Sign-in
+          </button>
+          <p className={FOOTNOTE}>Don&apos;t have an account? Sign-up {switchTo("signup")}</p>
+          <p className={cn(FOOTNOTE, "-mt-4 flex flex-wrap justify-center gap-x-3")}>
+            <button type="button" onClick={resetPassword} disabled={busy} className={FOOT_LINK}>
               Forgot your password?
             </button>
-          </form>
-        </TabsContent>
+            <button type="button" onClick={() => setMode("link")} className={FOOT_LINK}>
+              Email me a sign-in link
+            </button>
+          </p>
+        </form>
+      )}
 
-        <TabsContent value="signup">
-          <form onSubmit={signUp} className="space-y-4 pt-4">
-            <Field
-              id="name"
-              label="Display name (optional)"
+      {mode === "signup" && (
+        <form onSubmit={signUp} className="flex flex-col gap-[26px]">
+          <Heading title="Create Account" sub="Sign up for an account" />
+          <div className="flex flex-col gap-[26px]">
+            <input
+              aria-label="Display name (optional)"
               autoComplete="nickname"
               maxLength={40}
+              placeholder="DISPLAY NAME (OPTIONAL)"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              className={FIELD}
             />
-            <Field
-              id="new-email"
-              label="Email"
+            <input
+              aria-label="Email"
               type="email"
               autoComplete="email"
               required
+              placeholder="EMAIL"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              className={FIELD}
             />
-            <Field
-              id="new-password"
-              label={`Password (at least ${MIN_PASSWORD} characters)`}
+            <input
+              aria-label={`Password (at least ${MIN_PASSWORD} characters)`}
               type="password"
               autoComplete="new-password"
               required
               minLength={MIN_PASSWORD}
+              placeholder="PASSWORD"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              className={FIELD}
             />
-            <p className="text-xs text-muted-foreground">
-              You must be 18 or older. After you sign in you&apos;ll prove your age with your date of birth, a
-              photo of a government ID and a selfie holding it. Posting, messaging and buying unlock once
-              it&apos;s approved.
-            </p>
-            <Button
-              type="submit"
-              className="w-full cursor-pointer"
-              disabled={busy}
-            >
-              {busy && <Spinner />} Create account
-            </Button>
-          </form>
-        </TabsContent>
+          </div>
+          <p className={cn(FOOTNOTE, "-mt-3 text-[11px]")}>
+            You must be 18 or older. Passwords need at least {MIN_PASSWORD} characters.
+          </p>
+          <button type="submit" className={SUBMIT} disabled={busy}>
+            {busy && <Spinner />} Sign-up
+          </button>
+          <p className={FOOTNOTE}>Already have an account? Sign-in {switchTo("signin")}</p>
+        </form>
+      )}
 
-        <TabsContent value="link">
-          <form onSubmit={sendLink} className="space-y-4 pt-4">
-            <Field
-              id="link-email"
-              label="Email"
-              type="email"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <p className="text-xs text-muted-foreground">
-              We'll email you a one-time link. New here? The link creates your
-              account too. You must be 18 or older and will prove your age
-              with a government ID after signing in.
-            </p>
-            <Button
-              type="submit"
-              className="w-full cursor-pointer"
-              disabled={busy}
-            >
-              {busy && <Spinner />} Email me a sign-in link
-            </Button>
-          </form>
-        </TabsContent>
-      </Tabs>
-      <p className="text-center text-sm text-muted-foreground">
-        <Link href="/" className="underline-offset-4 hover:underline">
-          Back to the shop
-        </Link>
-      </p>
-    </div>
+      {mode === "link" && (
+        <form onSubmit={sendLink} className="flex flex-col gap-[26px]">
+          <Heading title="Email Link" sub="We'll email you a one-time sign-in link" />
+          <input
+            aria-label="Email"
+            type="email"
+            autoComplete="email"
+            required
+            placeholder="EMAIL"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className={FIELD}
+          />
+          <p className={cn(FOOTNOTE, "-mt-3 text-[11px]")}>
+            New here? The link creates your account too. You must be 18 or older.
+          </p>
+          <button type="submit" className={SUBMIT} disabled={busy}>
+            {busy && <Spinner />} Email me a link
+          </button>
+          <p className={FOOTNOTE}>Use a password instead? Sign-in {switchTo("signin")}</p>
+        </form>
+      )}
+    </Shell>
   );
 }

@@ -178,6 +178,15 @@
       inset 3px 5px 4px rgb(28 28 28 / 24%) !important;
   }
 
+  /* Sign-in page fields: flat, with the design's dark edge */
+  input.signin-field {
+    border-color: #101114 !important;
+    box-shadow: none !important;
+  }
+  input.signin-field:focus {
+    border-color: #4c1d95 !important;
+  }
+
   /* A field drawn by its container (the header search) */
   input.field-bare {
     background-color: transparent !important;
