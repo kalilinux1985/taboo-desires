@@ -5,7 +5,7 @@ import { useNavigate } from "@/lib/navigation.ts";
 import { useAccess } from "@/hooks/use-access.ts";
 
 /** Actions sellers need Premium for. */
-export type PremiumAction = "list" | "message" | "post";
+export type PremiumAction = "list" | "message" | "post" | "follow";
 
 /**
  * Sellers without Premium can't list, message or post. Instead of failing,
@@ -17,7 +17,7 @@ export function useUpgradeGate() {
 
   const needsUpgrade = useCallback(
     (action: PremiumAction) =>
-      !!access && access.accountType === "seller" && !access.isAdmin && !access.can[action],
+      !!access && access.accountType === "seller" && !access.isAdmin && (action === "follow" ? !access.isPro : !access.can[action]),
     [access],
   );
   const sendToPlans = useCallback(

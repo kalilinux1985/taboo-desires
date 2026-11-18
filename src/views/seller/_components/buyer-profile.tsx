@@ -1,3 +1,4 @@
+import FollowButton from "./follow-button.tsx";
 import { useState } from "react";
 import ReportButton from "@/components/report-button.tsx";
 import ZoomImage from "@/components/zoom-image.tsx";
@@ -76,6 +77,11 @@ function Header({ profile }: { profile: Profile }) {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+      {!profile.isMe && (
+        <div className="mt-3">
+          <FollowButton userId={profile._id} targetType="buyer" />
+        </div>
+      )}
       {profile.bio && (
         <p className={cn(SANS, "mt-6 whitespace-pre-wrap break-words text-[14px] leading-6 text-white")}>{profile.bio}</p>
       )}

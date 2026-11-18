@@ -5,6 +5,7 @@ import { sql } from "../core/sql.ts";
 import { v } from "../core/values.ts";
 import { getCurrentUserDoc, requireUser } from "../lib/auth.ts";
 import { bumpStats } from "../lib/sellerStats.ts";
+import { getPlan } from "../lib/subscription.ts";
 import { toCard } from "../lib/listingCard.ts";
 
 // Feed reads a bounded slice: newest listings from up to this many followed sellers
@@ -42,10 +43,20 @@ export const toggle = mutation({
         code: "BAD_REQUEST",
         message: "You can't follow yourself",
       });
-    const seller = await ctx.db.get("users", sellerId);
-    if (!seller || (seller.accountType !== "seller" && seller.role !== "admin"))
-      throw new AppError({ code: "NOT_FOUND", message: "Seller not found" });
+    const target = await ctx.db.get("users", sellerId);
+    if (!target) throw new AppError({ code: "NOT_FOUND", message: "Member not found" });
     const existing = await findFollow(ctx, me._id, sellerId);
+    // Unfollowing is always allowed; following is checked below
+    if (!existing) {
+      if (me.accountType === "seller" && me.role !== "admin") {
+        // Premium sellers can follow anyone
+        if ((await getPlan(ctx, me._id)) !== "pro")
+          throw new AppError({ code: "FORBIDDEN", message: "Upgrade to Premium to follow members" });
+      } else if (target.accountType !== "seller" && target.role !== "admin") {
+        // Buyers can follow sellers
+        throw new AppError({ code: "BAD_REQUEST", message: "You can only follow sellers" });
+      }
+    }
     // Unfollow, or cancel a request that hasn't been answered
     if (existing) {
       await ctx.db.delete("follows", existing._id);
