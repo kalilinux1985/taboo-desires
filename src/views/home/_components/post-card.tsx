@@ -26,7 +26,7 @@ import LikerAvatars from "./liker-avatars.tsx";
 export function PostImages({ images }: { images: string[] }) {
   if (images.length === 1) {
     return (
-      <div className="w-full max-w-[210px] overflow-hidden rounded-[2px] bg-[#8b8b90]">
+      <div className="w-full max-w-[210px] overflow-hidden rounded-[5px] bg-[#8b8b90]">
         <ZoomImage src={images[0]} className="w-full"><img src={images[0]} alt="" loading="lazy" className="max-h-[22rem] w-full object-cover" /></ZoomImage>
       </div>
     );
@@ -34,7 +34,7 @@ export function PostImages({ images }: { images: string[] }) {
   return (
     <div className="grid max-w-[426px] grid-cols-2 gap-1.5">
       {images.map((url) => (
-        <div key={url} className="aspect-square overflow-hidden rounded-[2px] bg-[#8b8b90]">
+        <div key={url} className="aspect-square overflow-hidden rounded-[5px] bg-[#8b8b90]">
           <ZoomImage src={url} className="size-full"><img src={url} alt="" loading="lazy" className="size-full object-cover" /></ZoomImage>
         </div>
       ))}
@@ -46,7 +46,7 @@ export function ListingPreview({ listing }: { listing: NonNullable<FeedItem["lis
   return (
     <Link
       href={`/listing/${listing._id}`}
-      className="group relative block w-full max-w-[210px] cursor-pointer overflow-hidden rounded-[2px] bg-[#8b8b90]"
+      className="group relative block w-full max-w-[210px] cursor-pointer overflow-hidden rounded-[5px] bg-[#8b8b90]"
     >
       {listing.imageUrl && (
         <img
@@ -78,7 +78,7 @@ export function roleLabel(author: FeedItem["author"]) {
 
 /**
  * One activity post: round avatar on the left; name and flag, the text in a
- * rounded-[2px] bubble, media, then comment count | likes with liker faces and the
+ * rounded-[5px] bubble, media, then comment count | likes with liker faces and the
  * age on the right; comments below. Used by the home feed and the seller profile.
  */
 export default function PostCard({ item, online }: { item: FeedItem; online: boolean }) {
@@ -100,7 +100,7 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
   const text = item.body || (item.kind !== "status" ? `${verb.lead} ${verb.link}${item.listing ? `: ${item.listing.title}` : ""}` : "");
 
   return (
-    <article className="flex gap-3 rounded-[2px] border border-white/[3%] bg-[#52525214] p-4 shadow-[0_14px_34px_-8px_rgba(0,0,0,0.3)] sm:gap-4">
+    <article className="flex gap-3 rounded-[5px] border border-white/[3%] bg-[#52525214] p-4 shadow-[0_14px_34px_-8px_rgba(0,0,0,0.3)] sm:gap-4">
       <Link href={profile} className="relative h-fit shrink-0 cursor-pointer">
         <ProfileAvatar
           name={item.author.name}
@@ -122,7 +122,7 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
               {item.author.name}
             </Link>
             {item.author.country && (
-              <CountryFlag country={item.author.country} className="h-3.5 w-5 rounded-[2px] object-cover" />
+              <CountryFlag country={item.author.country} className="h-3.5 w-5 rounded-[5px] object-cover" />
             )}
             {item.author.verified && <VerifiedBadge />}
             {label && <span className="text-[10px] font-bold uppercase tracking-wide text-violet-600">{label}</span>}

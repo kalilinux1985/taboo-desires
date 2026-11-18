@@ -31,11 +31,11 @@ const SERIF = "[font-family:var(--font-signin-serif),Cambria,Georgia,serif]";
 
 const FIELD = cn(
   SERIF,
-  "signin-field h-[42px] w-full rounded-[2px] border px-4 text-[17px] tracking-[0.02em] text-[#b8b8b9] outline-none placeholder:text-[#4f5051] focus:border-[#4c1d95]",
+  "signin-field h-[42px] w-full rounded-[5px] border px-4 text-[17px] tracking-[0.02em] text-[#b8b8b9] outline-none placeholder:text-[#4f5051] focus:border-[#4c1d95]",
 );
 const SUBMIT = cn(
   ROUNDED,
-  "flex h-[38px] w-full cursor-pointer items-center justify-center gap-2 rounded-[2px] bg-[#4c1d95] text-[16px] font-bold text-white transition-colors hover:bg-[#5b24b3] disabled:cursor-default disabled:opacity-60",
+  "flex h-[38px] w-full cursor-pointer items-center justify-center gap-2 rounded-[5px] bg-[#4c1d95] text-[16px] font-bold text-white transition-colors hover:bg-[#5b24b3] disabled:cursor-default disabled:opacity-60",
 );
 const FOOTNOTE = cn(ROUNDED, "text-center text-[12px] text-[#b8b8b9]");
 const FOOT_LINK = "cursor-pointer text-[#7c3aed] underline underline-offset-2 hover:text-[#9d5cff]";
@@ -49,8 +49,8 @@ function Shell({ children }: { children: React.ReactNode }) {
           <img src="/signin/logo.png" alt="" className="size-[122px]" />
           <span className="[font-family:var(--font-nurma),Arial,sans-serif] text-[40px] leading-none text-[#69269e] sm:text-[44px]">Taboo Desire&apos;s</span>
         </Link>
-        <div className="mt-[18px] w-full max-w-[498px] rounded-[2px] border border-[#202227] bg-[#1f2126] p-[10px] shadow-[0_10px_22px_rgba(0,0,0,0.6)]">
-          <div className="rounded-[2px] border border-[#1b1d23] bg-[#141519] px-6 py-10 shadow-[0_6px_16px_rgba(0,0,0,0.55)] sm:px-[50px]">{children}</div>
+        <div className="mt-[18px] w-full max-w-[498px] rounded-[5px] border border-[#202227] bg-[#1f2126] p-[10px] shadow-[0_10px_22px_rgba(0,0,0,0.6)]">
+          <div className="rounded-[5px] border border-[#1b1d23] bg-[#141519] px-6 py-10 shadow-[0_6px_16px_rgba(0,0,0,0.55)] sm:px-[50px]">{children}</div>
         </div>
       </div>
       {/* The grid in the picture is transparent, so the page shows through the gaps */}
@@ -354,7 +354,7 @@ export default function SignInPage() {
                   onClick={() => setAccountType(t)}
                   className={cn(
                     ROUNDED,
-                    "h-[42px] cursor-pointer rounded-[2px] border text-[15px] font-bold capitalize transition-colors",
+                    "h-[42px] cursor-pointer rounded-[5px] border text-[15px] font-bold capitalize transition-colors",
                     accountType === t
                       ? "border-[#4c1d95] bg-[#4c1d95]/30 text-white"
                       : "border-[#33333355] text-[#b8b8b9] hover:border-[#4c1d95]",

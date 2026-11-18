@@ -42,7 +42,7 @@ export function Logo({ className }: { className?: string }) {
 
 /** Square dark button used for the header icons. */
 export const HEADER_ICON_BUTTON =
-  "relative flex size-[41px] shrink-0 cursor-pointer items-center justify-center rounded-[2px] text-violet-600 transition-colors hover:text-violet-600";
+  "relative flex size-[41px] shrink-0 cursor-pointer items-center justify-center rounded-[5px] text-violet-600 transition-colors hover:text-violet-600";
 
 const COUNT_BADGE =
   "absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 font-sans text-[10px] font-bold text-white";
@@ -112,7 +112,7 @@ function ShopMenu({ label, short, section }: (typeof MENUS)[number]) {
       <DropdownMenuContent
         align="start"
         sideOffset={14}
-        className="w-max min-w-0 rounded-[2px] border-white/[3%] bg-[#09090b] px-1.5 py-1 font-serif"
+        className="w-max min-w-0 rounded-[5px] border-white/[3%] bg-[#09090b] px-1.5 py-1 font-serif"
       >
         {links.map((l) => {
           const href = "page" in l ? shopPageHref(l.page) : l.href;
@@ -139,7 +139,7 @@ function HeaderSearch() {
     setOpen(false);
   };
   const field = (autoFocus: boolean) => (
-    <form onSubmit={submit} role="search" className="flex h-[41px] w-full items-center gap-2.5 rounded-[2px] bg-background px-3 shadow-[inset_0_3px_8px_rgba(0,0,0,0.28),inset_0_0_3px_rgba(0,0,0,0.28)]">
+    <form onSubmit={submit} role="search" className="flex h-[41px] w-full items-center gap-2.5 rounded-[5px] bg-background px-3 shadow-[inset_0_3px_8px_rgba(0,0,0,0.28),inset_0_0_3px_rgba(0,0,0,0.28)]">
       <Search className="size-5 shrink-0 text-slate-400" strokeWidth={1.5} />
       <input
         value={text}
@@ -158,7 +158,7 @@ function HeaderSearch() {
         <PopoverTrigger aria-label="Search" className={cn(HEADER_ICON_BUTTON, "xl:hidden")}>
           <Search className="size-5" strokeWidth={1.75} />
         </PopoverTrigger>
-        <PopoverContent align="start" sideOffset={10} className="w-72 rounded-[2px] border-white/[3%] bg-[#09090b]/90 p-2">
+        <PopoverContent align="start" sideOffset={10} className="w-72 rounded-[5px] border-white/[3%] bg-[#09090b]/90 p-2">
           {field(true)}
         </PopoverContent>
       </Popover>

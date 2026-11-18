@@ -12,12 +12,12 @@ export const SERIF = "[font-family:var(--font-profile-buyer),Cambria,Georgia,ser
 export const SANS = "[font-family:Arial,Helvetica,sans-serif]";
 /** Nurma display face: member names and page titles */
 export const NURMA = "[font-family:var(--font-nurma),Arial,sans-serif]";
-export const OUTER = "rounded-[2px] border border-white/[3%] bg-[#202227] shadow-[0_6px_14px_rgba(0,0,0,0.35)]";
+export const OUTER = "rounded-[5px] border border-white/[3%] bg-[#202227] shadow-[0_6px_14px_rgba(0,0,0,0.35)]";
 export const INNER =
-  "rounded-[2px] border border-[#59595b4f] bg-[#141519] shadow-[0_4px_10px_rgba(0,0,0,0.3)]";
+  "rounded-[5px] border border-[#59595b4f] bg-[#141519] shadow-[0_4px_10px_rgba(0,0,0,0.3)]";
 /** A card inside an inner card (listings, posts, tiles) */
 export const CARD =
-  "rounded-[2px] border border-[#2a2c33] bg-[#202227] shadow-[0_4px_10px_rgba(0,0,0,0.3)]";
+  "rounded-[5px] border border-[#2a2c33] bg-[#202227] shadow-[0_4px_10px_rgba(0,0,0,0.3)]";
 /** "1 year ago", without date-fns' "about"/"over"/"almost". */
 export const joinedAgo = (date: string | number) =>
   formatDistanceToNow(new Date(date), { addSuffix: true }).replace(/^(about|over|almost) /, "");
@@ -26,11 +26,11 @@ export const imagesLabel = (n: number) => `${n} ${n === 1 ? "Image" : "Images"}`
 /** Filled violet action (Message Buyer / Message Seller) */
 export const FILLED_ACTION = cn(
   SANS,
-  "inline-flex h-[29px] w-[168px] cursor-pointer items-center justify-center rounded-[2px] bg-[#7b3aec] text-[10px] font-bold uppercase tracking-[0.02em] text-[#020516] transition-colors hover:bg-[#8a4ff0]",
+  "inline-flex h-[29px] w-[168px] cursor-pointer items-center justify-center rounded-[5px] bg-[#7b3aec] text-[10px] font-bold uppercase tracking-[0.02em] text-[#020516] transition-colors hover:bg-[#8a4ff0]",
 );
 /** Outlined violet action (Edit Profile, the ⋮ menu) */
 export const OUTLINED_ACTION =
-  "inline-flex h-[29px] cursor-pointer items-center justify-center rounded-[2px] border-2 border-[#5e2faf] text-[#7b3aec] transition-colors hover:bg-[#7b3aec] hover:text-white";
+  "inline-flex h-[29px] cursor-pointer items-center justify-center rounded-[5px] border-2 border-[#5e2faf] text-[#7b3aec] transition-colors hover:bg-[#7b3aec] hover:text-white";
 
 /** Page background and the two-column grid: picture | header, picture | tabs, about | content. */
 export function ProfilePage({ children }: { children: ReactNode }) {
@@ -52,7 +52,7 @@ export function ProfilePage({ children }: { children: ReactNode }) {
 /** The square profile picture: white with a picture icon when there's none. */
 export function ProfilePicture({ url, name }: { url: string | null; name: string }) {
   return (
-    <div className="relative aspect-square w-full max-w-[445px] self-start overflow-hidden rounded-[6px] bg-white shadow-[0_6px_14px_rgba(0,0,0,0.45)] [grid-area:avatar]">
+    <div className="relative aspect-square w-full max-w-[445px] self-start overflow-hidden rounded-[5px] bg-white shadow-[0_6px_14px_rgba(0,0,0,0.45)] [grid-area:avatar]">
       {url ? (
         <ZoomImage src={url} alt={name} className="size-full"><img src={url} alt={name} className="size-full object-cover" /></ZoomImage>
       ) : (
@@ -121,7 +121,7 @@ export function ProfileTabBar<T extends string>({
           onClick={() => onChange(t.value)}
           className={cn(
             SERIF,
-            "h-[30px] cursor-pointer rounded-[2px] bg-[#141519] px-[14px] text-[17px] transition-colors hover:text-[#7b3aec]",
+            "h-[30px] cursor-pointer rounded-[5px] bg-[#141519] px-[14px] text-[17px] transition-colors hover:text-[#7b3aec]",
             value === t.value ? "text-[#7b3aec]" : "text-white",
           )}
         >

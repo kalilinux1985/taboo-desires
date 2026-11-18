@@ -92,10 +92,10 @@ function DropdownList({ onPick }: { onPick: () => void }) {
         const who = n.actor ?? "Someone";
         const rest = text.startsWith(who) ? text.slice(who.length) : ` ${text}`;
         const isRequest = n.kind === "follow" && n.title === "pending" && n.actorId;
-        const rowClass = cn("flex items-start gap-3 rounded-[2px] p-3 transition-colors", n.unread && "bg-[#202227]");
+        const rowClass = cn("flex items-start gap-3 rounded-[5px] p-3 transition-colors", n.unread && "bg-[#202227]");
         const body = (
           <>
-            <ProfileAvatar name={who} url={n.actorAvatarUrl} className="size-12 rounded-[2px] text-xl" />
+            <ProfileAvatar name={who} url={n.actorAvatarUrl} className="size-12 rounded-[5px] text-xl" />
             <span className="min-w-0 flex-1 text-base leading-snug">
               <span className="font-bold">{who}</span>
               {rest}
@@ -179,7 +179,7 @@ export default function NotificationBell({
           </Button>
         )}
       </PopoverTrigger>
-      <PopoverContent align="end" sideOffset={8} className="flex w-[min(24rem,calc(100vw-1.5rem))] flex-col rounded-[2px] border-white/10 bg-[#09090be6] p-0">
+      <PopoverContent align="end" sideOffset={8} className="flex w-[min(24rem,calc(100vw-1.5rem))] flex-col rounded-[5px] border-white/10 bg-[#09090be6] p-0">
         <div className="flex items-baseline gap-3 border-b border-white/10 px-4 py-4">
           <p className="font-display text-xl">Notifications</p>
           <HideOnError>

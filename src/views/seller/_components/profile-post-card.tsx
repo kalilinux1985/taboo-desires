@@ -66,7 +66,7 @@ export default function ProfilePostCard({
           <ProfileAvatar
             name={item.author.name}
             url={item.author.avatarUrl}
-            className="size-[37px] rounded-[2px] bg-[#a8a9ae] text-base text-[#2a2a2e]"
+            className="size-[37px] rounded-[5px] bg-[#a8a9ae] text-base text-[#2a2a2e]"
           />
         </Link>
         <div className="flex min-w-0 flex-1 flex-col">

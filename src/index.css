@@ -33,10 +33,10 @@
   --shadow-xl: 0 14px 34px -8px rgb(0 0 0 / 30%);
   --shadow-2xl: 0 14px 34px -8px rgb(0 0 0 / 30%);
 
-  --radius-sm: 1px;
-  --radius-md: 1px;
-  --radius-lg: 1px;
-  --radius-xl: 1px;
+  --radius-sm: 5px;
+  --radius-md: 5px;
+  --radius-lg: 5px;
+  --radius-xl: 5px;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -75,7 +75,7 @@
    1px white borders at 25%; drop shadows black at 30%, inner shadows black at 28%;
    #0a0f22 header, #1f2235 secondary surfaces, #7f22fe violet accents */
 :root {
-  --radius: 1px; /* every corner is 1px (circles stay round) */
+  --radius: 5px; /* every corner is 5px (circles stay round) */
   --background: #191a1f;
   --foreground: #f2f6ff;
   --card: rgb(3 9 23 / 50%); /* #030917 at 50% */
@@ -228,10 +228,10 @@
       inset 3px 5px 4px rgb(28 28 28 / 12%) !important;
   }
 
-  /* Cards are the profile's cards: #030917 at 50%, 1px white border at 25%, 1px corners */
+  /* Cards are the profile's cards: #030917 at 50%, 1px white border at 25%, 5px corners */
   [data-slot="card-light"] {
     border-color: rgb(255 255 255 / 25%) !important;
-    border-radius: 1px !important;
+    border-radius: 5px !important;
     background-color: #03091780 !important;
     box-shadow: 0 14px 34px -8px rgba(0, 0, 0, 0.3) !important;
   }

@@ -57,12 +57,12 @@ import { Detail, INNER, NURMA, OUTER, SANS, SERIF, SectionTitle, joinedAgo } fro
 /** Full-width violet action (Message Seller / Buy now) */
 const WIDE_ACTION = cn(
   SERIF,
-  "flex h-[50px] w-full cursor-pointer items-center justify-center rounded-[2px] bg-[#7b3aec] text-[13px] uppercase tracking-[0.08em] text-white transition-colors hover:bg-[#8a4ff0] disabled:cursor-default disabled:opacity-60",
+  "flex h-[50px] w-full cursor-pointer items-center justify-center rounded-[5px] bg-[#7b3aec] text-[13px] uppercase tracking-[0.08em] text-white transition-colors hover:bg-[#8a4ff0] disabled:cursor-default disabled:opacity-60",
 );
 /** Outlined violet action (View ALL Items) */
 const WIDE_OUTLINED = cn(
   SERIF,
-  "inline-flex h-[41px] cursor-pointer items-center justify-center rounded-[2px] border-2 border-[#5e2faf] px-6 text-[13px] tracking-[0.06em] text-[#7b3aec] transition-colors hover:bg-[#7b3aec] hover:text-white",
+  "inline-flex h-[41px] cursor-pointer items-center justify-center rounded-[5px] border-2 border-[#5e2faf] px-6 text-[13px] tracking-[0.06em] text-[#7b3aec] transition-colors hover:bg-[#7b3aec] hover:text-white",
 );
 /** "Payment Methods" style sub-heading inside the seller card */
 const SUBHEAD = cn(SERIF, "text-[20px] leading-tight text-white");
@@ -80,7 +80,7 @@ function Gallery({
   const current = images[active] ?? images[0];
   return (
     <div className="flex flex-col gap-3">
-      <div className="relative aspect-[8/5] overflow-hidden rounded-[2px] bg-white shadow-[0_6px_14px_rgba(0,0,0,0.35)]">
+      <div className="relative aspect-[8/5] overflow-hidden rounded-[5px] bg-white shadow-[0_6px_14px_rgba(0,0,0,0.35)]">
         {current && <img src={current.url} alt={title} className="size-full object-cover" />}
         {locked && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/30 text-white">
@@ -99,7 +99,7 @@ function Gallery({
               type="button"
               onClick={() => setActive(i)}
               className={cn(
-                "aspect-square cursor-pointer overflow-hidden rounded-[2px] border-2",
+                "aspect-square cursor-pointer overflow-hidden rounded-[5px] border-2",
                 i === active ? "border-[#7b3aec]" : "border-transparent opacity-70 hover:opacity-100",
               )}
             >
@@ -200,7 +200,7 @@ function SellerCard({ seller }: { seller: Seller }) {
       <ProfileAvatar
         name={seller.name}
         url={seller.avatarUrl}
-        className="size-[90px] shrink-0 rounded-[2px] bg-white text-3xl text-[#2a2a2e]"
+        className="size-[90px] shrink-0 rounded-[5px] bg-white text-3xl text-[#2a2a2e]"
       />
       <div className="flex min-w-0 flex-1 flex-col">
         <span className={cn(SANS, "text-[11px] text-[#7b3aec]")}>{seller.isPro ? "Premium Seller" : "Seller"}</span>
@@ -347,7 +347,7 @@ function InstantContentView({
                     listingId={listing._id}
                     sellerId={listing.sellerId}
                     withLabel
-                    className="h-10 self-start rounded-[2px] bg-[#141519] shadow-none"
+                    className="h-10 self-start rounded-[5px] bg-[#141519] shadow-none"
                   />
                   <ReportButton target={{ kind: "listing", id: listing._id }} className="self-start" />
                 </div>
@@ -428,9 +428,9 @@ export default function ListingPage() {
 
   const badges = (
     <>
-      {isAuction && <Badge className="rounded-[2px] uppercase">Auction</Badge>}
+      {isAuction && <Badge className="rounded-[5px] uppercase">Auction</Badge>}
       {locked && (
-        <Badge className="rounded-[2px] uppercase">
+        <Badge className="rounded-[5px] uppercase">
           <Lock /> Paywalled
         </Badge>
       )}
@@ -534,7 +534,7 @@ export default function ListingPage() {
                     listingId={listing._id}
                     sellerId={listing.sellerId}
                     withLabel
-                    className="h-10 self-start rounded-[2px] bg-[#141519] shadow-none"
+                    className="h-10 self-start rounded-[5px] bg-[#141519] shadow-none"
                   />
                   <ReportButton target={{ kind: "listing", id: listing._id }} className="self-start" />
                 </div>

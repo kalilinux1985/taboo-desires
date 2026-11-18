@@ -48,7 +48,7 @@ function PhotoPick({
       <button
         type="button"
         onClick={() => ref.current?.click()}
-        className="flex w-full cursor-pointer items-center gap-3 rounded-[2px] border border-white/[3%] bg-[#0F172A] px-3 py-2.5 text-left text-sm hover:border-violet-bright"
+        className="flex w-full cursor-pointer items-center gap-3 rounded-[5px] border border-white/[3%] bg-[#0F172A] px-3 py-2.5 text-left text-sm hover:border-violet-bright"
       >
         {file ? (
           <CircleCheck className="size-5 shrink-0 text-violet-600" />
@@ -171,7 +171,7 @@ export default function AgeVerificationDialog() {
             </AlertDialogHeader>
 
             {state?.status === "rejected" && (
-              <p className="rounded-[2px] border border-white/[3%] bg-[#0F172A] px-3 py-2 text-sm">
+              <p className="rounded-[5px] border border-white/[3%] bg-[#0F172A] px-3 py-2 text-sm">
                 Your last submission wasn&apos;t approved
                 {state.reason ? `: ${state.reason}` : "."} Please try again with clearer photos.
               </p>

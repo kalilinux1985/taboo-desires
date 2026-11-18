@@ -99,7 +99,7 @@ export default function ProfilePhotos({
         {photos.map((p) => (
           <div
             key={p._id}
-            className="group relative aspect-square overflow-hidden rounded-[2px] bg-muted"
+            className="group relative aspect-square overflow-hidden rounded-[5px] bg-muted"
           >
             <ZoomImage src={p.url} className="size-full"><img src={p.url} alt="" className="size-full object-cover" /></ZoomImage>
             {isMe && p.photoId && (
@@ -119,7 +119,7 @@ export default function ProfilePhotos({
             type="button"
             disabled={uploading}
             onClick={() => inputRef.current?.click()}
-            className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-[2px] border-2 border-dashed text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+            className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-[5px] border-2 border-dashed text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
           >
             {uploading ? <Spinner /> : <ImagePlus className="size-6" />}
             <span className="text-xs font-medium">{limit === undefined ? "Add photos" : "Add photo"}</span>

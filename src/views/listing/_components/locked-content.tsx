@@ -42,10 +42,10 @@ export function UnlockedMedia({ media }: { media: NonNullable<Locked["media"]> }
       <div className="grid gap-3 sm:grid-cols-2">
         {media.map((m) =>
           m.kind === "video" ? (
-            <video key={m.storageId} src={m.url} controls playsInline className="w-full rounded-[2px] bg-black" />
+            <video key={m.storageId} src={m.url} controls playsInline className="w-full rounded-[5px] bg-black" />
           ) : (
             <a key={m.storageId} href={m.url} target="_blank" rel="noreferrer" className="cursor-pointer">
-              <img src={m.url} alt="" className="w-full rounded-[2px] object-cover" />
+              <img src={m.url} alt="" className="w-full rounded-[5px] object-cover" />
             </a>
           ),
         )}
@@ -86,7 +86,7 @@ export function BuyLockedPanel({
   };
 
   return (
-    <div className="flex flex-col gap-3 rounded-[2px] border border-primary/40 bg-accent/30 p-4">
+    <div className="flex flex-col gap-3 rounded-[5px] border border-primary/40 bg-accent/30 p-4">
       <div className="flex items-center gap-2 font-semibold">
         <Lock className="size-4 text-violet-600" /> Locked content
       </div>
@@ -130,7 +130,7 @@ export function UnlockRequests({ listingId }: { listingId: Id<"listings"> }) {
   };
 
   return (
-    <section className="flex flex-col gap-3 rounded-[2px] border border-white/[3%] bg-card shadow-[0_14px_34px_-8px_rgba(0,0,0,0.3)] p-4">
+    <section className="flex flex-col gap-3 rounded-[5px] border border-white/[3%] bg-card shadow-[0_14px_34px_-8px_rgba(0,0,0,0.3)] p-4">
       <h2 className="font-semibold">Purchase requests</h2>
       {requests === undefined ? (
         <Skeleton className="h-12 w-full" />
@@ -200,7 +200,7 @@ export function UnlockBox({
   };
 
   return (
-    <div className={cn(SERIF, "flex flex-col gap-3 rounded-[2px] border border-[#5e2faf] bg-[#202227] px-[18px] pb-4 pt-3 shadow-[0_6px_14px_rgba(0,0,0,0.35)]")}>
+    <div className={cn(SERIF, "flex flex-col gap-3 rounded-[5px] border border-[#5e2faf] bg-[#202227] px-[18px] pb-4 pt-3 shadow-[0_6px_14px_rgba(0,0,0,0.35)]")}>
       <p className="text-center text-[32px] leading-none text-[#7b3aec]">
         ${dollars}.{cents}
         <span className="ml-0.5 text-[20px]">USD</span>
@@ -218,7 +218,7 @@ export function UnlockBox({
             type="button"
             onClick={unlock}
             disabled={!isActive}
-            className="flex h-[50px] w-full cursor-pointer items-center justify-center gap-2 rounded-[2px] bg-[#7b3aec] text-[26px] text-white transition-colors hover:bg-[#8a4ff0] disabled:cursor-default disabled:opacity-60"
+            className="flex h-[50px] w-full cursor-pointer items-center justify-center gap-2 rounded-[5px] bg-[#7b3aec] text-[26px] text-white transition-colors hover:bg-[#8a4ff0] disabled:cursor-default disabled:opacity-60"
           >
             <Unlock className="size-6" /> Unlock Now
           </button>
@@ -236,12 +236,12 @@ export function UnlockBox({
   );
 }
 
-const TILE = "flex aspect-square items-center justify-center overflow-hidden rounded-[2px] bg-[#30333e]";
+const TILE = "flex aspect-square items-center justify-center overflow-hidden rounded-[5px] bg-[#30333e]";
 
 /** Instant Content: shown to a buyer while their 24 hours are running. */
 export function AccessNotice({ expiresAt }: { expiresAt: number | null }) {
   return (
-    <p className={cn(SERIF, "flex items-center justify-center gap-2 rounded-[2px] border border-[#5e2faf] bg-[#202227] px-4 py-3 text-[15px] text-white shadow-[0_6px_14px_rgba(0,0,0,0.35)]")}>
+    <p className={cn(SERIF, "flex items-center justify-center gap-2 rounded-[5px] border border-[#5e2faf] bg-[#202227] px-4 py-3 text-[15px] text-white shadow-[0_6px_14px_rgba(0,0,0,0.35)]")}>
       <Unlock className="size-5 text-[#7b3aec]" />
       {expiresAt ? `Unlocked. Your access ends in ${formatDistanceToNow(expiresAt)}.` : "Unlocked."}
     </p>

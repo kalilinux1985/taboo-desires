@@ -134,7 +134,7 @@ export default function LabelDialog({ orderId, shipsTo }: { orderId: Id<"orders"
         </DialogHeader>
 
         {mode === "test" && (
-          <p className="rounded-[2px] border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+          <p className="rounded-[5px] border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
             Test mode: labels are free samples and can't be mailed.
           </p>
         )}
@@ -164,7 +164,7 @@ export default function LabelDialog({ orderId, shipsTo }: { orderId: Id<"orders"
           />
         ) : (
           <div className="flex flex-col gap-4">
-            <div className="flex items-start justify-between gap-3 rounded-[2px] border px-3 py-2 text-sm">
+            <div className="flex items-start justify-between gap-3 rounded-[5px] border px-3 py-2 text-sm">
               <div>
                 <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Return address</p>
                 <p>{shipFrom!.name}</p>
@@ -233,7 +233,7 @@ export default function LabelDialog({ orderId, shipsTo }: { orderId: Id<"orders"
                     aria-checked={r.id === rateId}
                     onClick={() => setRateId(r.id)}
                     className={cn(
-                      "flex cursor-pointer items-center justify-between rounded-[2px] border px-3 py-2 text-left text-sm transition-colors",
+                      "flex cursor-pointer items-center justify-between rounded-[5px] border px-3 py-2 text-left text-sm transition-colors",
                       r.id === rateId ? "border-primary bg-primary/5" : "hover:bg-accent",
                     )}
                   >

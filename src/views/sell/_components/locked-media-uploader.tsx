@@ -33,9 +33,9 @@ const MAX_VIDEO_BYTES = 200 * 1024 * 1024;
 
 type Mode = "photos" | "video";
 
-const TILE = "relative aspect-square overflow-hidden rounded-[2px] bg-muted";
+const TILE = "relative aspect-square overflow-hidden rounded-[5px] bg-muted";
 const ADD =
-  "flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-[2px] border-2 border-dashed text-muted-foreground transition-colors hover:border-primary hover:text-foreground";
+  "flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-[5px] border-2 border-dashed text-muted-foreground transition-colors hover:border-primary hover:text-foreground";
 
 /**
  * Instant Content uploader: either up to 10 photos (the first is the public cover)
@@ -162,7 +162,7 @@ export default function LockedMediaUploader({
       onClick={() => switchMode(m)}
       aria-pressed={mode === m}
       className={cn(
-        "flex h-9 flex-1 cursor-pointer items-center justify-center gap-2 rounded-[2px] border text-sm transition-colors",
+        "flex h-9 flex-1 cursor-pointer items-center justify-center gap-2 rounded-[5px] border text-sm transition-colors",
         mode === m ? "border-primary bg-primary/15 text-foreground" : "text-muted-foreground hover:border-primary",
       )}
     >
@@ -183,7 +183,7 @@ export default function LockedMediaUploader({
             <div key={item.storageId} className={TILE}>
               <img src={item.url} alt="" className="size-full object-cover" />
               {i === 0 && (
-                <span className="absolute bottom-1 left-1 rounded-[2px] bg-accent px-1.5 py-0.5 text-[10px] font-bold uppercase text-accent-foreground">
+                <span className="absolute bottom-1 left-1 rounded-[5px] bg-accent px-1.5 py-0.5 text-[10px] font-bold uppercase text-accent-foreground">
                   Cover
                 </span>
               )}
@@ -223,7 +223,7 @@ export default function LockedMediaUploader({
           {items[0] ? (
             <div className={TILE}>
               <video src={items[0].url} muted playsInline className="size-full object-cover" />
-              <span className="absolute bottom-1 left-1 flex items-center gap-1 rounded-[2px] bg-black/70 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white">
+              <span className="absolute bottom-1 left-1 flex items-center gap-1 rounded-[5px] bg-black/70 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white">
                 <Film className="size-3" /> Video
               </span>
               <button
@@ -249,7 +249,7 @@ export default function LockedMediaUploader({
           {cover ? (
             <div className={TILE}>
               <img src={cover.url} alt="" className="size-full object-cover" />
-              <span className="absolute bottom-1 left-1 rounded-[2px] bg-accent px-1.5 py-0.5 text-[10px] font-bold uppercase text-accent-foreground">
+              <span className="absolute bottom-1 left-1 rounded-[5px] bg-accent px-1.5 py-0.5 text-[10px] font-bold uppercase text-accent-foreground">
                 Thumbnail
               </span>
               <button

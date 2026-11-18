@@ -22,7 +22,7 @@ function LikerFace({ liker, className }: { liker: Liker; className?: string }) {
       href={`/seller/${liker._id}`}
       title={liker.name}
       aria-label={liker.name}
-      className={cn("flex shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-[2px] bg-[#a8a9ae]", className)}
+      className={cn("flex shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-[5px] bg-[#a8a9ae]", className)}
     >
       {liker.avatarUrl ? (
         <img src={liker.avatarUrl} alt="" loading="lazy" className="size-full object-cover" />

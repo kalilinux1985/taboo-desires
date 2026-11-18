@@ -23,11 +23,11 @@ import { getErrorMessage } from "@/lib/listings.ts";
 function Photo({ url, label }: { url: string | null; label: string }) {
   return url ? (
     <a href={url} target="_blank" rel="noreferrer" className="block cursor-pointer">
-      <img src={url} alt={label} className="h-48 w-full rounded-[2px] object-cover sm:w-56" />
+      <img src={url} alt={label} className="h-48 w-full rounded-[5px] object-cover sm:w-56" />
       <span className="mt-1 block text-xs text-muted-foreground">{label} (tap to enlarge)</span>
     </a>
   ) : (
-    <div className="flex h-48 w-full items-center justify-center rounded-[2px] bg-muted sm:w-56">
+    <div className="flex h-48 w-full items-center justify-center rounded-[5px] bg-muted sm:w-56">
       <ImageOff className="text-muted-foreground" />
     </div>
   );

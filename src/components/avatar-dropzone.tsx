@@ -22,7 +22,7 @@ export default function AvatarDropzone(props: AvatarPickerProps) {
         void pick(e.dataTransfer.files[0]);
       }}
       className={cn(
-        "flex min-h-64 items-center justify-center rounded-[2px] border-2 border-dashed border-white/[3%] bg-background/50 p-4 transition-colors",
+        "flex min-h-64 items-center justify-center rounded-[5px] border-2 border-dashed border-white/[3%] bg-background/50 p-4 transition-colors",
         dragging && "border-violet-bright bg-violet-600/10",
       )}
     >
@@ -33,7 +33,7 @@ export default function AvatarDropzone(props: AvatarPickerProps) {
             onClick={openPicker}
             disabled={uploading}
             aria-label="Change profile image"
-            className="block cursor-pointer overflow-hidden rounded-[2px]"
+            className="block cursor-pointer overflow-hidden rounded-[5px]"
           >
             <img src={previewUrl} alt="Profile" className="h-56 w-44 object-cover sm:h-64 sm:w-52" />
           </button>
@@ -47,7 +47,7 @@ export default function AvatarDropzone(props: AvatarPickerProps) {
             <X className="size-4" />
           </button>
           {uploading && (
-            <div className="absolute inset-0 flex items-center justify-center rounded-[2px] bg-black/60">
+            <div className="absolute inset-0 flex items-center justify-center rounded-[5px] bg-black/60">
               <Spinner />
             </div>
           )}

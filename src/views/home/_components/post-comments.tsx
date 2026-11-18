@@ -32,17 +32,17 @@ function SmallAvatar({ name, url }: { name: string; url: string | null }) {
       url={url}
       className={cn(
         "bg-[#a8a9ae] text-sm text-[#2a2a2e]",
-        profile ? "size-[27px] rounded-[2px]" : "size-[31px] rounded-full",
+        profile ? "size-[27px] rounded-[5px]" : "size-[31px] rounded-full",
       )}
     />
   );
 }
 
 /** Comment box: the grey page color with an inner shadow (colors and shadow come from .comment-surface). */
-const COMMENT_BOX = "comment-surface rounded-[2px] bg-background shadow-[inset_0_3px_8px_rgba(0,0,0,0.28),inset_0_0_3px_rgba(0,0,0,0.28)]";
+const COMMENT_BOX = "comment-surface rounded-[5px] bg-background shadow-[inset_0_3px_8px_rgba(0,0,0,0.28),inset_0_0_3px_rgba(0,0,0,0.28)]";
 /** Profile comment box: the same, with a thin border. */
 const PROFILE_BOX =
-  "comment-surface rounded-[2px] border border-white/[3%] bg-background shadow-[inset_0_3px_8px_rgba(0,0,0,0.28),inset_0_0_3px_rgba(0,0,0,0.28)]";
+  "comment-surface rounded-[5px] border border-white/[3%] bg-background shadow-[inset_0_3px_8px_rgba(0,0,0,0.28),inset_0_0_3px_rgba(0,0,0,0.28)]";
 const boxClass = (v: Variant) => (v === "profile" ? PROFILE_BOX : COMMENT_BOX);
 
 const LINK_ACTION = "flex cursor-pointer items-center gap-1.5 transition-colors hover:text-[#f2f6ff]";

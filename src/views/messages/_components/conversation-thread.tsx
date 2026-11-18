@@ -71,7 +71,7 @@ function Composer({ conversationId }: { conversationId: Id<"conversations"> }) {
         maxLength={2000}
         rows={1}
         placeholder="Type a message"
-        className="max-h-32 min-h-11 resize-none rounded-[2px] bg-[#0C0F15]"
+        className="max-h-32 min-h-11 resize-none rounded-[5px] bg-[#0C0F15]"
       />
       <Button
         type="submit"
@@ -124,7 +124,7 @@ function MessageList({
           <div className={cn("flex min-w-0 flex-col gap-1", mine ? "items-end" : "items-start")}>
             <div
               className={cn(
-                "whitespace-pre-wrap break-words rounded-[2px] border px-4 py-2 text-base",
+                "whitespace-pre-wrap break-words rounded-[5px] border px-4 py-2 text-base",
                 mine ? "border-white/10 bg-[#0C0F15] text-foreground" : "border-transparent bg-[#202227] text-foreground/90",
               )}
             >
@@ -139,7 +139,7 @@ function MessageList({
               <div className="flex max-w-[80%] self-end">{bubble}</div>
             ) : (
               <div className="flex max-w-[80%] items-start gap-2 self-start">
-                <ProfileAvatar name={other.name} url={other.avatarUrl} className="mt-0.5 size-9 rounded-[2px] text-sm" />
+                <ProfileAvatar name={other.name} url={other.avatarUrl} className="mt-0.5 size-9 rounded-[5px] text-sm" />
                 {bubble}
               </div>
             )}
@@ -195,7 +195,7 @@ export default function ConversationThread({
             <ArrowLeft />
           </Link>
         </Button>
-        <ProfileAvatar name={convo.other.name} url={convo.other.avatarUrl} className="size-12 rounded-[2px] text-xl" />
+        <ProfileAvatar name={convo.other.name} url={convo.other.avatarUrl} className="size-12 rounded-[5px] text-xl" />
         <div className="flex min-w-0 flex-1 flex-col">
           <p className="truncate text-lg font-bold">{convo.other.name}</p>
           <p className="truncate text-sm text-muted-foreground">

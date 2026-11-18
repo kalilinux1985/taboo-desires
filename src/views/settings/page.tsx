@@ -66,7 +66,7 @@ function SettingsInner({ kind }: { kind?: SettingsKind }) {
               <CardTitle className="font-display text-2xl">Delete Your Account</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col gap-3 rounded-[2px] border border-destructive/40 bg-destructive/5 p-4">
+              <div className="flex flex-col gap-3 rounded-[5px] border border-destructive/40 bg-destructive/5 p-4">
                 <p className="text-sm text-muted-foreground">
                   Permanently deleting your account will remove all your data on Taboo Desires,
                   including your listings, messages and posts. This can't be undone.
@@ -112,7 +112,7 @@ function SettingsInner({ kind }: { kind?: SettingsKind }) {
           </div>
           <SignInButton size="sm" variant="secondary" signOutText="Log out" />
           {!me.isAdmin && (
-            <div className="flex flex-col gap-3 rounded-[2px] border border-destructive/40 bg-destructive/5 p-4">
+            <div className="flex flex-col gap-3 rounded-[5px] border border-destructive/40 bg-destructive/5 p-4">
               <div>
                 <p className="text-sm font-semibold text-destructive">Danger zone</p>
                 <p className="text-xs text-muted-foreground">
