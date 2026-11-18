@@ -304,7 +304,8 @@ var TABLES = {
     sqlName: "follows",
     columns: {
       followerId: c("follower_id", "uuid"),
-      sellerId: c("seller_id", "uuid")
+      sellerId: c("seller_id", "uuid"),
+      status: c("status")
     }
   },
   sellerStats: {
@@ -1034,7 +1035,7 @@ var deleteMyAccount = mutation({
     await ctx.db.rows(sql`
       update public.seller_stats s set follower_count = greatest(0, s.follower_count - 1)
         from public.follows f
-       where f.follower_id = ${id}::uuid and s.seller_id = f.seller_id`);
+       where f.follower_id = ${id}::uuid and f.status = 'accepted' and s.seller_id = f.seller_id`);
     await ctx.db.delete("users", id);
     return null;
   }
@@ -2936,7 +2937,7 @@ var followedSellers = query({
     const me = await requireUser(ctx);
     const follows = await ctx.db.select(
       "follows",
-      sql`where follower_id = ${me._id}::uuid order by created_at limit 100`
+      sql`where follower_id = ${me._id}::uuid and status = 'accepted' order by created_at limit 100`
     );
     const sellers = await Promise.all(
       follows.map((f) => ctx.db.get("users", f.sellerId))
@@ -2957,6 +2958,7 @@ var follows_exports = {};
 __export(follows_exports, {
   feed: () => feed,
   isFollowing: () => isFollowing,
+  respond: () => respond2,
   toggle: () => toggle2
 });
 var FEED_SELLERS_MAX = 100;
@@ -2972,8 +2974,9 @@ var isFollowing = query({
   args: { sellerId: v.id("users") },
   handler: async (ctx, { sellerId }) => {
     const me = await getCurrentUserDoc(ctx);
-    if (!me) return false;
-    return !!await findFollow(ctx, me._id, sellerId);
+    if (!me) return "none";
+    const f = await findFollow(ctx, me._id, sellerId);
+    return !f ? "none" : f.status === "pending" ? "pending" : "following";
   }
 });
 var toggle2 = mutation({
@@ -2991,12 +2994,29 @@ var toggle2 = mutation({
     const existing = await findFollow(ctx, me._id, sellerId);
     if (existing) {
       await ctx.db.delete("follows", existing._id);
-      await bumpStats(ctx, sellerId, { followerCount: -1 });
-      return false;
+      if (existing.status === "accepted") await bumpStats(ctx, sellerId, { followerCount: -1 });
+      return "none";
     }
-    await ctx.db.insert("follows", { followerId: me._id, sellerId });
-    await bumpStats(ctx, sellerId, { followerCount: 1 });
-    return true;
+    await ctx.db.insert("follows", { followerId: me._id, sellerId, status: "pending" });
+    return "pending";
+  }
+});
+var respond2 = mutation({
+  args: { followerId: v.id("users"), accept: v.boolean() },
+  handler: async (ctx, { followerId, accept }) => {
+    const me = await requireUser(ctx);
+    const req = await findFollow(ctx, followerId, me._id);
+    if (!req) throw new AppError({ code: "NOT_FOUND", message: "That follow request is gone" });
+    if (!accept) {
+      await ctx.db.delete("follows", req._id);
+      if (req.status === "accepted") await bumpStats(ctx, me._id, { followerCount: -1 });
+      return null;
+    }
+    if (req.status === "pending") {
+      await ctx.db.patch("follows", req._id, { status: "accepted" });
+      await bumpStats(ctx, me._id, { followerCount: 1 });
+    }
+    return null;
   }
 });
 var feed = query({
@@ -3007,7 +3027,7 @@ var feed = query({
     const followingCount = Number(
       await ctx.db.scalar(sql`
         select count(*)::int from (
-          select 1 from public.follows where follower_id = ${me._id}::uuid limit ${FEED_SELLERS_MAX}
+          select 1 from public.follows where follower_id = ${me._id}::uuid and status = 'accepted' limit ${FEED_SELLERS_MAX}
         ) f`)
     );
     const newest = await ctx.db.docs(
@@ -3015,7 +3035,7 @@ var feed = query({
       sql`
         select l.* from (
           select seller_id from public.follows
-           where follower_id = ${me._id}::uuid order by created_at limit ${FEED_SELLERS_MAX}
+           where follower_id = ${me._id}::uuid and status = 'accepted' order by created_at limit ${FEED_SELLERS_MAX}
         ) f
         cross join lateral (
           select * from public.listings
@@ -3434,7 +3454,7 @@ async function recentFor(ctx, userId) {
     select * from (
       select 'follow' as kind, f.created_at as at, a.id as actor_id,
              coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'Someone') as actor,
-             null::text as title, null::uuid as target_id, null::int as amount
+             f.status as title, null::uuid as target_id, null::int as amount
         from public.follows f join public.users a on a.id = f.follower_id
        where f.seller_id = ${me} and f.created_at > ${since}
       union all
@@ -4442,7 +4462,7 @@ var unlocks_exports = {};
 __export(unlocks_exports, {
   pendingForListing: () => pendingForListing,
   request: () => request,
-  respond: () => respond2
+  respond: () => respond3
 });
 var PENDING_LIMIT = 50;
 var request = mutation({
@@ -4507,7 +4527,7 @@ var pendingForListing = query({
     });
   }
 });
-var respond2 = mutation({
+var respond3 = mutation({
   args: { unlockId: v.id("unlocks"), grant: v.boolean() },
   handler: async (ctx, { unlockId, grant }) => {
     const user = await requireUser(ctx);
@@ -4879,7 +4899,7 @@ async function profileCounts(ctx, userId) {
         where seller_id = ${userId}::uuid and status = 'active' and paywall is null) as listings,
       (select count(*)::int from public.listings
         where seller_id = ${userId}::uuid and status = 'active' and paywall is not null) as instant,
-      (select count(*)::int from public.follows where follower_id = ${userId}::uuid) as following,
+      (select count(*)::int from public.follows where follower_id = ${userId}::uuid and status = 'accepted') as following,
       (select count(*)::int from public.profile_photos where user_id = ${userId}::uuid)
         + (select coalesce(sum(cardinality(image_ids)), 0)::int from public.posts
             where author_id = ${userId}::uuid and kind <> 'listing') as photos,
