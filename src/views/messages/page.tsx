@@ -1,10 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useQuery } from "@/lib/backend/react.tsx";
 import { formatDistanceToNowStrict } from "date-fns";
-import { MessagesSquare } from "lucide-react";
+import { MailSearch, MessageSquarePlus, MessagesSquare } from "lucide-react";
 import { api } from "@/lib/backend/api.ts";
 import type { Id } from "@/lib/backend/types.ts";
 import RequireAuth from "@/components/require-auth.tsx";
@@ -18,12 +19,15 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty.tsx";
+import { Input } from "@/components/ui/input.tsx";
 import { cn } from "@/lib/utils.ts";
 import ProfileAvatar from "@/components/profile-avatar.tsx";
 import ConversationThread from "./_components/conversation-thread.tsx";
 
-function InboxList({ activeId }: { activeId?: string }) {
-  const convos = useQuery(api.messages.inbox, {});
+function InboxList({ activeId, search }: { activeId?: string; search: string }) {
+  const all = useQuery(api.messages.inbox, {});
+  const q = search.trim().toLowerCase();
+  const convos = all && q ? all.filter((c) => `${c.other.name} ${c.lastMessagePreview} ${c.listing?.title ?? ""}`.toLowerCase().includes(q)) : all;
 
   if (convos === undefined) {
     return (
@@ -55,35 +59,25 @@ function InboxList({ activeId }: { activeId?: string }) {
   }
 
   return (
-    <ul className="flex flex-col">
+    <ul className="flex flex-col gap-2 px-3 pb-3">
       {convos.map((c) => (
         <li key={c._id}>
           <Link
             href={`/messages/${c._id}`}
             className={cn(
-              "flex cursor-pointer items-center gap-3 border-b px-3 py-3 transition-colors hover:bg-secondary",
-              activeId === c._id && "bg-secondary",
+              "flex cursor-pointer items-center gap-3 rounded-[2px] border border-transparent p-2 transition-colors hover:bg-black/30",
+              activeId === c._id && "border-white/10 bg-black/40",
             )}
           >
             <ProfileAvatar name={c.other.name} url={c.other.avatarUrl} className="size-12 rounded-[2px] text-xl" />
             <div className="min-w-0 flex-1">
-              <div className="flex items-baseline justify-between gap-2">
-                <p className={cn("truncate text-sm", c.unread ? "font-bold" : "font-medium")}>
-                  {c.other.name}
-                </p>
-                <span className="shrink-0 text-[10px] text-muted-foreground">
-                  {formatDistanceToNowStrict(new Date(c.lastMessageAt))}
-                </span>
-              </div>
-              <p className="truncate text-xs text-muted-foreground">
-                {c.listing?.title ?? "Direct message"}
-              </p>
-              <p className={cn("truncate text-xs", c.unread ? "text-foreground font-semibold" : "text-muted-foreground")}>
+              <p className={cn("truncate text-base", c.unread ? "font-bold" : "font-semibold")}>{c.other.name}</p>
+              <p className={cn("truncate text-sm", c.unread ? "text-foreground" : "text-muted-foreground")}>
                 {c.lastFromMe && "You: "}
                 {c.lastMessagePreview}
               </p>
             </div>
-            {c.unread && <span className="size-2.5 shrink-0 rounded-full bg-accent ring-1 ring-foreground/20" />}
+            {c.unread && <span className="size-2.5 shrink-0 rounded-full bg-violet-500" />}
           </Link>
         </li>
       ))}
@@ -93,19 +87,46 @@ function InboxList({ activeId }: { activeId?: string }) {
 
 function Inbox() {
   const { conversationId } = useParams<{ conversationId: Id<"conversations"> }>();
+  const [search, setSearch] = useState("");
+  const inbox = useQuery(api.messages.inbox, {});
+  const unreadCount = inbox?.filter((c) => c.unread).length ?? 0;
   return (
     <div className="mx-auto flex h-[calc(100dvh-3.5rem)] max-w-7xl md:px-4 md:py-6">
       <div className="flex min-h-0 flex-1 overflow-hidden border-x md:rounded-[2px] md:border">
         <aside
           className={cn(
-            "w-full shrink-0 overflow-y-auto border-r md:block md:w-80",
-            conversationId && "hidden",
+            "flex w-full shrink-0 flex-col border-r bg-[#202227] md:w-96",
+            conversationId && "hidden md:flex",
           )}
         >
-          <h1 className="border-b px-3 py-4 font-display text-3xl">Messages</h1>
-          <InboxList activeId={conversationId} />
+          <div className="flex items-center gap-3 border-b border-white/5 px-5 py-5">
+            <h1 className="font-display text-2xl">Active Chats</h1>
+            {unreadCount > 0 && (
+              <span className="rounded-[2px] bg-violet-600 px-2 py-0.5 text-sm font-semibold text-white">{unreadCount}</span>
+            )}
+            <Link
+              href="/browse"
+              aria-label="Start a chat: find a listing to ask about"
+              title="Start a chat from a listing"
+              className="ml-auto cursor-pointer text-violet-500 hover:text-violet-400"
+            >
+              <MessageSquarePlus className="size-6" />
+            </Link>
+          </div>
+          <div className="relative p-3">
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search for chats"
+              className="h-11 rounded-[2px] bg-[#0C0F15] pr-10"
+            />
+            <MailSearch className="pointer-events-none absolute right-6 top-1/2 size-5 -translate-y-1/2" />
+          </div>
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            <InboxList activeId={conversationId} search={search} />
+          </div>
         </aside>
-        <section className={cn("min-w-0 flex-1 flex-col", conversationId ? "flex" : "hidden md:flex")}>
+        <section className={cn("min-w-0 flex-1 flex-col bg-[#141519]", conversationId ? "flex" : "hidden md:flex")}>
           {conversationId ? (
             <ConversationThread key={conversationId} conversationId={conversationId} />
           ) : (

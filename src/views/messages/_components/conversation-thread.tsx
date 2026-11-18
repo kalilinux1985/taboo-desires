@@ -1,16 +1,16 @@
 import { useEffect, useState, type FormEvent, type KeyboardEvent } from "react";
 import Link from "next/link";
 import { useMutation, usePaginatedQuery, useQuery } from "@/lib/backend/react.tsx";
-import { format, isToday } from "date-fns";
-import { ArrowLeft, SendHorizontal } from "lucide-react";
+import { format, formatDistanceToNow, isSameDay, isToday } from "date-fns";
+import { ArrowLeft, EllipsisVertical, Send } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/backend/api.ts";
 import type { Id } from "@/lib/backend/types.ts";
 import { Button } from "@/components/ui/button.tsx";
 import { Textarea } from "@/components/ui/textarea.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu.tsx";
 import { Spinner } from "@/components/ui/spinner.tsx";
-import { Badge } from "@/components/ui/badge.tsx";
 import { formatPrice, getErrorMessage } from "@/lib/listings.ts";
 import { cn } from "@/lib/utils.ts";
 import { useAccess } from "@/hooks/use-access.ts";
@@ -63,24 +63,25 @@ function Composer({ conversationId }: { conversationId: Id<"conversations"> }) {
   }
 
   return (
-    <form onSubmit={submit} className="flex items-end gap-2 border-t bg-card p-3">
+    <form onSubmit={submit} className="flex items-center gap-3 border-t border-white/5 bg-[#141519] p-4">
       <Textarea
         value={body}
         onChange={(e) => setBody(e.target.value)}
         onKeyDown={onKeyDown}
         maxLength={2000}
         rows={1}
-        placeholder="Write a message..."
-        className="max-h-32 min-h-10 resize-none"
+        placeholder="Type a message"
+        className="max-h-32 min-h-11 resize-none rounded-[2px] bg-[#0C0F15]"
       />
       <Button
         type="submit"
         size="icon"
+        variant="ghost"
         disabled={!body.trim() || sending}
-        className="size-10 shrink-0 cursor-pointer"
+        className="size-11 shrink-0 cursor-pointer text-violet-500 hover:bg-transparent hover:text-violet-400"
         aria-label="Send message"
       >
-        {sending ? <Spinner /> : <SendHorizontal />}
+        {sending ? <Spinner /> : <Send className="size-6" />}
       </Button>
     </form>
   );
@@ -115,31 +116,36 @@ function MessageList({
   return (
     // column-reverse keeps the view pinned to the newest message
     <div className="flex min-h-0 flex-1 flex-col-reverse gap-2 overflow-y-auto p-4">
-      {results.map((m) => {
+      {results.map((m, i) => {
         const mine = m.senderId === meId;
+        const older = results[i + 1];
+        const newDay = !older || !isSameDay(older._creationTime, m._creationTime);
         const bubble = (
           <div className={cn("flex min-w-0 flex-col gap-1", mine ? "items-end" : "items-start")}>
             <div
               className={cn(
-                "whitespace-pre-wrap break-words rounded-[2px] px-3 py-2 text-sm",
-                mine ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground",
+                "whitespace-pre-wrap break-words rounded-[2px] border px-4 py-2 text-base",
+                mine ? "border-white/10 bg-[#0C0F15] text-foreground" : "border-transparent bg-[#202227] text-foreground/90",
               )}
             >
               {m.body}
             </div>
-            <span className="px-1 text-[10px] text-muted-foreground">
-              {formatTime(m._creationTime)}
-            </span>
+            <span className="px-1 text-xs text-violet-500">{format(m._creationTime, "h:mm a")}</span>
           </div>
         );
-        return mine ? (
-          <div key={m._id} className="flex max-w-[80%] self-end">
-            {bubble}
-          </div>
-        ) : (
-          <div key={m._id} className="flex max-w-[80%] items-start gap-2 self-start">
-            <ProfileAvatar name={other.name} url={other.avatarUrl} className="mt-0.5 size-7 rounded-[2px] text-xs" />
-            {bubble}
+        return (
+          <div key={m._id} className="flex flex-col-reverse gap-2">
+            {mine ? (
+              <div className="flex max-w-[80%] self-end">{bubble}</div>
+            ) : (
+              <div className="flex max-w-[80%] items-start gap-2 self-start">
+                <ProfileAvatar name={other.name} url={other.avatarUrl} className="mt-0.5 size-9 rounded-[2px] text-sm" />
+                {bubble}
+              </div>
+            )}
+            {newDay && (
+              <p className="py-2 text-center text-sm text-violet-500">{format(m._creationTime, "MMM d, yyyy h:mm a")}</p>
+            )}
           </div>
         );
       })}
@@ -183,51 +189,45 @@ export default function ConversationThread({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex items-center gap-3 border-b p-3">
+      <div className="flex items-center gap-3 border-b border-white/5 px-5 py-4">
         <Button asChild variant="ghost" size="icon-sm" className="cursor-pointer md:hidden">
           <Link href="/messages" aria-label="Back to inbox">
             <ArrowLeft />
           </Link>
         </Button>
-        {/* Who you're talking to, then the listing it's about */}
-        {convo.other._id ? (
-          <Link href={`/seller/${convo.other._id}`} className="flex shrink-0 cursor-pointer items-center gap-2.5">
-            <ProfileAvatar name={convo.other.name} url={convo.other.avatarUrl} className="size-11 rounded-[2px] text-lg" />
-          </Link>
-        ) : (
-          <ProfileAvatar name={convo.other.name} url={convo.other.avatarUrl} className="size-11 rounded-[2px] text-lg" />
-        )}
+        <ProfileAvatar name={convo.other.name} url={convo.other.avatarUrl} className="size-12 rounded-[2px] text-xl" />
         <div className="flex min-w-0 flex-1 flex-col">
-          <p className="truncate font-semibold">
-            {convo.other._id ? (
-              <Link href={`/seller/${convo.other._id}`} className="cursor-pointer hover:underline">
-                {convo.other.name}
-              </Link>
-            ) : (
-              convo.other.name
-            )}{" "}
-            <span className="text-xs font-normal text-muted-foreground">
-              ({convo.role === "buyer" ? "seller" : "buyer"})
-            </span>
+          <p className="truncate text-lg font-bold">{convo.other.name}</p>
+          <p className="truncate text-sm text-muted-foreground">
+            {convo.otherLastSeenAt
+              ? `Last active ${formatDistanceToNow(Date.parse(convo.otherLastSeenAt), { addSuffix: true })}`
+              : convo.listing
+                ? convo.listing.title
+                : "Direct message"}
           </p>
-          {convo.listing ? (
-            <Link
-              href={`/listing/${convo.listing._id}`}
-              className="flex min-w-0 cursor-pointer items-center gap-2 text-xs text-muted-foreground hover:text-foreground"
-            >
-              <span className="truncate">{convo.listing.title}</span>
-              <span className="shrink-0 font-mono">{formatPrice(convo.listing.priceCents)}</span>
-              {convo.listing.status === "sold" && <Badge variant="destructive">Sold</Badge>}
-            </Link>
-          ) : (
-            <p className="text-xs text-muted-foreground">Direct message</p>
-          )}
         </div>
-        {convo.listing?.imageUrl && (
-          <Link href={`/listing/${convo.listing._id}`} className="size-11 shrink-0 cursor-pointer overflow-hidden rounded-[2px] bg-muted">
-            <img src={convo.listing.imageUrl} alt="" className="size-full object-cover" />
-          </Link>
-        )}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon-sm" aria-label="Conversation options" className="cursor-pointer text-violet-500">
+              <EllipsisVertical />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {convo.other._id && (
+              <DropdownMenuItem asChild className="cursor-pointer">
+                <Link href={`/seller/${convo.other._id}`}>View profile</Link>
+              </DropdownMenuItem>
+            )}
+            {convo.listing && (
+              <DropdownMenuItem asChild className="cursor-pointer">
+                <Link href={`/listing/${convo.listing._id}`}>
+                  View listing · {convo.listing.title} · {formatPrice(convo.listing.priceCents)}
+                  {convo.listing.status === "sold" ? " (sold)" : ""}
+                </Link>
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
       <MessageList conversationId={conversationId} meId={convo.meId} other={convo.other} />
       <Composer conversationId={conversationId} />

@@ -269,7 +269,12 @@ export const getConversation = query({
   args: { conversationId: v.id("conversations") },
   handler: async (ctx, { conversationId }) => {
     const { user, convo } = await requireParticipant(ctx, conversationId);
-    return { ...(await summarize(ctx, convo, user._id)), meId: user._id };
+    const summary = await summarize(ctx, convo, user._id);
+    // When the other person was last online, for the thread header
+    const presence = summary.other._id
+      ? await ctx.db.first("presence", sql`where user_id = ${summary.other._id}::uuid`)
+      : null;
+    return { ...summary, meId: user._id, otherLastSeenAt: presence?.lastSeenAt ?? null };
   },
 });
 

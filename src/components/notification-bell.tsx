@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { formatDistanceToNow } from "date-fns";
 import { Bell } from "lucide-react";
 import { useMutation, useQuery } from "@/lib/backend/react.tsx";
 import { api } from "@/lib/backend/api.ts";
@@ -12,9 +11,15 @@ import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover.tsx";
 import { cn } from "@/lib/utils.ts";
 import HideOnError from "./hide-on-error.tsx";
+import ProfileAvatar from "./profile-avatar.tsx";
 
 /** How many of the newest notifications the dropdown shows. */
 const DROPDOWN_COUNT = 6;
+
+function NewCount() {
+  const count = useQuery(api.notifications.unreadCount, {});
+  return count ? <span className="font-display text-sm text-violet-500">{count} new</span> : null;
+}
 
 function CountBadge() {
   const count = useQuery(api.notifications.unreadCount, {});
@@ -26,7 +31,17 @@ function CountBadge() {
   );
 }
 
-/** The newest notifications, new ones highlighted, for the dropdown. */
+/** "Just now", "5m", "1hr", "3d" */
+function shortAgo(ms: number) {
+  const mins = Math.floor((Date.now() - ms) / 60000);
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins}m`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}hr`;
+  return `${Math.floor(hrs / 24)}d`;
+}
+
+/** The newest notifications, new ones on a lighter card, for the dropdown. */
 function DropdownList({ onPick }: { onPick: () => void }) {
   const items = useQuery(api.notifications.list, {});
   const me = useQuery(api.users.menu, {});
@@ -34,7 +49,7 @@ function DropdownList({ onPick }: { onPick: () => void }) {
     return (
       <div className="flex flex-col gap-2 p-3">
         {[0, 1, 2].map((i) => (
-          <Skeleton key={i} className="h-12 w-full" />
+          <Skeleton key={i} className="h-16 w-full" />
         ))}
       </div>
     );
@@ -43,27 +58,27 @@ function DropdownList({ onPick }: { onPick: () => void }) {
     return <p className="px-4 py-8 text-center text-sm text-muted-foreground">No notifications yet.</p>;
   }
   return (
-    <ul className="flex max-h-[min(24rem,60vh)] flex-col divide-y divide-white/25 overflow-y-auto">
+    <ul className="flex max-h-[min(26rem,60vh)] flex-col gap-2 overflow-y-auto p-3">
       {items.slice(0, DROPDOWN_COUNT).map((n, i) => {
-        const { icon: Icon, text, href } = describeNotification(n, me?._id);
+        const { text, href } = describeNotification(n, me?._id);
+        const who = n.actor ?? "Someone";
+        const rest = text.startsWith(who) ? text.slice(who.length) : ` ${text}`;
         return (
           <li key={`${n.kind}-${n.targetId ?? n.actorId}-${n.at}-${i}`}>
             <Link
               href={href}
               onClick={onPick}
               className={cn(
-                "flex items-start gap-3 px-4 py-3 group transition-colors",
-                n.unread && "bg-primary/15",
+                "flex items-start gap-3 rounded-[2px] p-3 transition-colors hover:bg-[#202227]",
+                n.unread && "bg-[#202227]",
               )}
             >
-              <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/25 text-violet-600">
-                <Icon className="size-4" />
+              <ProfileAvatar name={who} url={n.actorAvatarUrl} className="size-12 rounded-[2px] text-xl" />
+              <span className="min-w-0 flex-1 text-base leading-snug">
+                <span className="font-bold">{who}</span>
+                {rest}
               </span>
-              <span className="flex min-w-0 flex-1 flex-col">
-                <span className="text-sm leading-snug transition-colors group-hover:text-violet-600">{text}</span>
-                <span className="text-xs text-muted-foreground">{formatDistanceToNow(n.at, { addSuffix: true })}</span>
-              </span>
-              {n.unread && <span aria-label="New" className="mt-2 size-2 shrink-0 rounded-full bg-rose-500" />}
+              <span className="shrink-0 text-xs text-violet-500">{shortAgo(n.at)}</span>
             </Link>
           </li>
         );
@@ -131,20 +146,32 @@ export default function NotificationBell({
           </Button>
         )}
       </PopoverTrigger>
-      <PopoverContent align="end" sideOffset={8} className="flex w-[min(22rem,calc(100vw-1.5rem))] flex-col bg-[#09090b]/90 p-0">
-        <p className="border-b border-white/[3%] px-4 py-3 text-sm font-bold">Notifications</p>
+      <PopoverContent align="end" sideOffset={8} className="flex w-[min(24rem,calc(100vw-1.5rem))] flex-col rounded-[2px] border-white/10 bg-[#0C0F15] p-0">
+        <div className="flex items-baseline gap-3 border-b border-white/10 px-4 py-4">
+          <p className="font-display text-xl">Notifications</p>
+          <HideOnError>
+            <NewCount />
+          </HideOnError>
+          <button
+            type="button"
+            onClick={() => void markSeen({}).catch(() => {})}
+            className="ml-auto cursor-pointer font-display text-sm text-violet-500 hover:text-violet-400"
+          >
+            Clear all
+          </button>
+        </div>
         <HideOnError
           fallback={<p className="px-4 py-8 text-center text-sm text-muted-foreground">Notifications aren&apos;t available yet.</p>}
         >
           <DropdownList onPick={() => onOpenChange(false)} />
         </HideOnError>
-        <div className="border-t border-white/[3%] p-2">
-          <Button asChild className="w-full cursor-pointer">
-            <Link href="/notifications" onClick={() => onOpenChange(false)}>
-              Show all notifications
-            </Link>
-          </Button>
-        </div>
+        <Link
+          href="/notifications"
+          onClick={() => onOpenChange(false)}
+          className="cursor-pointer border-t border-white/10 py-4 text-center font-display text-xl text-violet-500 hover:text-violet-400"
+        >
+          View All Notifications
+        </Link>
       </PopoverContent>
     </Popover>
   );

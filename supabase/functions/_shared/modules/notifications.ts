@@ -113,7 +113,17 @@ async function recentFor(ctx: QueryCtx, userId: Id<"users">) {
     ) n
     order by at desc
     limit ${LIMIT}::int`);
+  // Profile pictures of the people behind the notifications
+  const actorIds = [...new Set(rows.map((r) => r.actor_id as string | null).filter((id): id is string => !!id))];
+  const avatars = new Map<string, string | null>();
+  await Promise.all(
+    actorIds.map(async (id) => {
+      const u = await ctx.db.get("users", id as Id<"users">);
+      avatars.set(id, u?.avatarStorageId ? await ctx.storage.getUrl(u.avatarStorageId) : null);
+    }),
+  );
   return rows.map((r) => ({
+    actorAvatarUrl: (r.actor_id ? avatars.get(r.actor_id as string) : null) ?? null,
     kind: r.kind as NotificationKind,
     at: new Date(r.at as string).getTime(),
     actorId: (r.actor_id as Id<"users"> | null) ?? null,
