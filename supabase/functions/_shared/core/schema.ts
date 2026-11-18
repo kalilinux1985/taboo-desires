@@ -174,7 +174,7 @@ type Fields = {
     body: string;
     updatedAt: string;
   };
-  follows: { followerId: Id<"users">; sellerId: Id<"users"> };
+  follows: { followerId: Id<"users">; sellerId: Id<"users">; status: "pending" | "accepted" };
   sellerStats: {
     sellerId: Id<"users">;
     followerCount: number;
@@ -430,6 +430,7 @@ export const TABLES: { [T in DbTable]: TableDef<T> } = {
     columns: {
       followerId: c("follower_id", "uuid"),
       sellerId: c("seller_id", "uuid"),
+      status: c("status"),
     },
   },
   sellerStats: {

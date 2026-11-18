@@ -92,7 +92,7 @@ export const deleteMyAccount = mutation({
     await ctx.db.rows(sql`
       update public.seller_stats s set follower_count = greatest(0, s.follower_count - 1)
         from public.follows f
-       where f.follower_id = ${id}::uuid and s.seller_id = f.seller_id`);
+       where f.follower_id = ${id}::uuid and f.status = 'accepted' and s.seller_id = f.seller_id`);
 
     await ctx.db.delete("users", id);
     return null;

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Authenticated, Unauthenticated, useMutation, useQuery } from "@/lib/backend/react.tsx";
-import { Heart } from "lucide-react";
+import { Clock, Heart } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/backend/api.ts";
 import type { Id } from "@/lib/backend/types.ts";
@@ -19,7 +19,9 @@ function FollowToggle({ sellerId }: { sellerId: Id<"users"> }) {
     setBusy(true);
     try {
       const now = await toggle({ sellerId });
-      toast.success(now ? "Following. New listings will show in your feed." : "Unfollowed");
+      toast.success(
+        now === "pending" ? "Follow request sent. You'll follow once they accept." : "Unfollowed",
+      );
     } catch (e) {
       toast.error(getErrorMessage(e, "Could not update follow"));
     } finally {
@@ -30,13 +32,19 @@ function FollowToggle({ sellerId }: { sellerId: Id<"users"> }) {
   return (
     <Button
       size="sm"
-      variant={following ? "secondary" : "default"}
+      variant={following && following !== "none" ? "secondary" : "default"}
       onClick={onClick}
       disabled={busy || following === undefined}
       className="cursor-pointer"
     >
-      {busy ? <Spinner /> : <Heart className={cn(following && "text-violet-600")} strokeWidth={following ? 3 : 2} />}
-      {following ? "Following" : "Follow"}
+      {busy ? (
+        <Spinner />
+      ) : following === "pending" ? (
+        <Clock />
+      ) : (
+        <Heart className={cn(following === "following" && "text-violet-600")} strokeWidth={following === "following" ? 3 : 2} />
+      )}
+      {following === "pending" ? "Requested" : following === "following" ? "Following" : "Follow"}
     </Button>
   );
 }

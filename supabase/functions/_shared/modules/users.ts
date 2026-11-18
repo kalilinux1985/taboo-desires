@@ -372,7 +372,7 @@ async function profileCounts(ctx: QueryCtx, userId: Id<"users">) {
         where seller_id = ${userId}::uuid and status = 'active' and paywall is null) as listings,
       (select count(*)::int from public.listings
         where seller_id = ${userId}::uuid and status = 'active' and paywall is not null) as instant,
-      (select count(*)::int from public.follows where follower_id = ${userId}::uuid) as following,
+      (select count(*)::int from public.follows where follower_id = ${userId}::uuid and status = 'accepted') as following,
       (select count(*)::int from public.profile_photos where user_id = ${userId}::uuid)
         + (select coalesce(sum(cardinality(image_ids)), 0)::int from public.posts
             where author_id = ${userId}::uuid and kind <> 'listing') as photos,

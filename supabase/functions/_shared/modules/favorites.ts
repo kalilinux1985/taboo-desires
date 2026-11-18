@@ -85,7 +85,7 @@ export const followedSellers = query({
     const me = await requireUser(ctx);
     const follows = await ctx.db.select(
       "follows",
-      sql`where follower_id = ${me._id}::uuid order by created_at limit 100`,
+      sql`where follower_id = ${me._id}::uuid and status = 'accepted' order by created_at limit 100`,
     );
     const sellers = await Promise.all(
       follows.map((f) => ctx.db.get("users", f.sellerId)),

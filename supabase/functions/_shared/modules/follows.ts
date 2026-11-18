@@ -27,8 +27,9 @@ export const isFollowing = query({
   args: { sellerId: v.id("users") },
   handler: async (ctx, { sellerId }) => {
     const me = await getCurrentUserDoc(ctx);
-    if (!me) return false;
-    return !!(await findFollow(ctx, me._id, sellerId));
+    if (!me) return "none" as const;
+    const f = await findFollow(ctx, me._id, sellerId);
+    return !f ? ("none" as const) : f.status === "pending" ? ("pending" as const) : ("following" as const);
   },
 });
 
@@ -45,14 +46,35 @@ export const toggle = mutation({
     if (!seller || (seller.accountType !== "seller" && seller.role !== "admin"))
       throw new AppError({ code: "NOT_FOUND", message: "Seller not found" });
     const existing = await findFollow(ctx, me._id, sellerId);
+    // Unfollow, or cancel a request that hasn't been answered
     if (existing) {
       await ctx.db.delete("follows", existing._id);
-      await bumpStats(ctx, sellerId, { followerCount: -1 });
-      return false;
+      if (existing.status === "accepted") await bumpStats(ctx, sellerId, { followerCount: -1 });
+      return "none" as const;
     }
-    await ctx.db.insert("follows", { followerId: me._id, sellerId });
-    await bumpStats(ctx, sellerId, { followerCount: 1 });
-    return true;
+    // A follow is a request until the seller accepts it
+    await ctx.db.insert("follows", { followerId: me._id, sellerId, status: "pending" });
+    return "pending" as const;
+  },
+});
+
+/** The seller accepts or deletes a follow request. */
+export const respond = mutation({
+  args: { followerId: v.id("users"), accept: v.boolean() },
+  handler: async (ctx, { followerId, accept }) => {
+    const me = await requireUser(ctx);
+    const req = await findFollow(ctx, followerId, me._id);
+    if (!req) throw new AppError({ code: "NOT_FOUND", message: "That follow request is gone" });
+    if (!accept) {
+      await ctx.db.delete("follows", req._id);
+      if (req.status === "accepted") await bumpStats(ctx, me._id, { followerCount: -1 });
+      return null;
+    }
+    if (req.status === "pending") {
+      await ctx.db.patch("follows", req._id, { status: "accepted" });
+      await bumpStats(ctx, me._id, { followerCount: 1 });
+    }
+    return null;
   },
 });
 
@@ -65,7 +87,7 @@ export const feed = query({
     const followingCount = Number(
       await ctx.db.scalar(sql`
         select count(*)::int from (
-          select 1 from public.follows where follower_id = ${me._id}::uuid limit ${FEED_SELLERS_MAX}
+          select 1 from public.follows where follower_id = ${me._id}::uuid and status = 'accepted' limit ${FEED_SELLERS_MAX}
         ) f`),
     );
     // Newest few per followed seller, then newest overall
@@ -74,7 +96,7 @@ export const feed = query({
       sql`
         select l.* from (
           select seller_id from public.follows
-           where follower_id = ${me._id}::uuid order by created_at limit ${FEED_SELLERS_MAX}
+           where follower_id = ${me._id}::uuid and status = 'accepted' order by created_at limit ${FEED_SELLERS_MAX}
         ) f
         cross join lateral (
           select * from public.listings

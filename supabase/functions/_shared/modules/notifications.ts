@@ -43,7 +43,7 @@ async function recentFor(ctx: QueryCtx, userId: Id<"users">) {
     select * from (
       select 'follow' as kind, f.created_at as at, a.id as actor_id,
              coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'Someone') as actor,
-             null::text as title, null::uuid as target_id, null::int as amount
+             f.status as title, null::uuid as target_id, null::int as amount
         from public.follows f join public.users a on a.id = f.follower_id
        where f.seller_id = ${me} and f.created_at > ${since}
       union all

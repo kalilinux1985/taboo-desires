@@ -21,7 +21,7 @@ export function describeNotification(
   const money = n.amountCents != null ? formatPrice(n.amountCents) : "";
   switch (n.kind) {
     case "follow":
-      return { icon: UserPlus, text: `${who} started following you`, href: n.actorId ? `/seller/${n.actorId}` : "/shop" };
+      return { icon: UserPlus, text: n.title === "pending" ? `${who} sent you a follow request` : `${who} started following you`, href: n.actorId ? `/seller/${n.actorId}` : "/shop" };
     case "bid":
       return { icon: Gavel, text: `${who} bid ${money} on “${n.title}”`, href: `/listing/${n.targetId}` };
     case "auction_won":

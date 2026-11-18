@@ -3,8 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Bell } from "lucide-react";
+import { toast } from "sonner";
 import { useMutation, useQuery } from "@/lib/backend/react.tsx";
 import { api } from "@/lib/backend/api.ts";
+import type { Id } from "@/lib/backend/types.ts";
+import { getErrorMessage } from "@/lib/listings.ts";
 import { describeNotification } from "@/lib/notifications.ts";
 import { Button } from "@/components/ui/button.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
@@ -27,6 +30,31 @@ function CountBadge() {
   return (
     <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">
       {count > 9 ? "9+" : count}
+    </span>
+  );
+}
+
+/** Accept / Delete for a follow request */
+function RequestActions({ followerId }: { followerId: Id<"users"> }) {
+  const respond = useMutation(api.follows.respond);
+  const [done, setDone] = useState<"accepted" | "deleted" | null>(null);
+  const answer = async (accept: boolean) => {
+    try {
+      await respond({ followerId, accept });
+      setDone(accept ? "accepted" : "deleted");
+    } catch (e) {
+      toast.error(getErrorMessage(e, "Could not answer the request"));
+    }
+  };
+  if (done) return <span className="mt-2 block text-sm text-muted-foreground">{done === "accepted" ? "Accepted" : "Deleted"}</span>;
+  return (
+    <span className="mt-2 flex gap-6 font-display text-base">
+      <button type="button" onClick={() => void answer(true)} className="cursor-pointer text-violet-500 hover:text-violet-400">
+        Accept
+      </button>
+      <button type="button" onClick={() => void answer(false)} className="cursor-pointer text-red-600 hover:text-red-500">
+        Delete
+      </button>
     </span>
   );
 }
@@ -63,23 +91,28 @@ function DropdownList({ onPick }: { onPick: () => void }) {
         const { text, href } = describeNotification(n, me?._id);
         const who = n.actor ?? "Someone";
         const rest = text.startsWith(who) ? text.slice(who.length) : ` ${text}`;
+        const isRequest = n.kind === "follow" && n.title === "pending" && n.actorId;
+        const rowClass = cn("flex items-start gap-3 rounded-[2px] p-3 transition-colors", n.unread && "bg-[#202227]");
+        const body = (
+          <>
+            <ProfileAvatar name={who} url={n.actorAvatarUrl} className="size-12 rounded-[2px] text-xl" />
+            <span className="min-w-0 flex-1 text-base leading-snug">
+              <span className="font-bold">{who}</span>
+              {rest}
+              {isRequest && n.actorId && <RequestActions followerId={n.actorId} />}
+            </span>
+            <span className="shrink-0 text-xs text-violet-500">{shortAgo(n.at)}</span>
+          </>
+        );
         return (
           <li key={`${n.kind}-${n.targetId ?? n.actorId}-${n.at}-${i}`}>
-            <Link
-              href={href}
-              onClick={onPick}
-              className={cn(
-                "flex items-start gap-3 rounded-[2px] p-3 transition-colors hover:bg-[#202227]",
-                n.unread && "bg-[#202227]",
-              )}
-            >
-              <ProfileAvatar name={who} url={n.actorAvatarUrl} className="size-12 rounded-[2px] text-xl" />
-              <span className="min-w-0 flex-1 text-base leading-snug">
-                <span className="font-bold">{who}</span>
-                {rest}
-              </span>
-              <span className="shrink-0 text-xs text-violet-500">{shortAgo(n.at)}</span>
-            </Link>
+            {isRequest ? (
+              <div className={rowClass}>{body}</div>
+            ) : (
+              <Link href={href} onClick={onPick} className={cn(rowClass, "hover:bg-[#202227]")}>
+                {body}
+              </Link>
+            )}
           </li>
         );
       })}
