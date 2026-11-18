@@ -11,9 +11,11 @@ import * as follows from "./modules/follows.ts";
 import * as listings from "./modules/listings.ts";
 import * as messages from "./modules/messages.ts";
 import * as notifications from "./modules/notifications.ts";
+import * as orders from "./modules/orders.ts";
 import * as posts from "./modules/posts.ts";
 import * as reports from "./modules/reports.ts";
 import * as reviews from "./modules/reviews.ts";
+import * as shipping from "./modules/shipping.ts";
 import * as subscriptions from "./modules/subscriptions.ts";
 import * as unlocks from "./modules/unlocks.ts";
 import * as users from "./modules/users.ts";
@@ -52,9 +54,11 @@ export const registry = {
   listings: functionsOf(listings),
   messages: functionsOf(messages),
   notifications: functionsOf(notifications),
+  orders: functionsOf(orders),
   posts: functionsOf(posts),
   reports: functionsOf(reports),
   reviews: functionsOf(reviews),
+  shipping: functionsOf(shipping),
   subscriptions: functionsOf(subscriptions),
   unlocks: functionsOf(unlocks),
   users: functionsOf(users),

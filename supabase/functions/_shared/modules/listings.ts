@@ -1,4 +1,5 @@
 import { AppError } from "../core/errors.ts";
+import { liveOrderForListing } from "./orders.ts";
 import { mutation, query, type QueryCtx } from "../core/functions.ts";
 import type { Doc, Id } from "../core/schema.ts";
 import { sql, empty, type Sql } from "../core/sql.ts";
@@ -559,6 +560,23 @@ export const setStatus = mutation({
         message: "Auctions close automatically",
       });
     if (listing.status === status) return null;
+    if (status === "active") {
+      // Relisting undoes the sale: cancel its order unless it's already shipping
+      const order = await liveOrderForListing(ctx, listingId);
+      if (order && order.status !== "awaiting_address" && order.status !== "ready_to_ship")
+        throw new AppError({
+          code: "CONFLICT",
+          message:
+            order.status === "label_created"
+              ? "Void the shipping label in Orders before relisting"
+              : "This item has already shipped",
+        });
+      if (order)
+        await ctx.db.patch("orders", order._id, {
+          status: "cancelled",
+          updatedAt: new Date(ctx.now()).toISOString(),
+        });
+    }
     await ctx.db.patch("listings", listingId, { status });
     // Sales count follows the sold flag so mistakes can be undone by relisting
     await bumpStats(ctx, listing.sellerId, {

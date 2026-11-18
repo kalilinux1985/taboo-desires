@@ -14,3 +14,8 @@ verify_jwt = false
 # The live function: supabase/functions/loader, which runs the latest
 # backend-dist/api.cjs from GitHub. Its JWT check stays on, as in the dashboard.
 verify_jwt = true
+
+[functions.easypost-webhook]
+# EasyPost tracking updates. EasyPost sends no JWT; the function only trusts
+# what it reads back from EasyPost's API, so the gateway check is off.
+verify_jwt = false
