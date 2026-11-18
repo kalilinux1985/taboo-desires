@@ -92,7 +92,22 @@ export function BackendProvider({ children }: { children: ReactNode }) {
       isLoading,
       isAuthenticated: !!token,
       authKey,
-      call: (name, args) => callBackend(name, args, tokenRef.current),
+      call: async (name, args) => {
+        try {
+          return await callBackend(name, args, tokenRef.current);
+        } catch (e) {
+          // The server no longer accepts this sign-in (expired, or signed out
+          // elsewhere): refresh it, or sign out here so the site loads signed out
+          // instead of waiting forever.
+          if (
+            e instanceof BackendError &&
+            e.data.code === "UNAUTHENTICATED" &&
+            tokenRef.current
+          )
+            void recoverSession(queryClient);
+          throw e;
+        }
+      },
     }),
     // token is in deps only through isAuthenticated; renewals keep the same authKey
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -102,6 +117,35 @@ export function BackendProvider({ children }: { children: ReactNode }) {
   return (
     <BackendContext.Provider value={value}>{children}</BackendContext.Provider>
   );
+}
+
+let recovering: Promise<void> | null = null;
+let lastRefreshAt = 0;
+
+/**
+ * One attempt at a time: get a fresh token, else drop the dead session
+ * locally. If a fresh token is rejected too, sign out rather than loop.
+ */
+function recoverSession(queryClient: QueryClient): Promise<void> {
+  recovering ??= (async () => {
+    try {
+      const refreshedRecently = Date.now() - lastRefreshAt < 60_000;
+      const { data, error } = refreshedRecently
+        ? { data: { session: null }, error: null }
+        : await supabase.auth.refreshSession();
+      if (error || !data.session) {
+        await supabase.auth.signOut({ scope: "local" });
+      } else {
+        lastRefreshAt = Date.now();
+        await queryClient.invalidateQueries({ queryKey: [KEY] });
+      }
+    } catch {
+      await supabase.auth.signOut({ scope: "local" }).catch(() => {});
+    } finally {
+      recovering = null;
+    }
+  })();
+  return recovering;
 }
 
 function useBackend(): BackendState {
