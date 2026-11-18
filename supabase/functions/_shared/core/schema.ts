@@ -18,6 +18,7 @@ import type { SellerDetails } from "../domain/sellerDetails.ts";
 import type { SellerSettings } from "../domain/sellerSettings.ts";
 import type { Subcategory } from "../domain/subcategories.ts";
 import type { BuyerDetails } from "../domain/buyerDetails.ts";
+import type { OrderStatus, ShippingAddress } from "../domain/shipping.ts";
 
 export type ReportType =
   | "nonconsensual_intimate"
@@ -212,6 +213,33 @@ type Fields = {
     conversationId: Id<"conversations">;
     senderId: Id<"users">;
     body: string;
+  };
+  orders: {
+    sellerId: Id<"users">;
+    buyerId: Id<"users">;
+    listingId?: Id<"listings">;
+    customRequestId?: Id<"customRequests">;
+    title: string;
+    status: OrderStatus;
+    shipTo?: ShippingAddress;
+    easypostShipmentId?: string;
+    carrier?: string;
+    service?: string;
+    postageCents?: number;
+    trackingCode?: string;
+    trackingUrl?: string;
+    trackingStatus?: string;
+    labelUrl?: string;
+    labelCreatedAt?: string;
+    shippedAt?: string;
+    deliveredAt?: string;
+    updatedAt: string;
+  };
+  shippingAddresses: {
+    userId: Id<"users">;
+    kind: "ship_to" | "ship_from";
+    address: ShippingAddress;
+    updatedAt: string;
   };
 };
 
@@ -492,6 +520,39 @@ export const TABLES: { [T in DbTable]: TableDef<T> } = {
       conversationId: c("conversation_id", "uuid"),
       senderId: c("sender_id", "uuid"),
       body: c("body"),
+    },
+  },
+  orders: {
+    sqlName: "orders",
+    columns: {
+      sellerId: c("seller_id", "uuid"),
+      buyerId: c("buyer_id", "uuid"),
+      listingId: c("listing_id", "uuid"),
+      customRequestId: c("custom_request_id", "uuid"),
+      title: c("title"),
+      status: c("status"),
+      shipTo: c("ship_to", "json"),
+      easypostShipmentId: c("easypost_shipment_id"),
+      carrier: c("carrier"),
+      service: c("service"),
+      postageCents: c("postage_cents", "int"),
+      trackingCode: c("tracking_code"),
+      trackingUrl: c("tracking_url"),
+      trackingStatus: c("tracking_status"),
+      labelUrl: c("label_url"),
+      labelCreatedAt: c("label_created_at", "ts"),
+      shippedAt: c("shipped_at", "ts"),
+      deliveredAt: c("delivered_at", "ts"),
+      updatedAt: c("updated_at", "ts"),
+    },
+  },
+  shippingAddresses: {
+    sqlName: "shipping_addresses",
+    columns: {
+      userId: c("user_id", "uuid"),
+      kind: c("kind"),
+      address: c("address", "json"),
+      updatedAt: c("updated_at", "ts"),
     },
   },
 };

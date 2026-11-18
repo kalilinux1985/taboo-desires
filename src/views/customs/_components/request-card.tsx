@@ -37,7 +37,7 @@ function Detail({ label, value }: { label: string; value: string }) {
 }
 
 function turnText(r: CustomRequestRow, role: Role) {
-  if (r.status === "accepted") return `Agreed at ${formatPrice(r.offerCents)}. Arrange payment and delivery in Messages.`;
+  if (r.status === "accepted") return `Agreed at ${formatPrice(r.offerCents)}. Arrange payment in Messages; shipping is in Orders.`;
   if (r.status !== "pending") return null;
   if (!r.myTurn) return "Waiting for their reply";
   return role === "seller" && !countered(r) ? "New request. Accept, decline, or counter." : "They made an offer. Your move.";

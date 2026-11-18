@@ -12,6 +12,7 @@ import { CheckCircle2, CircleCheck, Lock, MessageSquareText, Pencil, ShoppingBag
 import MessageSellerButton from "./_components/message-seller-button.tsx";
 import AuctionPanel from "./_components/auction-panel.tsx";
 import RelistAuctionButton from "./_components/relist-auction-button.tsx";
+import SellDialog from "./_components/sell-dialog.tsx";
 import { AccessNotice, BuyLockedPanel, IncludedContent, UnlockBox, UnlockRequests, UnlockedMedia } from "./_components/locked-content.tsx";
 import { toast } from "sonner";
 import { api } from "@/lib/backend/api.ts";
@@ -142,18 +143,14 @@ function OwnerActions({
           <Pencil /> Edit
         </Link>
       </Button>
-      {!isAuction && (
+      {!isAuction && status === "active" && <SellDialog listingId={listingId} />}
+      {!isAuction && status !== "active" && (
         <Button
           variant="secondary"
           className="cursor-pointer"
-          onClick={() =>
-            run(
-              () => setStatus({ listingId, status: status === "active" ? "sold" : "active" }),
-              status === "active" ? "Marked as sold" : "Listing is live again",
-            )
-          }
+          onClick={() => run(() => setStatus({ listingId, status: "active" }), "Listing is live again")}
         >
-          <CheckCircle2 /> {status === "active" ? "Mark as sold" : "Relist"}
+          <CheckCircle2 /> Relist
         </Button>
       )}
       {isAuction && status === "ended" && <RelistAuctionButton listingId={listingId} />}

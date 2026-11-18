@@ -11,6 +11,7 @@ import {
 } from "../lib/auth.ts";
 import type { Party } from "../domain/enums.ts";
 import { requireCapability } from "../lib/access.ts";
+import { CATEGORY_LABEL_SERVER, createOrder } from "./orders.ts";
 
 export type CustomAction = "accept" | "decline" | "counter" | "cancel";
 
@@ -190,6 +191,15 @@ export const respond = mutation({
           ? "declined"
           : "cancelled";
     await ctx.db.patch("customRequests", requestId, { status, updatedAt });
+    // An accepted custom request is something the seller ships: open an order
+    if (status === "accepted") {
+      await createOrder(ctx, {
+        sellerId: req.sellerId,
+        buyerId: req.buyerId,
+        customRequestId: requestId,
+        title: `Custom order: ${CATEGORY_LABEL_SERVER[req.category] ?? req.category}, size ${req.size}`,
+      });
+    }
     return null;
   },
 });

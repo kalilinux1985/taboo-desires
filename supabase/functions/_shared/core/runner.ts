@@ -1,6 +1,11 @@
 import { Db } from "./db.ts";
 import { AppError } from "./errors.ts";
-import type { AnyFunctionDef, Identity, QueryCtx } from "./functions.ts";
+import type {
+  ActionCtx,
+  AnyFunctionDef,
+  Identity,
+  QueryCtx,
+} from "./functions.ts";
 import { sql, type Driver } from "./sql.ts";
 import { Storage, type StorageBackend } from "./storage.ts";
 import { parseObject } from "./values.ts";
@@ -74,6 +79,50 @@ export async function execute(
     });
   }
   const args = parseObject(def.args, rawArgs ?? {});
+  if (def.kind === "action") return await runAction(def, args, opts);
+  return await runInTransaction(def, args, opts);
+}
+
+/**
+ * Actions run with no transaction open. Each runQuery / runMutation is a
+ * transaction of its own; the tables they read and wrote are reported together.
+ */
+async function runAction(
+  def: AnyFunctionDef,
+  args: unknown,
+  opts: ExecuteOptions,
+): Promise<{ value: unknown; reads: string[]; writes: string[] }> {
+  const reads = new Set<string>();
+  const writes = new Set<string>();
+  const run = async (inner: AnyFunctionDef, innerArgs: unknown) => {
+    if (inner.kind === "action")
+      throw new Error("Actions can't call other actions");
+    const result = await runInTransaction(inner, innerArgs, opts);
+    result.reads.forEach((t) => reads.add(t));
+    result.writes.forEach((t) => writes.add(t));
+    return result.value as never;
+  };
+  const ctx: ActionCtx = {
+    auth: { getUserIdentity: async () => opts.identity },
+    now: opts.now ?? Date.now,
+    runQuery: (fn, a) => run(fn as AnyFunctionDef, a),
+    runMutation: (fn, a) => run(fn as AnyFunctionDef, a),
+  };
+  const value = await (
+    def.handler as (ctx: ActionCtx, args: unknown) => Promise<unknown>
+  )(ctx, args);
+  return {
+    value: value === undefined ? null : value,
+    reads: [...reads],
+    writes: [...writes],
+  };
+}
+
+async function runInTransaction(
+  def: AnyFunctionDef,
+  args: unknown,
+  opts: ExecuteOptions,
+): Promise<{ value: unknown; reads: string[]; writes: string[] }> {
   const now = opts.now ?? Date.now;
 
   for (let attempt = 1; ; attempt++) {
@@ -90,7 +139,9 @@ export async function execute(
             auth: { getUserIdentity: async () => opts.identity },
             now,
           };
-          const value = await def.handler(ctx, args);
+          const value = await (
+            def.handler as (ctx: QueryCtx, args: unknown) => Promise<unknown>
+          )(ctx, args);
           // Filled in by the app.broadcast_change() triggers, cascades included
           const written =
             def.kind === "query"

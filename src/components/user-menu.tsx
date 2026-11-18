@@ -32,6 +32,7 @@ import ProfileAvatar from "./profile-avatar.tsx";
 /** Avatar button in the header that opens the account menu. */
 export default function UserMenu() {
   const me = useQuery(api.users.menu, {});
+  const ordersToDo = useQuery(api.orders.actionCount, me ? {} : "skip") ?? 0;
   const { signout } = useAuth();
 
   if (me === undefined) return <Skeleton className="size-[41px] rounded-[2px]" />;
@@ -42,11 +43,11 @@ export default function UserMenu() {
     { to: "/shop", label: "My profile", icon: User, show: true },
     { to: "/sell", label: "Sell an item", icon: Plus, show: isSeller },
     { to: "/my-listings", label: "My listings", icon: List, show: isSeller },
-    { to: "/orders", label: "Orders", icon: Package, show: true },
+    { to: "/orders", label: "Orders", icon: Package, show: true, count: ordersToDo },
     { to: "/customs", label: "Custom requests", icon: Sparkles, show: true },
     { to: settingsPathFor(me.accountType), label: "Settings", icon: Settings, show: true },
     { to: "/admin", label: "Admin", icon: ShieldCheck, show: me.isAdmin },
-  ].filter((l) => l.show);
+  ].filter((l) => l.show) as { to: string; label: string; icon: typeof User; count?: number }[];
   // Pages that used to be links in the top bar
   const explore = [
     { to: "/browse", label: "Browse", icon: Search, show: true },
@@ -77,6 +78,11 @@ export default function UserMenu() {
           <DropdownMenuItem key={l.to} asChild className="cursor-pointer transition-colors hover:bg-transparent hover:text-violet-600 focus:bg-transparent focus:text-violet-600 [&:hover_svg]:text-violet-600 [&:focus_svg]:text-violet-600">
             <Link href={l.to}>
               <l.icon /> {l.label}
+              {!!l.count && (
+                <span className="ml-auto rounded-full bg-violet-600 px-1.5 text-[11px] font-semibold text-white">
+                  {l.count}
+                </span>
+              )}
             </Link>
           </DropdownMenuItem>
         ))}
