@@ -3736,10 +3736,17 @@ var toggle2 = mutation({
         code: "BAD_REQUEST",
         message: "You can't follow yourself"
       });
-    const seller = await ctx.db.get("users", sellerId);
-    if (!seller || seller.accountType !== "seller" && seller.role !== "admin")
-      throw new AppError({ code: "NOT_FOUND", message: "Seller not found" });
+    const target = await ctx.db.get("users", sellerId);
+    if (!target) throw new AppError({ code: "NOT_FOUND", message: "Member not found" });
     const existing = await findFollow(ctx, me._id, sellerId);
+    if (!existing) {
+      if (me.accountType === "seller" && me.role !== "admin") {
+        if (await getPlan(ctx, me._id) !== "pro")
+          throw new AppError({ code: "FORBIDDEN", message: "Upgrade to Premium to follow members" });
+      } else if (target.accountType !== "seller" && target.role !== "admin") {
+        throw new AppError({ code: "BAD_REQUEST", message: "You can only follow sellers" });
+      }
+    }
     if (existing) {
       await ctx.db.delete("follows", existing._id);
       if (existing.status === "accepted") await bumpStats(ctx, sellerId, { followerCount: -1 });
