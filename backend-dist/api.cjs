@@ -3382,7 +3382,9 @@ var getConversation = query({
   args: { conversationId: v.id("conversations") },
   handler: async (ctx, { conversationId }) => {
     const { user, convo } = await requireParticipant(ctx, conversationId);
-    return { ...await summarize2(ctx, convo, user._id), meId: user._id };
+    const summary = await summarize2(ctx, convo, user._id);
+    const presence = summary.other._id ? await ctx.db.first("presence", sql`where user_id = ${summary.other._id}::uuid`) : null;
+    return { ...summary, meId: user._id, otherLastSeenAt: presence?.lastSeenAt ?? null };
   }
 });
 var listMessages = query({
@@ -3502,7 +3504,16 @@ async function recentFor(ctx, userId) {
     ) n
     order by at desc
     limit ${LIMIT}::int`);
+  const actorIds = [...new Set(rows.map((r) => r.actor_id).filter((id) => !!id))];
+  const avatars = /* @__PURE__ */ new Map();
+  await Promise.all(
+    actorIds.map(async (id) => {
+      const u = await ctx.db.get("users", id);
+      avatars.set(id, u?.avatarStorageId ? await ctx.storage.getUrl(u.avatarStorageId) : null);
+    })
+  );
   return rows.map((r) => ({
+    actorAvatarUrl: (r.actor_id ? avatars.get(r.actor_id) : null) ?? null,
     kind: r.kind,
     at: new Date(r.at).getTime(),
     actorId: r.actor_id ?? null,
