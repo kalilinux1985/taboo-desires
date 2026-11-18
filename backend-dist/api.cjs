@@ -368,6 +368,39 @@ var TABLES = {
       senderId: c("sender_id", "uuid"),
       body: c("body")
     }
+  },
+  orders: {
+    sqlName: "orders",
+    columns: {
+      sellerId: c("seller_id", "uuid"),
+      buyerId: c("buyer_id", "uuid"),
+      listingId: c("listing_id", "uuid"),
+      customRequestId: c("custom_request_id", "uuid"),
+      title: c("title"),
+      status: c("status"),
+      shipTo: c("ship_to", "json"),
+      easypostShipmentId: c("easypost_shipment_id"),
+      carrier: c("carrier"),
+      service: c("service"),
+      postageCents: c("postage_cents", "int"),
+      trackingCode: c("tracking_code"),
+      trackingUrl: c("tracking_url"),
+      trackingStatus: c("tracking_status"),
+      labelUrl: c("label_url"),
+      labelCreatedAt: c("label_created_at", "ts"),
+      shippedAt: c("shipped_at", "ts"),
+      deliveredAt: c("delivered_at", "ts"),
+      updatedAt: c("updated_at", "ts")
+    }
+  },
+  shippingAddresses: {
+    sqlName: "shipping_addresses",
+    columns: {
+      userId: c("user_id", "uuid"),
+      kind: c("kind"),
+      address: c("address", "json"),
+      updatedAt: c("updated_at", "ts")
+    }
   }
 };
 function toIso(raw2) {
@@ -813,6 +846,34 @@ async function execute(name, rawArgs, opts) {
     });
   }
   const args = parseObject(def.args, rawArgs ?? {});
+  if (def.kind === "action") return await runAction(def, args, opts);
+  return await runInTransaction(def, args, opts);
+}
+async function runAction(def, args, opts) {
+  const reads = /* @__PURE__ */ new Set();
+  const writes = /* @__PURE__ */ new Set();
+  const run = async (inner, innerArgs) => {
+    if (inner.kind === "action")
+      throw new Error("Actions can't call other actions");
+    const result = await runInTransaction(inner, innerArgs, opts);
+    result.reads.forEach((t) => reads.add(t));
+    result.writes.forEach((t) => writes.add(t));
+    return result.value;
+  };
+  const ctx = {
+    auth: { getUserIdentity: async () => opts.identity },
+    now: opts.now ?? Date.now,
+    runQuery: (fn, a) => run(fn, a),
+    runMutation: (fn, a) => run(fn, a)
+  };
+  const value = await def.handler(ctx, args);
+  return {
+    value: value === void 0 ? null : value,
+    reads: [...reads],
+    writes: [...writes]
+  };
+}
+async function runInTransaction(def, args, opts) {
   const now = opts.now ?? Date.now;
   for (let attempt = 1; ; attempt++) {
     let storage2 = null;
@@ -934,6 +995,9 @@ function mutation(def) {
 }
 function internalMutation(def) {
   return { kind: "internal", ...def };
+}
+function action(def) {
+  return { kind: "action", ...def };
 }
 
 // supabase/functions/_shared/lib/auth.ts
@@ -1494,9 +1558,9 @@ var DENIED = {
   }
 };
 var AGE_DENIED = "Verify your age (18+) first to do this";
-function deniedMessage(action, accountType, ageVerified = true) {
+function deniedMessage(action2, accountType, ageVerified = true) {
   if (!ageVerified) return AGE_DENIED;
-  return DENIED[action][accountType ?? "none"];
+  return DENIED[action2][accountType ?? "none"];
 }
 
 // supabase/functions/_shared/lib/access.ts
@@ -1509,13 +1573,13 @@ async function getCapabilities(ctx, user) {
     isAgeVerified(user.ageVerified)
   );
 }
-async function requireCapability(ctx, action) {
+async function requireCapability(ctx, action2) {
   const user = await requireUser(ctx);
   const can = await getCapabilities(ctx, user);
-  if (!can[action]) {
+  if (!can[action2]) {
     throw new AppError({
       code: "FORBIDDEN",
-      message: deniedMessage(action, user.accountType, isAgeVerified(user.ageVerified))
+      message: deniedMessage(action2, user.accountType, isAgeVerified(user.ageVerified))
     });
   }
   return user;
@@ -1546,9 +1610,9 @@ function extendedEndsAtMs(endsAtMs, nowMs) {
   return endsAtMs - nowMs < ANTI_SNIPE_MS ? nowMs + ANTI_SNIPE_MS : endsAtMs;
 }
 function maskName(name) {
-  const clean = name.trim();
-  if (clean.length <= 2) return `${clean.slice(0, 1) || "?"}***`;
-  return `${clean.slice(0, 1)}***${clean.slice(-1)}`;
+  const clean2 = name.trim();
+  if (clean2.length <= 2) return `${clean2.slice(0, 1) || "?"}***`;
+  return `${clean2.slice(0, 1)}***${clean2.slice(-1)}`;
 }
 
 // supabase/functions/_shared/modules/auctions.ts
@@ -1687,12 +1751,12 @@ var relist = mutation({
 var endingSoon = query({
   args: { paginationOpts: paginationOptsValidator },
   handler: async (ctx, { paginationOpts }) => {
-    const nowIso = new Date(ctx.now()).toISOString();
+    const nowIso3 = new Date(ctx.now()).toISOString();
     const result = await ctx.db.paginate(
       "auctions",
       {
         // The closing job runs every minute; hide auctions that ended since its last run
-        where: sql`status = 'live' and ends_at > ${nowIso}::timestamptz`,
+        where: sql`status = 'live' and ends_at > ${nowIso3}::timestamptz`,
         order: [{ column: "ends_at", cast: "timestamptz" }],
         direction: "asc"
       },
@@ -1721,7 +1785,7 @@ __export(customRequests_exports, {
   assertCanAct: () => assertCanAct,
   assertPrice: () => assertPrice,
   create: () => create2,
-  list: () => list,
+  list: () => list2,
   partyOf: () => partyOf,
   respond: () => respond
 });
@@ -1742,6 +1806,713 @@ __export(listings_exports, {
   saleTypeValidator: () => saleTypeValidator,
   setStatus: () => setStatus,
   update: () => update
+});
+
+// supabase/functions/_shared/modules/orders.ts
+var orders_exports = {};
+__export(orders_exports, {
+  CATEGORY_LABEL_SERVER: () => CATEGORY_LABEL_SERVER,
+  _saveAddress: () => _saveAddress,
+  _setShipTo: () => _setShipTo,
+  _whoAmI: () => _whoAmI,
+  actionCount: () => actionCount,
+  addTracking: () => addTracking,
+  addressValidator: () => addressValidator,
+  buyerChoices: () => buyerChoices,
+  cancel: () => cancel,
+  confirmReceived: () => confirmReceived,
+  createOrder: () => createOrder,
+  forListing: () => forListing2,
+  getOrderAs: () => getOrderAs,
+  getSavedAddress: () => getSavedAddress,
+  list: () => list,
+  liveOrderForListing: () => liveOrderForListing,
+  myAddresses: () => myAddresses,
+  saveAddress: () => saveAddress,
+  sellListing: () => sellListing,
+  setShipTo: () => setShipTo,
+  storedAddressValidator: () => storedAddressValidator
+});
+
+// supabase/functions/_shared/domain/shipping.ts
+var US_STATES = [
+  "AL",
+  "AK",
+  "AZ",
+  "AR",
+  "CA",
+  "CO",
+  "CT",
+  "DE",
+  "DC",
+  "FL",
+  "GA",
+  "HI",
+  "ID",
+  "IL",
+  "IN",
+  "IA",
+  "KS",
+  "KY",
+  "LA",
+  "ME",
+  "MD",
+  "MA",
+  "MI",
+  "MN",
+  "MS",
+  "MO",
+  "MT",
+  "NE",
+  "NV",
+  "NH",
+  "NJ",
+  "NM",
+  "NY",
+  "NC",
+  "ND",
+  "OH",
+  "OK",
+  "OR",
+  "PA",
+  "RI",
+  "SC",
+  "SD",
+  "TN",
+  "TX",
+  "UT",
+  "VT",
+  "VA",
+  "WA",
+  "WV",
+  "WI",
+  "WY",
+  "PR",
+  "AA",
+  "AE",
+  "AP"
+];
+function cleanAddress(raw2) {
+  const t = (s) => (s ?? "").trim().replace(/\s+/g, " ");
+  const name = t(raw2.name);
+  const street1 = t(raw2.street1);
+  const street2 = t(raw2.street2);
+  const city = t(raw2.city);
+  const state = t(raw2.state).toUpperCase();
+  const zip = t(raw2.zip);
+  const phone = t(raw2.phone).replace(/[^\d+]/g, "");
+  if (name.length < 2 || name.length > 60) return { ok: false, message: "Enter the name for the label" };
+  if (street1.length < 3 || street1.length > 80) return { ok: false, message: "Enter a street address or PO box" };
+  if (street2.length > 80) return { ok: false, message: "Address line 2 is too long" };
+  if (city.length < 2 || city.length > 60) return { ok: false, message: "Enter a city" };
+  if (!US_STATES.includes(state)) return { ok: false, message: "Pick a state" };
+  if (!/^\d{5}(-\d{4})?$/.test(zip)) return { ok: false, message: "Enter a 5-digit ZIP code" };
+  if (phone && (phone.length < 10 || phone.length > 15)) return { ok: false, message: "Enter a valid phone number or leave it blank" };
+  return {
+    ok: true,
+    address: {
+      name,
+      street1,
+      ...street2 ? { street2 } : {},
+      city,
+      state,
+      zip,
+      country: "US",
+      ...phone ? { phone } : {}
+    }
+  };
+}
+function cityLine(a) {
+  return a ? `${a.city}, ${a.state}` : null;
+}
+var PACKAGE_PRESETS = [
+  { id: "poly_small", label: "Small poly mailer (10 \xD7 13 in)", length: 13, width: 10, height: 1 },
+  { id: "padded_envelope", label: "Padded envelope (9 \xD7 12 in)", length: 12, width: 9, height: 1 },
+  { id: "poly_large", label: "Large poly mailer (14 \xD7 19 in)", length: 19, width: 14, height: 2 },
+  { id: "small_box", label: "Small box (8 \xD7 6 \xD7 4 in)", length: 8, width: 6, height: 4 },
+  { id: "shoe_box", label: "Shoe box (14 \xD7 10 \xD7 5 in)", length: 14, width: 10, height: 5 }
+];
+var MAX_WEIGHT_OZ = 70 * 16;
+var CARRIERS = ["USPS", "UPS", "FedEx", "DHL"];
+function carrierTrackingUrl(carrier, code) {
+  const c2 = encodeURIComponent(code);
+  switch (carrier.toUpperCase()) {
+    case "USPS":
+      return `https://tools.usps.com/go/TrackConfirmAction?tLabels=${c2}`;
+    case "UPS":
+      return `https://www.ups.com/track?tracknum=${c2}`;
+    case "FEDEX":
+      return `https://www.fedex.com/fedextrack/?trknbr=${c2}`;
+    case "DHL":
+      return `https://www.dhl.com/us-en/home/tracking.html?tracking-id=${c2}`;
+    default:
+      return null;
+  }
+}
+var IN_TRANSIT_STATUSES = /* @__PURE__ */ new Set([
+  "in_transit",
+  "out_for_delivery",
+  "available_for_pickup",
+  "return_to_sender",
+  "failure"
+]);
+
+// supabase/functions/_shared/lib/easypost.ts
+var BASE = "https://api.easypost.com/v2";
+function apiKey() {
+  const deno = globalThis.Deno;
+  return deno?.env.get("EASYPOST_API_KEY")?.trim() || null;
+}
+function easyPostMode() {
+  const key = apiKey();
+  if (!key) return "missing";
+  return key.startsWith("EZTK") ? "test" : "live";
+}
+var EasyPostRequestError = class extends Error {
+  constructor(status, code, message) {
+    super(message);
+    this.status = status;
+    this.code = code;
+    this.name = "EasyPostRequestError";
+  }
+  status;
+  code;
+};
+async function call(method, path, body) {
+  const key = apiKey();
+  if (!key) {
+    throw new AppError({
+      code: "BAD_REQUEST",
+      message: "Shipping labels aren't set up yet. The site owner needs to add the EasyPost key."
+    });
+  }
+  const res = await fetch(`${BASE}${path}`, {
+    method,
+    headers: {
+      Authorization: `Basic ${btoa(`${key}:`)}`,
+      "Content-Type": "application/json"
+    },
+    body: body === void 0 ? void 0 : JSON.stringify(body)
+  });
+  const text = await res.text();
+  let json = null;
+  try {
+    json = text ? JSON.parse(text) : null;
+  } catch {
+  }
+  if (!res.ok) {
+    const err = json?.error;
+    const detail = err?.errors?.map((e) => e.message).filter(Boolean).join("; ");
+    throw new EasyPostRequestError(
+      res.status,
+      err?.code ?? `HTTP_${res.status}`,
+      [err?.message, detail].filter(Boolean).join(": ") || `EasyPost error ${res.status}`
+    );
+  }
+  return json;
+}
+var toEp = (a) => ({
+  name: a.name,
+  street1: a.street1,
+  street2: a.street2 ?? "",
+  city: a.city,
+  state: a.state,
+  zip: a.zip,
+  country: a.country,
+  phone: a.phone ?? ""
+});
+async function verifyAddress(a) {
+  const res = await call("POST", "/addresses", {
+    address: { ...toEp(a), verify: ["delivery"] }
+  });
+  const delivery = res.verifications?.delivery;
+  if (!delivery?.success) {
+    const why = delivery?.errors?.map((e) => e.message).filter(Boolean)[0];
+    throw new AppError({
+      code: "BAD_REQUEST",
+      message: why ? `We couldn't verify that address: ${why}` : "We couldn't verify that address. Check the street, city and ZIP."
+    });
+  }
+  return {
+    name: a.name,
+    street1: res.street1 || a.street1,
+    ...res.street2 || a.street2 ? { street2: res.street2 || a.street2 } : {},
+    city: res.city || a.city,
+    state: res.state || a.state,
+    zip: res.zip || a.zip,
+    country: "US",
+    ...a.phone ? { phone: a.phone } : {}
+  };
+}
+async function createShipment(input) {
+  return await call("POST", "/shipments", {
+    shipment: {
+      from_address: toEp(input.from),
+      to_address: toEp(input.to),
+      parcel: {
+        length: input.parcel.length,
+        width: input.parcel.width,
+        height: input.parcel.height,
+        weight: input.parcel.weightOz
+      },
+      options: { label_format: "PDF", label_size: "4x6" },
+      reference: input.reference
+    }
+  });
+}
+async function getShipment(id) {
+  return await call("GET", `/shipments/${encodeURIComponent(id)}`);
+}
+async function buyShipment(id, rateId) {
+  try {
+    return await call("POST", `/shipments/${encodeURIComponent(id)}/buy`, {
+      rate: { id: rateId }
+    });
+  } catch (e) {
+    if (!(e instanceof EasyPostRequestError)) throw e;
+    const existing = await getShipment(id).catch(() => null);
+    if (existing?.postage_label) return existing;
+    throw e;
+  }
+}
+async function refundShipment(id) {
+  return await call("POST", `/shipments/${encodeURIComponent(id)}/refund`);
+}
+async function getTracker(id) {
+  return await call("GET", `/trackers/${encodeURIComponent(id)}`);
+}
+function labelUrlOf(s) {
+  return s.postage_label?.label_pdf_url || s.postage_label?.label_url || null;
+}
+function toCents(rate) {
+  if (!rate) return void 0;
+  const n = Math.round(Number(rate) * 100);
+  return Number.isFinite(n) ? n : void 0;
+}
+function shippingError(e, fallback) {
+  if (e instanceof AppError) return e;
+  if (e instanceof EasyPostRequestError) {
+    console.error("EasyPost", e.status, e.code, e.message);
+    if (e.status === 401 || e.status === 403)
+      return new AppError({ code: "INTERNAL", message: "Shipping is misconfigured. Please contact support." });
+    if (e.code.includes("PAYMENT") || /insufficient|balance|funds/i.test(e.message))
+      return new AppError({ code: "CONFLICT", message: "Labels are paused right now (postage account needs funds). Please try again later." });
+    return new AppError({ code: "BAD_REQUEST", message: `${fallback}: ${e.message}` });
+  }
+  console.error(fallback, e);
+  return new AppError({ code: "INTERNAL", message: fallback });
+}
+
+// supabase/functions/_shared/lib/sellerStats.ts
+async function getStats(ctx, sellerId) {
+  return await ctx.db.first(
+    "sellerStats",
+    sql`where seller_id = ${sellerId}::uuid`
+  );
+}
+async function bumpStats(ctx, sellerId, delta) {
+  const f = delta.followerCount ?? 0;
+  const r = delta.reviewCount ?? 0;
+  const s = delta.ratingSum ?? 0;
+  const n = delta.salesCount ?? 0;
+  await ctx.db.rows(sql`
+    insert into public.seller_stats (seller_id, follower_count, review_count, rating_sum, sales_count)
+    values (${sellerId}::uuid, greatest(0, ${f}::int), greatest(0, ${r}::int), greatest(0, ${s}::int), greatest(0, ${n}::int))
+    on conflict (seller_id) do update set
+      follower_count = greatest(0, seller_stats.follower_count + ${f}::int),
+      review_count = greatest(0, seller_stats.review_count + ${r}::int),
+      rating_sum = greatest(0, seller_stats.rating_sum + ${s}::int),
+      sales_count = greatest(0, seller_stats.sales_count + ${n}::int)`);
+}
+function summarize(stats) {
+  const reviewCount = stats?.reviewCount ?? 0;
+  const ratingSum = stats?.ratingSum ?? 0;
+  return {
+    followerCount: stats?.followerCount ?? 0,
+    salesCount: stats?.salesCount ?? 0,
+    reviewCount,
+    rating: reviewCount ? Math.round(ratingSum / reviewCount * 10) / 10 : null
+  };
+}
+async function canReview(ctx, reviewerId, sellerId) {
+  if (reviewerId === sellerId) return false;
+  ctx.db.touch("conversations", "unlocks");
+  const found = await ctx.db.scalar(sql`
+    select exists (
+      select 1 from public.conversations where buyer_id = ${reviewerId}::uuid and seller_id = ${sellerId}::uuid
+    ) or exists (
+      select 1 from public.unlocks
+       where buyer_id = ${reviewerId}::uuid and seller_id = ${sellerId}::uuid and status = 'granted'
+    )`);
+  return found === true || found === "t";
+}
+
+// supabase/functions/_shared/modules/orders.ts
+var addressValidator = v.object({
+  name: v.string(),
+  street1: v.string(),
+  street2: v.optional(v.string()),
+  city: v.string(),
+  state: v.string(),
+  zip: v.string(),
+  phone: v.optional(v.string())
+});
+var storedAddressValidator = v.object({
+  name: v.string(),
+  street1: v.string(),
+  street2: v.optional(v.string()),
+  city: v.string(),
+  state: v.string(),
+  zip: v.string(),
+  country: v.literal("US"),
+  phone: v.optional(v.string())
+});
+var roleValidator = v.union(v.literal("buyer"), v.literal("seller"));
+var kindValidator = v.union(v.literal("ship_to"), v.literal("ship_from"));
+var CATEGORY_LABEL_SERVER = {
+  panties: "Panties",
+  bras: "Bra",
+  lingerie: "Lingerie",
+  socks: "Socks",
+  shoes: "Shoes",
+  activewear: "Activewear",
+  clothing: "Clothing",
+  extras: "Extras",
+  custom: "Custom item"
+};
+var nowIso = (ctx) => new Date(ctx.now()).toISOString();
+var OPEN = /* @__PURE__ */ new Set(["awaiting_address", "ready_to_ship"]);
+async function getOrderAs(ctx, orderId, role, opts = {}) {
+  const me = role === "seller" && opts.pro ? await requireCapability(ctx, "list") : await requireUser(ctx);
+  const order = await ctx.db.get("orders", orderId);
+  const mine5 = order && (role === "seller" ? order.sellerId : order.buyerId) === me._id;
+  if (!order || !mine5)
+    throw new AppError({ code: "NOT_FOUND", message: "Order not found" });
+  return { order, me };
+}
+async function getSavedAddress(ctx, userId, kind) {
+  const row = await ctx.db.first(
+    "shippingAddresses",
+    sql`where user_id = ${userId}::uuid and kind = ${kind}`
+  );
+  return row?.address ?? null;
+}
+async function saveAddressRow(ctx, userId, kind, address) {
+  const existing = await ctx.db.first(
+    "shippingAddresses",
+    sql`where user_id = ${userId}::uuid and kind = ${kind}`
+  );
+  if (existing)
+    await ctx.db.patch("shippingAddresses", existing._id, { address, updatedAt: nowIso(ctx) });
+  else
+    await ctx.db.insert("shippingAddresses", { userId, kind, address, updatedAt: nowIso(ctx) });
+}
+async function createOrder(ctx, fields) {
+  const shipTo = await getSavedAddress(ctx, fields.buyerId, "ship_to");
+  return await ctx.db.insert("orders", {
+    ...fields,
+    title: fields.title.slice(0, 120) || "Order",
+    status: shipTo ? "ready_to_ship" : "awaiting_address",
+    shipTo: shipTo ?? void 0,
+    updatedAt: nowIso(ctx)
+  });
+}
+async function liveOrderForListing(ctx, listingId) {
+  return await ctx.db.first(
+    "orders",
+    sql`where listing_id = ${listingId}::uuid and status <> 'cancelled'`
+  );
+}
+async function toView(ctx, o, role) {
+  const [other, listing] = await Promise.all([
+    ctx.db.get("users", role === "buyer" ? o.sellerId : o.buyerId),
+    o.listingId ? ctx.db.get("listings", o.listingId) : null
+  ]);
+  const imageId = listing?.imageIds[0];
+  return {
+    _id: o._id,
+    role,
+    title: o.title,
+    status: o.status,
+    createdAt: o._creationTime,
+    updatedAt: o.updatedAt,
+    listingId: o.listingId ?? null,
+    customRequestId: o.customRequestId ?? null,
+    imageUrl: imageId ? await ctx.storage.getUrl(imageId) : null,
+    other: other ? {
+      _id: other._id,
+      name: role === "buyer" ? publicSellerName(other) : other.name || "Anonymous buyer",
+      avatarUrl: other.avatarStorageId ? await ctx.storage.getUrl(other.avatarStorageId) : null
+    } : null,
+    /** Full address only for the buyer; the seller sees it on the label */
+    shipTo: role === "buyer" ? o.shipTo ?? null : null,
+    shipsTo: cityLine(o.shipTo),
+    carrier: o.carrier ?? null,
+    service: o.service ?? null,
+    postageCents: role === "seller" ? o.postageCents ?? null : null,
+    trackingCode: o.trackingCode ?? null,
+    trackingUrl: o.trackingUrl ?? null,
+    trackingStatus: o.trackingStatus ?? null,
+    hasLabel: !!o.labelUrl,
+    labelUrl: role === "seller" ? o.labelUrl ?? null : null,
+    labelCreatedAt: o.labelCreatedAt ?? null,
+    shippedAt: o.shippedAt ?? null,
+    deliveredAt: o.deliveredAt ?? null
+  };
+}
+var list = query({
+  args: { role: roleValidator, paginationOpts: paginationOptsValidator },
+  handler: async (ctx, { role, paginationOpts }) => {
+    const me = await getCurrentUserDoc(ctx);
+    if (!me) return { page: [], isDone: true, continueCursor: "" };
+    const result = await ctx.db.paginate(
+      "orders",
+      {
+        where: role === "buyer" ? sql`buyer_id = ${me._id}::uuid` : sql`seller_id = ${me._id}::uuid`,
+        order: [{ column: "updated_at", cast: "timestamptz" }],
+        direction: "desc"
+      },
+      paginationOpts
+    );
+    return {
+      ...result,
+      page: await Promise.all(result.page.map((o) => toView(ctx, o, role)))
+    };
+  }
+});
+var actionCount = query({
+  args: {},
+  handler: async (ctx) => {
+    const me = await getCurrentUserDoc(ctx);
+    if (!me) return 0;
+    ctx.db.touch("orders");
+    return Number(
+      await ctx.db.scalar(sql`
+        select count(*)::int from public.orders
+         where (buyer_id = ${me._id}::uuid and status = 'awaiting_address')
+            or (seller_id = ${me._id}::uuid and status in ('ready_to_ship', 'label_created'))`)
+    );
+  }
+});
+var forListing2 = query({
+  args: { listingId: v.id("listings") },
+  handler: async (ctx, { listingId }) => {
+    const me = await getCurrentUserDoc(ctx);
+    const listing = await ctx.db.get("listings", listingId);
+    if (!me || !listing || listing.sellerId !== me._id) return null;
+    const order = await liveOrderForListing(ctx, listingId);
+    return order ? await toView(ctx, order, "seller") : null;
+  }
+});
+var buyerChoices = query({
+  args: { listingId: v.id("listings") },
+  handler: async (ctx, { listingId }) => {
+    const me = await getCurrentUserDoc(ctx);
+    const listing = await ctx.db.get("listings", listingId);
+    if (!me || !listing || listing.sellerId !== me._id) return [];
+    ctx.db.touch("conversations", "users");
+    const rows = await ctx.db.rows(sql`
+      select u.id, u.name, u.avatar_storage_id,
+             bool_or(c.listing_id = ${listingId}::uuid) as asked_about_it,
+             max(c.last_message_at) as last_at
+        from public.conversations c
+        join public.users u on u.id = c.buyer_id
+       where c.seller_id = ${me._id}::uuid
+       group by u.id
+       order by bool_or(c.listing_id = ${listingId}::uuid) desc, max(c.last_message_at) desc
+       limit 30`);
+    return await Promise.all(
+      rows.map(async (r) => ({
+        _id: String(r.id),
+        name: r.name || "Anonymous buyer",
+        avatarUrl: r.avatar_storage_id ? await ctx.storage.getUrl(r.avatar_storage_id) : null,
+        askedAboutIt: r.asked_about_it === true || r.asked_about_it === "t"
+      }))
+    );
+  }
+});
+var myAddresses = query({
+  args: {},
+  handler: async (ctx) => {
+    const me = await getCurrentUserDoc(ctx);
+    if (!me) return { shipTo: null, shipFrom: null };
+    const [shipTo, shipFrom] = await Promise.all([
+      getSavedAddress(ctx, me._id, "ship_to"),
+      getSavedAddress(ctx, me._id, "ship_from")
+    ]);
+    return { shipTo, shipFrom };
+  }
+});
+var sellListing = mutation({
+  args: { listingId: v.id("listings"), buyerId: v.optional(v.id("users")) },
+  handler: async (ctx, { listingId, buyerId }) => {
+    const me = await requireUser(ctx);
+    const listing = await ctx.db.get("listings", listingId);
+    if (!listing) throw new AppError({ code: "NOT_FOUND", message: "Listing not found" });
+    if (listing.sellerId !== me._id)
+      throw new AppError({ code: "FORBIDDEN", message: "Not your listing" });
+    if (listing.saleType === "auction")
+      throw new AppError({ code: "BAD_REQUEST", message: "Auctions close automatically" });
+    if (listing.status !== "active")
+      throw new AppError({ code: "CONFLICT", message: "This listing is already sold" });
+    let orderId = null;
+    if (buyerId) {
+      const talked = await ctx.db.scalar(sql`
+        select 1 from public.conversations
+         where seller_id = ${me._id}::uuid and buyer_id = ${buyerId}::uuid limit 1`);
+      if (!talked)
+        throw new AppError({
+          code: "BAD_REQUEST",
+          message: "You can only sell to a buyer who has messaged you"
+        });
+      orderId = await createOrder(ctx, {
+        sellerId: me._id,
+        buyerId,
+        listingId,
+        title: listing.title
+      });
+    }
+    await ctx.db.patch("listings", listingId, { status: "sold" });
+    await bumpStats(ctx, me._id, { salesCount: 1 });
+    return orderId;
+  }
+});
+var cancel = mutation({
+  args: { orderId: v.id("orders") },
+  handler: async (ctx, { orderId }) => {
+    const me = await requireUser(ctx);
+    const order = await ctx.db.get("orders", orderId);
+    if (!order || order.buyerId !== me._id && order.sellerId !== me._id)
+      throw new AppError({ code: "NOT_FOUND", message: "Order not found" });
+    if (!OPEN.has(order.status))
+      throw new AppError({
+        code: "CONFLICT",
+        message: order.status === "label_created" ? "Void the shipping label first" : "This order can't be cancelled anymore"
+      });
+    await ctx.db.patch("orders", orderId, { status: "cancelled", updatedAt: nowIso(ctx) });
+    return null;
+  }
+});
+var addTracking = mutation({
+  args: {
+    orderId: v.id("orders"),
+    carrier: v.string(),
+    trackingCode: v.string()
+  },
+  handler: async (ctx, { orderId, carrier, trackingCode }) => {
+    const { order } = await getOrderAs(ctx, orderId, "seller");
+    if (order.status !== "ready_to_ship" && order.status !== "awaiting_address")
+      throw new AppError({ code: "CONFLICT", message: "This order already has tracking" });
+    const code = trackingCode.replace(/\s+/g, "").toUpperCase();
+    if (!/^[A-Z0-9]{8,40}$/.test(code))
+      throw new AppError({ code: "BAD_REQUEST", message: "Enter a valid tracking number" });
+    if (!CARRIERS.includes(carrier))
+      throw new AppError({ code: "BAD_REQUEST", message: "Pick a carrier" });
+    const now = nowIso(ctx);
+    await ctx.db.patch("orders", orderId, {
+      status: "shipped",
+      carrier,
+      trackingCode: code,
+      trackingUrl: carrierTrackingUrl(carrier, code) ?? void 0,
+      shippedAt: now,
+      updatedAt: now
+    });
+    return null;
+  }
+});
+var confirmReceived = mutation({
+  args: { orderId: v.id("orders") },
+  handler: async (ctx, { orderId }) => {
+    const { order } = await getOrderAs(ctx, orderId, "buyer");
+    if (order.status !== "shipped" && order.status !== "label_created")
+      throw new AppError({ code: "CONFLICT", message: "This order hasn't shipped yet" });
+    const now = nowIso(ctx);
+    await ctx.db.patch("orders", orderId, {
+      status: "delivered",
+      deliveredAt: now,
+      updatedAt: now
+    });
+    return null;
+  }
+});
+function clean(raw2) {
+  const result = cleanAddress(raw2);
+  if (!result.ok) throw new AppError({ code: "BAD_REQUEST", message: result.message });
+  return result.address;
+}
+async function verified(raw2) {
+  try {
+    return await verifyAddress(clean(raw2));
+  } catch (e) {
+    throw shippingError(e, "Couldn't check that address");
+  }
+}
+var _whoAmI = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const me = await requireUser(ctx);
+    return { _id: me._id, accountType: me.accountType ?? null, role: me.role ?? null };
+  }
+});
+var _setShipTo = internalMutation({
+  args: {
+    orderId: v.id("orders"),
+    address: storedAddressValidator,
+    saveAsDefault: v.boolean()
+  },
+  handler: async (ctx, { orderId, address, saveAsDefault }) => {
+    const { order, me } = await getOrderAs(ctx, orderId, "buyer");
+    if (!OPEN.has(order.status))
+      throw new AppError({
+        code: "CONFLICT",
+        message: "The label is already made, so the address can't change. Message the seller."
+      });
+    await ctx.db.patch("orders", orderId, {
+      shipTo: address,
+      status: "ready_to_ship",
+      // A new address makes any rates the seller fetched stale
+      easypostShipmentId: void 0,
+      updatedAt: nowIso(ctx)
+    });
+    if (saveAsDefault) await saveAddressRow(ctx, me._id, "ship_to", address);
+    return null;
+  }
+});
+var setShipTo = action({
+  args: {
+    orderId: v.id("orders"),
+    address: addressValidator,
+    saveAsDefault: v.boolean()
+  },
+  handler: async (ctx, { orderId, address, saveAsDefault }) => {
+    await ctx.runMutation(_whoAmI, {});
+    const checked = await verified(address);
+    await ctx.runMutation(_setShipTo, { orderId, address: checked, saveAsDefault });
+    return checked;
+  }
+});
+var _saveAddress = internalMutation({
+  args: { kind: kindValidator, address: storedAddressValidator },
+  handler: async (ctx, { kind, address }) => {
+    const me = await requireUser(ctx);
+    await saveAddressRow(ctx, me._id, kind, address);
+    return null;
+  }
+});
+var saveAddress = action({
+  args: { kind: kindValidator, address: addressValidator },
+  handler: async (ctx, { kind, address }) => {
+    const me = await ctx.runMutation(_whoAmI, {});
+    const isSeller = me.accountType === "seller" || me.role === "admin";
+    const isBuyer = me.accountType === "buyer" || me.role === "admin";
+    if (kind === "ship_from" && !isSeller)
+      throw new AppError({ code: "FORBIDDEN", message: "Only sellers have a return address" });
+    if (kind === "ship_to" && !isBuyer)
+      throw new AppError({ code: "FORBIDDEN", message: "Only buyers have a shipping address" });
+    const checked = await verified(address);
+    await ctx.runMutation(_saveAddress, { kind, address: checked });
+    return checked;
+  }
 });
 
 // supabase/functions/_shared/domain/enums.ts
@@ -1822,50 +2593,6 @@ async function validateLockedMedia(ctx, sellerId, media, coverCount, alreadyAtta
     if (type && !type.startsWith(`${media[i].kind}/`))
       throw bad3("Unsupported file type");
   });
-}
-
-// supabase/functions/_shared/lib/sellerStats.ts
-async function getStats(ctx, sellerId) {
-  return await ctx.db.first(
-    "sellerStats",
-    sql`where seller_id = ${sellerId}::uuid`
-  );
-}
-async function bumpStats(ctx, sellerId, delta) {
-  const f = delta.followerCount ?? 0;
-  const r = delta.reviewCount ?? 0;
-  const s = delta.ratingSum ?? 0;
-  const n = delta.salesCount ?? 0;
-  await ctx.db.rows(sql`
-    insert into public.seller_stats (seller_id, follower_count, review_count, rating_sum, sales_count)
-    values (${sellerId}::uuid, greatest(0, ${f}::int), greatest(0, ${r}::int), greatest(0, ${s}::int), greatest(0, ${n}::int))
-    on conflict (seller_id) do update set
-      follower_count = greatest(0, seller_stats.follower_count + ${f}::int),
-      review_count = greatest(0, seller_stats.review_count + ${r}::int),
-      rating_sum = greatest(0, seller_stats.rating_sum + ${s}::int),
-      sales_count = greatest(0, seller_stats.sales_count + ${n}::int)`);
-}
-function summarize(stats) {
-  const reviewCount = stats?.reviewCount ?? 0;
-  const ratingSum = stats?.ratingSum ?? 0;
-  return {
-    followerCount: stats?.followerCount ?? 0,
-    salesCount: stats?.salesCount ?? 0,
-    reviewCount,
-    rating: reviewCount ? Math.round(ratingSum / reviewCount * 10) / 10 : null
-  };
-}
-async function canReview(ctx, reviewerId, sellerId) {
-  if (reviewerId === sellerId) return false;
-  ctx.db.touch("conversations", "unlocks");
-  const found = await ctx.db.scalar(sql`
-    select exists (
-      select 1 from public.conversations where buyer_id = ${reviewerId}::uuid and seller_id = ${sellerId}::uuid
-    ) or exists (
-      select 1 from public.unlocks
-       where buyer_id = ${reviewerId}::uuid and seller_id = ${sellerId}::uuid and status = 'granted'
-    )`);
-  return found === true || found === "t";
 }
 
 // supabase/functions/_shared/lib/listingDelete.ts
@@ -2648,6 +3375,19 @@ var setStatus = mutation({
         message: "Auctions close automatically"
       });
     if (listing.status === status) return null;
+    if (status === "active") {
+      const order = await liveOrderForListing(ctx, listingId);
+      if (order && order.status !== "awaiting_address" && order.status !== "ready_to_ship")
+        throw new AppError({
+          code: "CONFLICT",
+          message: order.status === "label_created" ? "Void the shipping label in Orders before relisting" : "This item has already shipped"
+        });
+      if (order)
+        await ctx.db.patch("orders", order._id, {
+          status: "cancelled",
+          updatedAt: new Date(ctx.now()).toISOString()
+        });
+    }
     await ctx.db.patch("listings", listingId, { status });
     await bumpStats(ctx, listing.sellerId, {
       salesCount: status === "sold" ? 1 : -1
@@ -2681,14 +3421,14 @@ function partyOf(req, userId) {
   if (req.sellerId === userId) return "seller";
   return null;
 }
-function assertCanAct(req, party, action) {
+function assertCanAct(req, party, action2) {
   if (req.status !== "pending") {
     throw new AppError({
       code: "CONFLICT",
       message: "This request is already closed"
     });
   }
-  if (action === "cancel") {
+  if (action2 === "cancel") {
     if (party !== "buyer")
       throw new AppError({
         code: "FORBIDDEN",
@@ -2782,15 +3522,15 @@ var respond = mutation({
     offerCents: v.optional(v.number()),
     note: v.optional(v.string())
   },
-  handler: async (ctx, { requestId, action, offerCents, note }) => {
+  handler: async (ctx, { requestId, action: action2, offerCents, note }) => {
     const me = await requireUser(ctx);
     const req = await ctx.db.get("customRequests", requestId);
     const party = req ? partyOf(req, me._id) : null;
     if (!req || !party)
       throw new AppError({ code: "NOT_FOUND", message: "Request not found" });
-    assertCanAct(req, party, action);
+    assertCanAct(req, party, action2);
     const updatedAt = new Date(ctx.now()).toISOString();
-    if (action === "counter") {
+    if (action2 === "counter") {
       if (offerCents === void 0)
         throw new AppError({
           code: "BAD_REQUEST",
@@ -2812,12 +3552,20 @@ var respond = mutation({
       });
       return null;
     }
-    const status = action === "accept" ? "accepted" : action === "decline" ? "declined" : "cancelled";
+    const status = action2 === "accept" ? "accepted" : action2 === "decline" ? "declined" : "cancelled";
     await ctx.db.patch("customRequests", requestId, { status, updatedAt });
+    if (status === "accepted") {
+      await createOrder(ctx, {
+        sellerId: req.sellerId,
+        buyerId: req.buyerId,
+        customRequestId: requestId,
+        title: `Custom order: ${CATEGORY_LABEL_SERVER[req.category] ?? req.category}, size ${req.size}`
+      });
+    }
     return null;
   }
 });
-var list = query({
+var list2 = query({
   args: { role: partyValidator, paginationOpts: paginationOptsValidator },
   handler: async (ctx, { role, paginationOpts }) => {
     const me = await getCurrentUserDoc(ctx);
@@ -3429,7 +4177,7 @@ var listMessages = query({
 // supabase/functions/_shared/modules/notifications.ts
 var notifications_exports = {};
 __export(notifications_exports, {
-  list: () => list2,
+  list: () => list3,
   markSeen: () => markSeen,
   unreadCount: () => unreadCount2
 });
@@ -3550,7 +4298,7 @@ async function seenAt(ctx, userId) {
   const value = row?.notifications_seen_at;
   return value ? new Date(value).getTime() : 0;
 }
-var list2 = query({
+var list3 = query({
   args: {},
   handler: async (ctx) => {
     const me = await getCurrentUserDoc(ctx);
@@ -4234,6 +4982,278 @@ var remove3 = mutation({
   }
 });
 
+// supabase/functions/_shared/modules/shipping.ts
+var shipping_exports = {};
+__export(shipping_exports, {
+  _applyTracking: () => _applyTracking,
+  _clearLabel: () => _clearLabel,
+  _prepareRates: () => _prepareRates,
+  _saveLabel: () => _saveLabel,
+  _saveShipment: () => _saveShipment,
+  _shipmentFor: () => _shipmentFor,
+  _trackingTarget: () => _trackingTarget,
+  buyLabel: () => buyLabel,
+  getRates: () => getRates,
+  mode: () => mode,
+  nextTracking: () => nextTracking,
+  refreshTracking: () => refreshTracking,
+  voidLabel: () => voidLabel
+});
+var nowIso2 = (ctx) => new Date(ctx.now()).toISOString();
+var mode = query({
+  args: {},
+  handler: async () => easyPostMode()
+});
+var _prepareRates = internalMutation({
+  args: { orderId: v.id("orders") },
+  handler: async (ctx, { orderId }) => {
+    const { order, me } = await getOrderAs(ctx, orderId, "seller", { pro: true });
+    if (order.status === "awaiting_address")
+      throw new AppError({ code: "CONFLICT", message: "The buyer hasn't added their address yet" });
+    if (order.status !== "ready_to_ship")
+      throw new AppError({ code: "CONFLICT", message: "This order already has a label" });
+    if (!order.shipTo)
+      throw new AppError({ code: "CONFLICT", message: "The buyer hasn't added their address yet" });
+    const from = await getSavedAddress(ctx, me._id, "ship_from");
+    if (!from)
+      throw new AppError({ code: "BAD_REQUEST", message: "Add your return address first" });
+    return { to: order.shipTo, from };
+  }
+});
+var _saveShipment = internalMutation({
+  args: { orderId: v.id("orders"), shipmentId: v.string() },
+  handler: async (ctx, { orderId, shipmentId }) => {
+    const { order } = await getOrderAs(ctx, orderId, "seller", { pro: true });
+    if (order.status !== "ready_to_ship") return null;
+    await ctx.db.patch("orders", orderId, { easypostShipmentId: shipmentId });
+    return null;
+  }
+});
+var getRates = action({
+  args: {
+    orderId: v.id("orders"),
+    presetId: v.string(),
+    weightOz: v.number()
+  },
+  handler: async (ctx, { orderId, presetId, weightOz }) => {
+    const preset = PACKAGE_PRESETS.find((p) => p.id === presetId);
+    if (!preset) throw new AppError({ code: "BAD_REQUEST", message: "Pick a package" });
+    if (!Number.isFinite(weightOz) || weightOz < 0.5 || weightOz > MAX_WEIGHT_OZ)
+      throw new AppError({ code: "BAD_REQUEST", message: "Enter the package weight in ounces" });
+    const { to, from } = await ctx.runMutation(_prepareRates, { orderId });
+    let shipment;
+    try {
+      shipment = await createShipment({
+        from,
+        to,
+        parcel: {
+          length: preset.length,
+          width: preset.width,
+          height: preset.height,
+          weightOz: Math.round(weightOz * 10) / 10
+        },
+        reference: orderId
+      });
+    } catch (e) {
+      throw shippingError(e, "Couldn't get shipping prices");
+    }
+    await ctx.runMutation(_saveShipment, { orderId, shipmentId: shipment.id });
+    const rates = (shipment.rates ?? []).map((r) => ({
+      id: r.id,
+      carrier: r.carrier,
+      service: r.service.replace(/([a-z])([A-Z])/g, "$1 $2"),
+      cents: toCents(r.rate) ?? 0,
+      days: r.delivery_days ?? r.est_delivery_days ?? null
+    })).filter((r) => r.cents > 0).sort((a, b) => a.cents - b.cents);
+    if (rates.length === 0) {
+      const why = shipment.messages?.map((m) => m.message).filter(Boolean)[0];
+      throw new AppError({
+        code: "BAD_REQUEST",
+        message: why ? `No prices available: ${why}` : "No prices available for this package"
+      });
+    }
+    return { rates, mode: easyPostMode() };
+  }
+});
+var _shipmentFor = internalMutation({
+  args: { orderId: v.id("orders") },
+  handler: async (ctx, { orderId }) => {
+    const { order } = await getOrderAs(ctx, orderId, "seller");
+    return {
+      status: order.status,
+      shipmentId: order.easypostShipmentId ?? null,
+      labelUrl: order.labelUrl ?? null
+    };
+  }
+});
+var _saveLabel = internalMutation({
+  args: {
+    orderId: v.id("orders"),
+    shipmentId: v.string(),
+    carrier: v.string(),
+    service: v.string(),
+    postageCents: v.optional(v.number()),
+    trackingCode: v.string(),
+    trackingUrl: v.optional(v.string()),
+    labelUrl: v.string()
+  },
+  handler: async (ctx, { orderId, ...label }) => {
+    const { order } = await getOrderAs(ctx, orderId, "seller", { pro: true });
+    if (order.labelUrl) return null;
+    if (order.easypostShipmentId !== label.shipmentId)
+      throw new AppError({ code: "CONFLICT", message: "These prices are out of date. Get new prices." });
+    const now = nowIso2(ctx);
+    await ctx.db.patch("orders", orderId, {
+      status: "label_created",
+      carrier: label.carrier,
+      service: label.service,
+      postageCents: label.postageCents,
+      trackingCode: label.trackingCode,
+      trackingUrl: label.trackingUrl,
+      trackingStatus: "pre_transit",
+      labelUrl: label.labelUrl,
+      labelCreatedAt: now,
+      updatedAt: now
+    });
+    return null;
+  }
+});
+var buyLabel = action({
+  args: { orderId: v.id("orders"), rateId: v.string() },
+  handler: async (ctx, { orderId, rateId }) => {
+    const current = await ctx.runMutation(_shipmentFor, { orderId });
+    if (current.labelUrl) return { labelUrl: current.labelUrl };
+    if (current.status !== "ready_to_ship" || !current.shipmentId)
+      throw new AppError({ code: "CONFLICT", message: "Get prices for this order first" });
+    let shipment;
+    try {
+      shipment = await buyShipment(current.shipmentId, rateId);
+    } catch (e) {
+      throw shippingError(e, "Couldn't buy the label");
+    }
+    const labelUrl = labelUrlOf(shipment);
+    if (!labelUrl || !shipment.tracking_code)
+      throw new AppError({ code: "INTERNAL", message: "The label wasn't ready. Try again in a minute." });
+    await ctx.runMutation(_saveLabel, {
+      orderId,
+      shipmentId: shipment.id,
+      carrier: shipment.selected_rate?.carrier ?? "",
+      service: (shipment.selected_rate?.service ?? "").replace(/([a-z])([A-Z])/g, "$1 $2"),
+      postageCents: toCents(shipment.selected_rate?.rate),
+      trackingCode: shipment.tracking_code,
+      trackingUrl: shipment.tracker?.public_url ?? void 0,
+      labelUrl
+    });
+    return { labelUrl };
+  }
+});
+var _clearLabel = internalMutation({
+  args: { orderId: v.id("orders") },
+  handler: async (ctx, { orderId }) => {
+    const { order } = await getOrderAs(ctx, orderId, "seller");
+    if (order.status !== "label_created") return null;
+    await ctx.db.patch("orders", orderId, {
+      status: "ready_to_ship",
+      easypostShipmentId: void 0,
+      carrier: void 0,
+      service: void 0,
+      postageCents: void 0,
+      trackingCode: void 0,
+      trackingUrl: void 0,
+      trackingStatus: void 0,
+      labelUrl: void 0,
+      labelCreatedAt: void 0,
+      updatedAt: nowIso2(ctx)
+    });
+    return null;
+  }
+});
+var voidLabel = action({
+  args: { orderId: v.id("orders") },
+  handler: async (ctx, { orderId }) => {
+    const current = await ctx.runMutation(_shipmentFor, { orderId });
+    if (current.status !== "label_created" || !current.shipmentId)
+      throw new AppError({
+        code: "CONFLICT",
+        message: "Only a label that hasn't been scanned by the carrier can be voided"
+      });
+    try {
+      const res = await refundShipment(current.shipmentId);
+      if (res.refund_status === "rejected" || res.refund_status === "not_applicable")
+        throw new AppError({
+          code: "CONFLICT",
+          message: "The carrier wouldn't void this label (it may already be scanned)"
+        });
+    } catch (e) {
+      throw shippingError(e, "Couldn't void the label");
+    }
+    await ctx.runMutation(_clearLabel, { orderId });
+    return null;
+  }
+});
+var _trackingTarget = internalMutation({
+  args: { orderId: v.id("orders") },
+  handler: async (ctx, { orderId }) => {
+    let found;
+    try {
+      found = await getOrderAs(ctx, orderId, "buyer");
+    } catch {
+      found = await getOrderAs(ctx, orderId, "seller");
+    }
+    const o = found.order;
+    return { shipmentId: o.easypostShipmentId ?? null, status: o.status, labelUrl: o.labelUrl ?? null };
+  }
+});
+var _applyTracking = internalMutation({
+  args: {
+    orderId: v.id("orders"),
+    trackingStatus: v.string(),
+    trackingUrl: v.optional(v.string())
+  },
+  handler: async (ctx, { orderId, trackingStatus, trackingUrl }) => {
+    const order = await ctx.db.get("orders", orderId);
+    if (!order || order.status === "cancelled" || order.status === "delivered") return null;
+    await ctx.db.patch("orders", orderId, nextTracking(order, trackingStatus, trackingUrl, nowIso2(ctx)));
+    return null;
+  }
+});
+function nextTracking(order, trackingStatus, trackingUrl, now) {
+  const patch = {
+    trackingStatus,
+    trackingUrl: trackingUrl || order.trackingUrl,
+    updatedAt: now
+  };
+  if (trackingStatus === "delivered") {
+    patch.status = "delivered";
+    patch.deliveredAt = now;
+    patch.shippedAt = order.shippedAt ?? now;
+  } else if (IN_TRANSIT_STATUSES.has(trackingStatus) && order.status === "label_created") {
+    patch.status = "shipped";
+    patch.shippedAt = now;
+  }
+  return patch;
+}
+var refreshTracking = action({
+  args: { orderId: v.id("orders") },
+  handler: async (ctx, { orderId }) => {
+    const target = await ctx.runMutation(_trackingTarget, { orderId });
+    if (!target.shipmentId || !target.labelUrl) return null;
+    try {
+      const shipment = await getShipment(target.shipmentId);
+      const tracker = shipment.tracker?.id ? await getTracker(shipment.tracker.id) : null;
+      if (!tracker?.status) return null;
+      await ctx.runMutation(_applyTracking, {
+        orderId,
+        trackingStatus: tracker.status,
+        trackingUrl: tracker.public_url ?? void 0
+      });
+      return tracker.status;
+    } catch (e) {
+      throw shippingError(e, "Couldn't refresh tracking");
+    }
+  }
+});
+
 // supabase/functions/_shared/modules/subscriptions.ts
 var subscriptions_exports = {};
 __export(subscriptions_exports, {
@@ -4436,14 +5456,14 @@ var revoke = mutation({
 var featured = query({
   args: {},
   handler: async (ctx) => {
-    const nowIso = new Date(ctx.now()).toISOString();
+    const nowIso3 = new Date(ctx.now()).toISOString();
     ctx.db.touch("subscriptions");
     const listings = await ctx.db.docs(
       "listings",
       sql`
         select l.* from (
           select user_id, expires_at from public.subscriptions
-           where status = 'active' and expires_at > ${nowIso}::timestamptz
+           where status = 'active' and expires_at > ${nowIso3}::timestamptz
            order by expires_at desc, id desc limit ${FEATURED_SELLERS}
         ) s
         cross join lateral (
@@ -4757,11 +5777,11 @@ var finishSignup = mutation({
     const details = { country, gender, ageRange };
     const problem = accountType === "buyer" ? invalidBuyerDetail(details) : invalidSellerDetail(details);
     if (problem) throw new AppError({ code: "BAD_REQUEST", message: problem });
-    const clean = Object.fromEntries(Object.entries(details).filter(([, x]) => x));
+    const clean2 = Object.fromEntries(Object.entries(details).filter(([, x]) => x));
     await ctx.db.patch("users", user._id, {
       accountType,
       ...country && !user.location ? { location: country } : {},
-      ...accountType === "buyer" ? { buyerDetails: { ...user.buyerDetails, ...clean } } : { sellerDetails: { ...user.sellerDetails, ...clean } }
+      ...accountType === "buyer" ? { buyerDetails: { ...user.buyerDetails, ...clean2 } } : { sellerDetails: { ...user.sellerDetails, ...clean2 } }
     });
     return null;
   }
@@ -4957,7 +5977,7 @@ var updateSettings = mutation({
     }
     const problem = invalidSetting(settings);
     if (problem) throw new AppError({ code: "BAD_REQUEST", message: problem });
-    const unique = (list3) => list3 ? [...new Set(list3)] : void 0;
+    const unique = (list4) => list4 ? [...new Set(list4)] : void 0;
     const next = { ...user.settings };
     for (const [key, value] of Object.entries(settings)) {
       if (value !== void 0) next[key] = value;
@@ -5236,9 +6256,11 @@ var registry = {
   listings: functionsOf(listings_exports),
   messages: functionsOf(messages_exports),
   notifications: functionsOf(notifications_exports),
+  orders: functionsOf(orders_exports),
   posts: functionsOf(posts_exports),
   reports: functionsOf(reports_exports),
   reviews: functionsOf(reviews_exports),
+  shipping: functionsOf(shipping_exports),
   subscriptions: functionsOf(subscriptions_exports),
   unlocks: functionsOf(unlocks_exports),
   users: functionsOf(users_exports),
@@ -5260,8 +6282,8 @@ var db = (0, import_npm_postgres_3_4.default)(env("SUPABASE_DB_URL"), {
   connection: { TimeZone: "UTC" }
 });
 var runner = {
-  async transaction(mode, fn) {
-    const options = mode === "read" ? "isolation level repeatable read read only" : "isolation level serializable";
+  async transaction(mode2, fn) {
+    const options = mode2 === "read" ? "isolation level repeatable read read only" : "isolation level serializable";
     return await db.begin(
       options,
       (tx) => fn({
