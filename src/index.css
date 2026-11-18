@@ -87,7 +87,7 @@
   --secondary: #1f2235;
   --secondary-foreground: #f2f6ff;
   --muted: #0f172a;
-  --muted-foreground: #969aa3;
+  --muted-foreground: #ffffff;
   --accent: #1f2235;
   --accent-foreground: #ede9fe;
   --destructive: oklch(0.66 0.22 18);
@@ -100,7 +100,7 @@
   --chart-4: #a78bfa;
   --chart-5: #5b21b6;
   --sidebar: #0a0f22;
-  --sidebar-foreground: #babdcc;
+  --sidebar-foreground: #ffffff;
   --sidebar-primary: #7f22fe;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #1f2235;

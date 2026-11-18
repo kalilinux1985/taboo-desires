@@ -198,7 +198,7 @@ export default function PricingPage() {
           className="flex flex-col items-center gap-3 border-b pb-8 text-center"
         >
           <h1 className="flex flex-wrap items-center justify-center gap-x-3 font-display text-4xl text-balance md:text-6xl">
-            <Medal className="size-10 text-rose-400 md:size-12" /> Become Premium &amp; start making money!
+            <Medal className="size-10 text-red-500 md:size-12" /> Become Premium &amp; start making money!
           </h1>
           <p className="text-lg font-semibold text-violet-600">One sale can cover your whole plan.</p>
         </motion.header>

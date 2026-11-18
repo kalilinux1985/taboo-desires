@@ -192,7 +192,7 @@ function PremiumBanner({ onNavigate }: { onNavigate: () => void }) {
   if (me?.isPro) {
     return (
       <p className="flex items-center justify-center gap-2 py-3.5 text-sm font-extrabold uppercase tracking-[0.18em] text-violet-600">
-        <Medal className="size-5 text-rose-400" /> Pro member
+        <Medal className="size-5 text-red-500" /> Pro member
       </p>
     );
   }
@@ -202,7 +202,7 @@ function PremiumBanner({ onNavigate }: { onNavigate: () => void }) {
       onClick={onNavigate}
       className="group flex items-center justify-center gap-2 py-3.5 text-lg font-extrabold uppercase tracking-[0.18em] transition-colors hover:bg-primary/20"
     >
-      <Medal className="size-6 text-rose-400" />
+      <Medal className="size-6 text-red-500" />
       Go Premium
       <ArrowRight className="size-5 transition-transform group-hover:translate-x-1" />
     </Link>

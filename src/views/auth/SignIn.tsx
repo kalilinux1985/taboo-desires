@@ -31,19 +31,19 @@ const SERIF = "[font-family:var(--font-signin-serif),Cambria,Georgia,serif]";
 
 const FIELD = cn(
   SERIF,
-  "signin-field h-[42px] w-full rounded-[5px] border px-4 text-[17px] tracking-[0.02em] text-[#b8b8b9] outline-none placeholder:text-[#4f5051] focus:border-[#4c1d95]",
+  "signin-field h-[42px] w-full rounded-[5px] border px-4 text-[17px] tracking-[0.02em] text-white outline-none placeholder:text-white/70 focus:border-[#4c1d95]",
 );
 const SUBMIT = cn(
   ROUNDED,
   "flex h-[38px] w-full cursor-pointer items-center justify-center gap-2 rounded-[5px] bg-[#4c1d95] text-[16px] font-bold text-white transition-colors hover:bg-[#5b24b3] disabled:cursor-default disabled:opacity-60",
 );
-const FOOTNOTE = cn(ROUNDED, "text-center text-[12px] text-[#b8b8b9]");
+const FOOTNOTE = cn(ROUNDED, "text-center text-[12px] text-white");
 const FOOT_LINK = "cursor-pointer text-[#7c3aed] underline underline-offset-2 hover:text-[#9d5cff]";
 
 /** The two-column page: the card on the left, the portrait on the right. */
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="grid min-h-dvh bg-[#0c0f15] text-[#b8b8b9] lg:grid-cols-2">
+    <div className="grid min-h-dvh bg-[#0c0f15] text-white lg:grid-cols-2">
       <div className="flex flex-col items-center justify-center px-4 py-10 sm:px-8">
         <Link href="/" className="flex flex-col items-center gap-[10px]">
           <img src="/signin/logo.png" alt="" className="size-[122px]" />
@@ -68,8 +68,8 @@ function Shell({ children }: { children: React.ReactNode }) {
 function Heading({ title, sub }: { title: string; sub: string }) {
   return (
     <div className={cn(SERIF, "flex flex-col items-center gap-[10px] text-center")}>
-      <h1 className="text-[40px] leading-none text-[#b8b8b9] sm:text-[44px]">{title}</h1>
-      <p className="text-[16px] text-[#b8b8b9]">{sub}</p>
+      <h1 className="text-[40px] leading-none text-white sm:text-[44px]">{title}</h1>
+      <p className="text-[16px] text-white">{sub}</p>
     </div>
   );
 }
@@ -313,7 +313,7 @@ export default function SignInPage() {
               className={cn(FIELD, "appearance-none [color-scheme:dark]", !country && "text-[#4f5051]")}
             >
               <option value="" disabled>COUNTRY</option>
-              {COUNTRIES.map((c) => <option key={c} value={c} className="text-[#b8b8b9]">{c}</option>)}
+              {COUNTRIES.map((c) => <option key={c} value={c} className="text-white">{c}</option>)}
             </select>
             <div className="grid grid-cols-[110px_1fr] gap-3">
               <select
@@ -326,7 +326,7 @@ export default function SignInPage() {
                 className={cn(FIELD, "appearance-none [color-scheme:dark]", !age && "text-[#4f5051]")}
               >
                 <option value="" disabled>AGE</option>
-                {AGE_RANGES.map((a) => <option key={a} value={a} className="text-[#b8b8b9]">{a}</option>)}
+                {AGE_RANGES.map((a) => <option key={a} value={a} className="text-white">{a}</option>)}
               </select>
               <select
                 id="gender"
@@ -338,7 +338,7 @@ export default function SignInPage() {
                 className={cn(FIELD, "appearance-none [color-scheme:dark]", !gender && "text-[#4f5051]")}
               >
                 <option value="" disabled>GENDER</option>
-                {GENDERS.map((g) => <option key={g} value={g} className="text-[#b8b8b9]">{g}</option>)}
+                {GENDERS.map((g) => <option key={g} value={g} className="text-white">{g}</option>)}
               </select>
             </div>
           </div>
@@ -357,7 +357,7 @@ export default function SignInPage() {
                     "h-[42px] cursor-pointer rounded-[5px] border text-[15px] font-bold capitalize transition-colors",
                     accountType === t
                       ? "border-[#4c1d95] bg-[#4c1d95]/30 text-white"
-                      : "border-[#33333355] text-[#b8b8b9] hover:border-[#4c1d95]",
+                      : "border-[#33333355] text-white hover:border-[#4c1d95]",
                   )}
                 >
                   {t}
@@ -365,7 +365,7 @@ export default function SignInPage() {
               ))}
             </div>
           </div>
-          <label className={cn(SERIF, "flex cursor-pointer items-start gap-3 text-[14px] text-[#b8b8b9]")}>
+          <label className={cn(SERIF, "flex cursor-pointer items-start gap-3 text-[14px] text-white")}>
             <input
               id="confirm-18"
               name="confirm-18"

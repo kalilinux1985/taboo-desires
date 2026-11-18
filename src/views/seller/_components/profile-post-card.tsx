@@ -73,7 +73,7 @@ export default function ProfilePostCard({
           {label && (
             <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-[#7b3aec]">{label}</span>
           )}
-          <p className="flex min-w-0 items-baseline gap-2 text-[#66656a]">
+          <p className="flex min-w-0 items-baseline gap-2 text-white">
             <Link href={profile} className="cursor-pointer truncate text-[15px] tracking-[0.03em] hover:underline">
               {item.author.name}
             </Link>
@@ -86,7 +86,7 @@ export default function ProfilePostCard({
         {item.canDelete && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Post options" className="size-7 shrink-0 cursor-pointer text-[#66656a]">
+              <Button variant="ghost" size="icon" aria-label="Post options" className="size-7 shrink-0 cursor-pointer text-white">
                 <MoreHorizontal />
               </Button>
             </DropdownMenuTrigger>
@@ -103,7 +103,7 @@ export default function ProfilePostCard({
       </header>
 
       {text && (
-        <p className="mt-4 whitespace-pre-wrap break-words text-[15px] leading-[1.55] text-[#fcfdfd]">{text}</p>
+        <p className="mt-4 whitespace-pre-wrap break-words text-[15px] leading-[1.55] text-white">{text}</p>
       )}
       {item.images.length > 0 && (
         <div className="mt-3 [&>div]:max-w-[185px]">
@@ -116,17 +116,17 @@ export default function ProfilePostCard({
         </div>
       )}
       {item.kind === "listing" && !item.listing && (
-        <p className="mt-3 text-sm text-[#66656a]">This listing is no longer available.</p>
+        <p className="mt-3 text-sm text-white">This listing is no longer available.</p>
       )}
 
-      <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-[12px] text-[#9fa0a2]">
+      <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-[12px] text-white">
         <button
           type="button"
           onClick={() => setShowComments((s) => !s)}
           aria-expanded={showComments}
           aria-label={showComments ? "Hide comments" : "Show comments"}
           title="Comments"
-          className={cn(ACTION, showComments && "text-[#f9f9f9]")}
+          className={cn(ACTION, showComments && "text-white")}
         >
           <MessageCircle className="size-4 text-violet-600" />
           <span>{item.commentCount}</span>
@@ -138,7 +138,7 @@ export default function ProfilePostCard({
             aria-pressed={item.likedByMe}
             aria-label={item.likedByMe ? "Unlike" : "Like"}
             title={item.likedByMe ? "Unlike" : "Like"}
-            className={cn(ACTION, item.likedByMe && "text-[#f9f9f9]")}
+            className={cn(ACTION, item.likedByMe && "text-white")}
           >
             <ThumbsUp className="size-4 text-violet-600" />
             <span>{item.likeCount}</span>

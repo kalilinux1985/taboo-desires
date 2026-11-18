@@ -75,10 +75,10 @@ export function ShopCard({ listing }: { listing: ListingCardData }) {
           <span className="ml-1 font-mono text-[11px] text-violet-600">USD</span>
         </span>
         {liveAuction ? (
-          <span className="flex items-center gap-1.5 rounded-[5px] border border-rose-400 px-3 py-1 text-xs font-extrabold text-rose-400">
+          <span className="flex items-center gap-1.5 rounded-[5px] border border-rose-400 px-3 py-1 text-xs font-extrabold text-red-500">
             <Gavel className="size-3.5" /> {liveAuction.bidCount}{" "}
             {liveAuction.bidCount === 1 ? "bid" : "bids"} ·{" "}
-            <Countdown endsAt={liveAuction.endsAt} className="text-rose-400" />
+            <Countdown endsAt={liveAuction.endsAt} className="text-red-500" />
           </span>
         ) : (
           <span className="rounded-[5px] bg-primary px-3 py-1 text-xs font-extrabold text-primary-foreground">

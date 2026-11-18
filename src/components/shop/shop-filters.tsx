@@ -157,9 +157,9 @@ const SELLER_OPTIONS: Record<string, { label: string; options: Option[] }> = {
   gender: {
     label: "Gender",
     options: [
-      opt("Female", ["Female"], { icon: Venus, iconClass: "text-pink-500" }),
-      opt("Male", ["Male"], { icon: Mars, iconClass: "text-cyan-500" }),
-      opt("Transgender", ["Trans woman", "Trans man"], { icon: Transgender, iconClass: "text-orange-500" }),
+      opt("Female", ["Female"], { icon: Venus, iconClass: "text-white" }),
+      opt("Male", ["Male"], { icon: Mars, iconClass: "text-white" }),
+      opt("Transgender", ["Trans woman", "Trans man"], { icon: Transgender, iconClass: "text-white" }),
       opt("Other", ["Other", "Non-binary"], { icon: Circle, iconClass: "text-muted-foreground" }),
     ],
   },

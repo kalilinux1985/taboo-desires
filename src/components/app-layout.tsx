@@ -104,10 +104,10 @@ function ShopMenu({ label, short, section }: (typeof MENUS)[number]) {
   const links = SHOP_SECTIONS.find((s) => s.label === section)?.links ?? [];
   return (
     <DropdownMenu modal={false}>
-      <DropdownMenuTrigger className="flex cursor-pointer items-center gap-1 whitespace-nowrap font-serif text-[13px] uppercase text-slate-300 outline-none transition-colors hover:text-violet-600 focus-visible:text-white data-[state=open]:text-white xl:text-[15px]">
+      <DropdownMenuTrigger className="flex cursor-pointer items-center gap-1 whitespace-nowrap font-serif text-[13px] uppercase text-white outline-none transition-colors hover:text-violet-600 focus-visible:text-white data-[state=open]:text-white xl:text-[15px]">
         <span className="xl:hidden">{short}</span>
         <span className="hidden xl:inline">{label}</span>
-        <ChevronDown className="size-3.5 text-slate-300" strokeWidth={1.75} />
+        <ChevronDown className="size-3.5 text-white" strokeWidth={1.75} />
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="start"
@@ -117,7 +117,7 @@ function ShopMenu({ label, short, section }: (typeof MENUS)[number]) {
         {links.map((l) => {
           const href = "page" in l ? shopPageHref(l.page) : l.href;
           return (
-            <DropdownMenuItem key={href} asChild className="cursor-pointer rounded-none border-b border-white/10 px-2 py-[5px] text-[13px] leading-tight text-slate-300 transition-colors last:border-b-0 hover:bg-transparent hover:text-violet-600 focus:bg-transparent focus:text-violet-600">
+            <DropdownMenuItem key={href} asChild className="cursor-pointer rounded-none border-b border-white/10 px-2 py-[5px] text-[13px] leading-tight text-white transition-colors last:border-b-0 hover:bg-transparent hover:text-violet-600 focus:bg-transparent focus:text-violet-600">
               <Link href={href}>{l.label}</Link>
             </DropdownMenuItem>
           );
@@ -140,14 +140,14 @@ function HeaderSearch() {
   };
   const field = (autoFocus: boolean) => (
     <form onSubmit={submit} role="search" className="flex h-[41px] w-full items-center gap-2.5 rounded-[5px] bg-background px-3 shadow-[inset_0_3px_8px_rgba(0,0,0,0.28),inset_0_0_3px_rgba(0,0,0,0.28)]">
-      <Search className="size-5 shrink-0 text-slate-400" strokeWidth={1.5} />
+      <Search className="size-5 shrink-0 text-white" strokeWidth={1.5} />
       <input
         value={text}
         onChange={(e) => setText(e.target.value)}
         autoFocus={autoFocus}
         aria-label="Search users and listings"
         placeholder="Search Users / Listings..."
-        className="field-bare min-w-0 flex-1 bg-transparent font-serif text-[13px] text-slate-200 outline-none placeholder:text-slate-400 xl:text-[14px]"
+        className="field-bare min-w-0 flex-1 bg-transparent font-serif text-[13px] text-white outline-none placeholder:text-white/70 xl:text-[14px]"
       />
     </form>
   );

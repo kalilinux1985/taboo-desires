@@ -94,10 +94,10 @@ function CommentForm({
         onChange={(e) => setBody(e.target.value)}
         className={cn(
           boxClass(variant),
-          "w-full pl-4 pr-10 text-[#f2f6ff] outline-none focus:ring-1 focus:ring-violet-600/50",
+          "w-full pl-4 pr-10 text-white outline-none focus:ring-1 focus:ring-violet-600/50",
           variant === "profile"
-            ? "h-[31px] text-[12px] placeholder:text-[#4b5263]"
-            : "h-9 text-[13px] placeholder:text-slate-400",
+            ? "h-[31px] text-[12px] placeholder:text-white/70"
+            : "h-9 text-[13px] placeholder:text-white/70",
         )}
       />
       <button
@@ -157,13 +157,13 @@ function CommentItem({
         <div className="flex min-w-0 flex-1 flex-col gap-2.5">
           <div className={cn(PROFILE_BOX, "flex min-h-[72px] flex-col gap-1 px-[13px] py-2")}>
             <div className="flex items-start justify-between gap-3">
-              <Link href={profile} className="cursor-pointer truncate text-[12px] tracking-[0.03em] text-[#eaeceb] hover:underline">
+              <Link href={profile} className="cursor-pointer truncate text-[12px] tracking-[0.03em] text-white hover:underline">
                 {comment.author.name}
               </Link>
-              <span className="flex shrink-0 items-center gap-2 text-[10px] text-[#e3e4e6]">
+              <span className="flex shrink-0 items-center gap-2 text-[10px] text-white">
                 <span title={new Date(comment._creationTime).toLocaleString()}>{shortAge(comment._creationTime)}</span>
                 {comment.canDelete ? (
-                  <button type="button" aria-label="Delete comment" onClick={remove_} className="cursor-pointer hover:text-rose-400">
+                  <button type="button" aria-label="Delete comment" onClick={remove_} className="cursor-pointer hover:text-red-500">
                     <Trash2 className="size-3" />
                   </button>
                 ) : (
@@ -171,11 +171,11 @@ function CommentItem({
                 )}
               </span>
             </div>
-            <p className="whitespace-pre-wrap break-words text-[12px] leading-5 text-[#f5f7f6]">{comment.body}</p>
+            <p className="whitespace-pre-wrap break-words text-[12px] leading-5 text-white">{comment.body}</p>
           </div>
 
           {/* Same as the post's actions: outlined violet icons, reply first, then like with its count and likers */}
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-1 pl-0.5 text-[12px] text-[#9da1a2]">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-1 pl-0.5 text-[12px] text-white">
             <Authenticated>
               <button
                 type="button"
@@ -206,7 +206,7 @@ function CommentItem({
                 type="button"
                 onClick={() => setShowReplies((s) => !s)}
                 aria-expanded={showReplies}
-                className={cn(TEXT_ACTION, showReplies && "text-[#f9f9f9]")}
+                className={cn(TEXT_ACTION, showReplies && "text-white")}
               >
                 {showReplies
                   ? "Hide replies"
@@ -230,17 +230,17 @@ function CommentItem({
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <div className={cn(COMMENT_BOX, "flex min-h-[84px] flex-col gap-1 px-[15px] py-2.5")}>
           <div className="flex items-start justify-between gap-3">
-            <Link href={profile} className="cursor-pointer truncate text-[13px] text-[#f6f8ff] hover:underline">
+            <Link href={profile} className="cursor-pointer truncate text-[13px] text-white hover:underline">
               {comment.author.name}
             </Link>
-            <span className="flex shrink-0 items-center gap-2 text-[10px] text-[#cbd1df]">
+            <span className="flex shrink-0 items-center gap-2 text-[10px] text-white">
               <span title={new Date(comment._creationTime).toLocaleString()}>{shortAge(comment._creationTime)}</span>
               {comment.canDelete ? (
                 <button
                   type="button"
                   aria-label="Delete comment"
                   onClick={() => remove({ commentId: comment._id }).catch((e) => toast.error(getErrorMessage(e, "Could not delete")))}
-                  className="cursor-pointer hover:text-rose-400"
+                  className="cursor-pointer hover:text-red-500"
                 >
                   <Trash2 className="size-3" />
                 </button>
@@ -249,10 +249,10 @@ function CommentItem({
               )}
             </span>
           </div>
-          <p className="whitespace-pre-wrap break-words text-[13px] leading-5 text-[#f2f6ff]">{comment.body}</p>
+          <p className="whitespace-pre-wrap break-words text-[13px] leading-5 text-white">{comment.body}</p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-x-7 gap-y-1 pl-0.5 text-[13px] text-[#9a9ca5]">
+        <div className="flex flex-wrap items-center gap-x-7 gap-y-1 pl-0.5 text-[13px] text-white">
           <Authenticated>
             <button
               type="button"
@@ -284,7 +284,7 @@ function CommentItem({
               aria-expanded={showReplies}
               aria-label={`${showReplies ? "Hide" : "Show"} ${comment.replyCount} ${comment.replyCount === 1 ? "reply" : "replies"}`}
               title={showReplies ? "Hide replies" : "Show replies"}
-              className={cn(LINK_ACTION, showReplies && "text-[#f2f6ff]")}
+              className={cn(LINK_ACTION, showReplies && "text-white")}
             >
               <MessagesSquare className="size-3.5 text-violet-600" />
               {comment.replyCount}
@@ -324,7 +324,7 @@ function Replies({ postId, parentId }: { postId: Id<"posts">; parentId: Id<"post
         <CommentItem key={r._id} postId={postId} comment={r} threadId={parentId} />
       ))}
       {status === "CanLoadMore" && (
-        <button type="button" onClick={() => loadMore(10)} className={cn(LINK_ACTION, "self-start text-[13px] text-[#9a9ca5]")}>
+        <button type="button" onClick={() => loadMore(10)} className={cn(LINK_ACTION, "self-start text-[13px] text-white")}>
           More replies
         </button>
       )}
@@ -355,7 +355,7 @@ function CommentList({ postId }: { postId: Id<"posts"> }) {
         ))}
       </ul>
       {status === "CanLoadMore" && (
-        <button type="button" onClick={() => loadMore(10)} className={cn(LINK_ACTION, "self-start pl-[37px] text-[13px] text-[#9a9ca5]")}>
+        <button type="button" onClick={() => loadMore(10)} className={cn(LINK_ACTION, "self-start pl-[37px] text-[13px] text-white")}>
           View more comments
         </button>
       )}
@@ -386,7 +386,7 @@ export default function PostComments({
         )}
       </Authenticated>
       <Unauthenticated>
-        <p className="text-[13px] text-[#61646d]">
+        <p className="text-[13px] text-white">
           <Link href="/signin" className="cursor-pointer text-violet-600 hover:underline">
             Sign in
           </Link>{" "}

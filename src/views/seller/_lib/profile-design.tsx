@@ -57,7 +57,7 @@ export function ProfilePicture({ url, name }: { url: string | null; name: string
         <ZoomImage src={url} alt={name} className="size-full"><img src={url} alt={name} className="size-full object-cover" /></ZoomImage>
       ) : (
         <div className="flex size-full items-center justify-center">
-          <ImageIcon className="size-[84%] text-[#adacb1]" strokeWidth={1.1} />
+          <ImageIcon className="size-[84%] text-white" strokeWidth={1.1} />
         </div>
       )}
     </div>

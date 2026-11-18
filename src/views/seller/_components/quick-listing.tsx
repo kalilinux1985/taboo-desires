@@ -35,7 +35,7 @@ import { profileFontVars } from "../_lib/fonts.ts";
 
 const MAX_BYTES = 10 * 1024 * 1024;
 const MAX_PHOTOS = 4;
-const FIELD = "h-9 rounded-[5px] border-white/[3%] text-sm placeholder:text-slate-400";
+const FIELD = "h-9 rounded-[5px] border-white/[3%] text-sm placeholder:text-white/70";
 
 type Photo = { id: Id<"_storage">; url: string };
 
@@ -180,7 +180,7 @@ function QuickListingForm({ onPosted }: { onPosted: () => void }) {
           </Link>
         )}
       </div>
-      <p className="text-xs text-slate-500">
+      <p className="text-xs text-white">
         Need sizes, wear time or an auction?{" "}
         <Link href="/sell" className="text-violet-600 hover:underline">Use the full listing form</Link>
       </p>
@@ -217,7 +217,7 @@ export default function CreateListingButton({ className }: { className?: string 
           <DialogTitle className={cn(HEADING_FONT, "w-fit border-b-2 border-violet-bright pb-0.5 text-2xl font-normal")}>
             Create a Listing
           </DialogTitle>
-          <DialogDescription className="text-slate-400">
+          <DialogDescription className="text-white">
             Add photos, a title and a price. It goes live in your shop right away.
           </DialogDescription>
         </DialogHeader>

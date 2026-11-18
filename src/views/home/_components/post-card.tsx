@@ -118,7 +118,7 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         <header className="flex items-center gap-2">
           <p className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-0.5">
-            <Link href={profile} className="cursor-pointer truncate text-[15px] font-bold text-[#696b78] hover:underline">
+            <Link href={profile} className="cursor-pointer truncate text-[15px] font-bold text-white hover:underline">
               {item.author.name}
             </Link>
             {item.author.country && (
@@ -130,7 +130,7 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
           {item.canDelete && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="Post options" className="size-7 shrink-0 cursor-pointer text-[#61646d]">
+                <Button variant="ghost" size="icon" aria-label="Post options" className="size-7 shrink-0 cursor-pointer text-white">
                   <MoreHorizontal />
                 </Button>
               </DropdownMenuTrigger>
@@ -147,7 +147,7 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
         </header>
 
         {text && (
-          <p className="whitespace-pre-wrap break-words text-[15px] leading-snug text-[#a8abb4]">
+          <p className="whitespace-pre-wrap break-words text-[15px] leading-snug text-white">
             {text}
           </p>
         )}
@@ -155,17 +155,17 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
         {item.images.length > 0 && <PostImages images={item.images} />}
         {item.listing && <ListingPreview listing={item.listing} />}
         {item.kind === "listing" && !item.listing && (
-          <p className="text-sm text-[#61646d]">This listing is no longer available.</p>
+          <p className="text-sm text-white">This listing is no longer available.</p>
         )}
 
-        <div className="mt-1 flex items-center gap-3 text-sm text-[#9a9ca5]">
+        <div className="mt-1 flex items-center gap-3 text-sm text-white">
           <button
             type="button"
             onClick={() => setShowComments((s) => !s)}
             aria-expanded={showComments}
             aria-label={showComments ? "Hide comments" : "Show comments"}
             title="Comments"
-            className={cn(action, "border-r border-white/[3%] pr-3", showComments && "text-[#f2f6ff]")}
+            className={cn(action, "border-r border-white/[3%] pr-3", showComments && "text-white")}
           >
             <MessageCircle className="size-4 text-violet-600" />
             <span>{item.commentCount}</span>
@@ -184,7 +184,7 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
           <span className="flex min-w-0 items-center gap-1 text-xs [&>a]:size-5">
             <LikerAvatars likers={item.likers} total={item.likeCount} postId={item._id} size="sm" />
           </span>
-          <div className="ml-auto flex shrink-0 items-center gap-3 text-xs text-[#61646d]">
+          <div className="ml-auto flex shrink-0 items-center gap-3 text-xs text-white">
             <span className="flex items-center gap-1" title={new Date(item._creationTime).toLocaleString()}>
               <Clock className="size-3.5" /> {shortAge(item._creationTime, now)}
             </span>

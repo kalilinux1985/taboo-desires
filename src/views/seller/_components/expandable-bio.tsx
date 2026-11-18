@@ -30,7 +30,7 @@ export default function ExpandableBio({ text, className }: { text: string; class
       <p
         ref={ref}
         id="profile-bio"
-        className={cn("whitespace-pre-line break-words text-slate-300", !open && "line-clamp-4")}
+        className={cn("whitespace-pre-line break-words text-white", !open && "line-clamp-4")}
       >
         {text}
       </p>

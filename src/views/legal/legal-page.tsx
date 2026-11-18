@@ -21,7 +21,7 @@ export default function LegalPage({
           <h1 className={cn(NURMA, "text-[34px] leading-tight text-white")}>{title}</h1>
           <p className="mt-1 text-sm text-muted-foreground">Last updated {LEGAL_UPDATED}</p>
           {intro && <p className={cn(SANS, "mt-5 text-[15px] leading-7 text-white")}>{intro}</p>}
-          <div className={cn(SANS, "mt-6 flex flex-col gap-6 text-[15px] leading-7 text-[#e4e4e6]")}>{children}</div>
+          <div className={cn(SANS, "mt-6 flex flex-col gap-6 text-[15px] leading-7 text-white")}>{children}</div>
           <nav className="mt-10 flex flex-wrap gap-x-5 gap-y-2 border-t border-white/10 pt-5 text-sm">
             <Link href="/terms" className="text-[#7b3aec] hover:underline">Terms</Link>
             <Link href="/privacy" className="text-[#7b3aec] hover:underline">Privacy</Link>
