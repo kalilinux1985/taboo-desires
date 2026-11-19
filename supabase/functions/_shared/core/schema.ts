@@ -96,7 +96,13 @@ type Fields = {
     reason?: string;
   };
   favorites: { userId: Id<"users">; listingId: Id<"listings"> };
-  profilePhotos: { userId: Id<"users">; storageId: Id<"_storage"> };
+  profilePhotos: {
+    userId: Id<"users">;
+    storageId: Id<"_storage">;
+    albumId?: Id<"photoAlbums">;
+    description?: string;
+  };
+  photoAlbums: { userId: Id<"users">; name: string };
   subscriptions: {
     userId: Id<"users">;
     plan: "pro";
@@ -364,7 +370,16 @@ export const TABLES: { [T in DbTable]: TableDef<T> } = {
   },
   profilePhotos: {
     sqlName: "profile_photos",
-    columns: { userId: c("user_id", "uuid"), storageId: c("storage_id") },
+    columns: {
+      userId: c("user_id", "uuid"),
+      storageId: c("storage_id"),
+      albumId: c("album_id", "uuid"),
+      description: c("description"),
+    },
+  },
+  photoAlbums: {
+    sqlName: "photo_albums",
+    columns: { userId: c("user_id", "uuid"), name: c("name") },
   },
   subscriptions: {
     sqlName: "subscriptions",

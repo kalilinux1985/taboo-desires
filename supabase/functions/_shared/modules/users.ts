@@ -509,10 +509,26 @@ export const updateProfile = mutation({
 });
 
 export const addProfilePhoto = mutation({
-  args: { storageId: v.storageId() },
-  handler: async (ctx, { storageId }) => {
+  args: {
+    storageId: v.storageId(),
+    description: v.optional(v.string()),
+    albumId: v.optional(v.id("photoAlbums")),
+  },
+  handler: async (ctx, { storageId, description, albumId }) => {
     const user = await requireUser(ctx);
     assertOwnFiles([storageId], user._id, "public");
+    const caption = description?.trim() ?? "";
+    if (caption.length > 300) {
+      ctx.storage.delete(storageId);
+      throw new AppError({ code: "BAD_REQUEST", message: "Descriptions are up to 300 characters" });
+    }
+    if (albumId) {
+      const album = await ctx.db.get("photoAlbums", albumId);
+      if (!album || album.userId !== user._id) {
+        ctx.storage.delete(storageId);
+        throw new AppError({ code: "NOT_FOUND", message: "Album not found" });
+      }
+    }
     // Sellers (and admins) can add as many as they like; buyers keep a small limit
     if (user.accountType !== "seller" && user.role !== "admin") {
       const count = Number(
@@ -531,6 +547,8 @@ export const addProfilePhoto = mutation({
     return await ctx.db.insert("profilePhotos", {
       userId: user._id,
       storageId,
+      ...(caption ? { description: caption } : {}),
+      ...(albumId ? { albumId } : {}),
     });
   },
 });

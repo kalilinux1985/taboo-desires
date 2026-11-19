@@ -1,17 +1,15 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import ZoomImage from "@/components/zoom-image.tsx";
 import { useMutation, usePaginatedQuery } from "@/lib/backend/react.tsx";
 import { ImagePlus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/backend/api.ts";
-import { uploadFile } from "@/lib/backend/upload.ts";
 import type { Id } from "@/lib/backend/types.ts";
 import { Spinner } from "@/components/ui/spinner.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { getErrorMessage } from "@/lib/listings.ts";
-
-const MAX_BYTES = 10 * 1024 * 1024;
+import AddImageDialog from "./add-image-dialog.tsx";
 
 /**
  * A member's public profile photos, newest first, loaded a page at a time.
@@ -39,41 +37,11 @@ export default function ProfilePhotos({
     { userId },
     { initialNumItems: 24 },
   );
-  const generateUploadUrl = useMutation(api.listings.generateUploadUrl);
-  const addPhoto = useMutation(api.users.addProfilePhoto);
   const removePhoto = useMutation(api.users.removeProfilePhoto);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [uploading, setUploading] = useState(false);
+  const [adding, setAdding] = useState(false);
 
   if (!isMe && total === 0) return null;
   const room = limit === undefined ? Infinity : limit - (ownCount ?? total);
-
-  const upload = async (list: FileList | null) => {
-    const files = Array.from(list ?? []).slice(0, room);
-    if (files.length === 0) return;
-    setUploading(true);
-    try {
-      for (const file of files) {
-        if (!file.type.startsWith("image/")) {
-          toast.error(`${file.name} is not an image`);
-          continue;
-        }
-        if (file.size > MAX_BYTES) {
-          toast.error(`${file.name} is over 10MB`);
-          continue;
-        }
-        try {
-          const storageId = await uploadFile(generateUploadUrl, file);
-          await addPhoto({ storageId });
-        } catch (e) {
-          toast.error(getErrorMessage(e, `${file.name} failed to upload`));
-        }
-      }
-    } finally {
-      setUploading(false);
-      if (inputRef.current) inputRef.current.value = "";
-    }
-  };
 
   const remove = async (photoId: Id<"profilePhotos">) => {
     try {
@@ -117,11 +85,10 @@ export default function ProfilePhotos({
         {isMe && room > 0 && (
           <button
             type="button"
-            disabled={uploading}
-            onClick={() => inputRef.current?.click()}
+            onClick={() => setAdding(true)}
             className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-[5px] border-2 border-dashed text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
           >
-            {uploading ? <Spinner /> : <ImagePlus className="size-6" />}
+            <ImagePlus className="size-6" />
             <span className="text-xs font-medium">{limit === undefined ? "Add photos" : "Add photo"}</span>
           </button>
         )}
@@ -132,14 +99,7 @@ export default function ProfilePhotos({
         </Button>
       )}
       {status === "LoadingMore" && <Spinner className="self-center" />}
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        multiple={limit === undefined}
-        className="hidden"
-        onChange={(e) => upload(e.target.files)}
-      />
+      {isMe && <AddImageDialog open={adding} onOpenChange={setAdding} />}
     </section>
   );
 }
