@@ -210,7 +210,16 @@ var TABLES = {
   },
   profilePhotos: {
     sqlName: "profile_photos",
-    columns: { userId: c("user_id", "uuid"), storageId: c("storage_id") }
+    columns: {
+      userId: c("user_id", "uuid"),
+      storageId: c("storage_id"),
+      albumId: c("album_id", "uuid"),
+      description: c("description")
+    }
+  },
+  photoAlbums: {
+    sqlName: "photo_albums",
+    columns: { userId: c("user_id", "uuid"), name: c("name") }
   },
   subscriptions: {
     sqlName: "subscriptions",
@@ -1569,6 +1578,45 @@ var toggle = mutation({
   }
 });
 
+// supabase/functions/_shared/modules/albums.ts
+var albums_exports = {};
+__export(albums_exports, {
+  create: () => create,
+  mine: () => mine2
+});
+var NAME_MAX = 40;
+var ALBUMS_MAX = 50;
+var mine2 = query({
+  args: {},
+  handler: async (ctx) => {
+    const me = await getCurrentUserDoc(ctx);
+    if (!me) return [];
+    const rows = await ctx.db.select(
+      "photoAlbums",
+      sql`where user_id = ${me._id}::uuid order by created_at limit ${ALBUMS_MAX}::int`
+    );
+    return rows.map((a) => ({ _id: a._id, name: a.name }));
+  }
+});
+var create = mutation({
+  args: { name: v.string() },
+  handler: async (ctx, { name }) => {
+    const me = await requireUser(ctx);
+    const clean2 = name.trim().replace(/\s+/g, " ");
+    if (!clean2 || clean2.length > NAME_MAX)
+      throw new AppError({
+        code: "BAD_REQUEST",
+        message: `Album names are 1 to ${NAME_MAX} characters`
+      });
+    const existing = await ctx.db.select("photoAlbums", sql`where user_id = ${me._id}::uuid limit ${ALBUMS_MAX}::int`);
+    if (existing.some((a) => a.name.toLowerCase() === clean2.toLowerCase()))
+      throw new AppError({ code: "BAD_REQUEST", message: "You already have an album with that name" });
+    if (existing.length >= ALBUMS_MAX)
+      throw new AppError({ code: "FORBIDDEN", message: `You can have up to ${ALBUMS_MAX} albums` });
+    return await ctx.db.insert("photoAlbums", { userId: me._id, name: clean2 });
+  }
+});
+
 // supabase/functions/_shared/modules/auctions.ts
 var auctions_exports = {};
 __export(auctions_exports, {
@@ -1900,7 +1948,7 @@ __export(customRequests_exports, {
   MIN_PRICE_CENTS: () => MIN_PRICE_CENTS,
   assertCanAct: () => assertCanAct,
   assertPrice: () => assertPrice,
-  create: () => create2,
+  create: () => create3,
   list: () => list2,
   partyOf: () => partyOf,
   respond: () => respond
@@ -1913,7 +1961,7 @@ __export(listings_exports, {
   bySeller: () => bySeller,
   categoryValidator: () => categoryValidator,
   conditionValidator: () => conditionValidator,
-  create: () => create,
+  create: () => create2,
   generateUploadUrl: () => generateUploadUrl,
   get: () => get,
   listingStatusValidator: () => listingStatusValidator,
@@ -2257,8 +2305,8 @@ var OPEN = /* @__PURE__ */ new Set(["awaiting_address", "ready_to_ship"]);
 async function getOrderAs(ctx, orderId, role, opts = {}) {
   const me = role === "seller" && opts.pro ? await requireCapability(ctx, "list") : await requireUser(ctx);
   const order = await ctx.db.get("orders", orderId);
-  const mine5 = order && (role === "seller" ? order.sellerId : order.buyerId) === me._id;
-  if (!order || !mine5)
+  const mine6 = order && (role === "seller" ? order.sellerId : order.buyerId) === me._id;
+  if (!order || !mine6)
     throw new AppError({ code: "NOT_FOUND", message: "Order not found" });
   return { order, me };
 }
@@ -3330,7 +3378,7 @@ var bySeller = query({
     };
   }
 });
-var create = mutation({
+var create2 = mutation({
   args: {
     ...listingFields,
     saleType: saleTypeValidator,
@@ -3524,7 +3572,7 @@ function assertPrice(cents) {
   }
 }
 var partyValidator = v.union(v.literal("buyer"), v.literal("seller"));
-var create2 = mutation({
+var create3 = mutation({
   args: {
     sellerId: v.id("users"),
     category: categoryValidator,
@@ -3690,7 +3738,7 @@ var favorites_exports = {};
 __export(favorites_exports, {
   followedSellers: () => followedSellers,
   isFavorite: () => isFavorite,
-  mine: () => mine2,
+  mine: () => mine3,
   toggle: () => toggle2
 });
 async function findFavorite(ctx, userId, listingId) {
@@ -3728,7 +3776,7 @@ var toggle2 = mutation({
     return true;
   }
 });
-var mine2 = query({
+var mine3 = query({
   args: { paginationOpts: paginationOptsValidator },
   handler: async (ctx, { paginationOpts }) => {
     const me = await requireUser(ctx);
@@ -4420,7 +4468,7 @@ var markSeen = mutation({
 var posts_exports = {};
 __export(posts_exports, {
   addComment: () => addComment,
-  create: () => create3,
+  create: () => create4,
   feed: () => feed2,
   likers: () => likers,
   listComments: () => listComments,
@@ -4484,7 +4532,7 @@ var onlineAuthors = query({
     return rows.map((r) => r.userId);
   }
 });
-var create3 = mutation({
+var create4 = mutation({
   args: { body: v.string(), imageIds: v.array(v.storageId(), 20) },
   handler: async (ctx, { body, imageIds }) => {
     const me = await requireCapability(ctx, "post");
@@ -5345,13 +5393,13 @@ __export(subscriptions_exports, {
   cancelRequest: () => cancelRequest,
   decline: () => decline,
   featured: () => featured,
-  mine: () => mine3,
+  mine: () => mine4,
   requestPro: () => requestPro,
   revoke: () => revoke
 });
 var MAX_NOTE2 = 500;
 var FEATURED_SELLERS = 8;
-var mine3 = query({
+var mine4 = query({
   args: {},
   handler: async (ctx) => {
     const me = await getCurrentUserDoc(ctx);
@@ -6119,10 +6167,26 @@ var updateProfile = mutation({
   }
 });
 var addProfilePhoto = mutation({
-  args: { storageId: v.storageId() },
-  handler: async (ctx, { storageId }) => {
+  args: {
+    storageId: v.storageId(),
+    description: v.optional(v.string()),
+    albumId: v.optional(v.id("photoAlbums"))
+  },
+  handler: async (ctx, { storageId, description, albumId }) => {
     const user = await requireUser(ctx);
     assertOwnFiles([storageId], user._id, "public");
+    const caption = description?.trim() ?? "";
+    if (caption.length > 300) {
+      ctx.storage.delete(storageId);
+      throw new AppError({ code: "BAD_REQUEST", message: "Descriptions are up to 300 characters" });
+    }
+    if (albumId) {
+      const album = await ctx.db.get("photoAlbums", albumId);
+      if (!album || album.userId !== user._id) {
+        ctx.storage.delete(storageId);
+        throw new AppError({ code: "NOT_FOUND", message: "Album not found" });
+      }
+    }
     if (user.accountType !== "seller" && user.role !== "admin") {
       const count = Number(
         await ctx.db.scalar(
@@ -6139,7 +6203,9 @@ var addProfilePhoto = mutation({
     }
     return await ctx.db.insert("profilePhotos", {
       userId: user._id,
-      storageId
+      storageId,
+      ...caption ? { description: caption } : {},
+      ...albumId ? { albumId } : {}
     });
   }
 });
@@ -6185,7 +6251,7 @@ var search = query({
 var verification_exports = {};
 __export(verification_exports, {
   adminPending: () => adminPending2,
-  mine: () => mine4,
+  mine: () => mine5,
   review: () => review2,
   revoke: () => revoke2,
   submit: () => submit3
@@ -6197,7 +6263,7 @@ async function getVerification(ctx, userId) {
     sql`where user_id = ${userId}::uuid`
   );
 }
-var mine4 = query({
+var mine5 = query({
   args: {},
   handler: async (ctx) => {
     const me = await getCurrentUserDoc(ctx);
@@ -6332,6 +6398,7 @@ var registry = {
   accountDeletion: functionsOf(accountDeletion_exports),
   activity: functionsOf(activity_exports),
   ageVerification: functionsOf(ageVerification_exports),
+  albums: functionsOf(albums_exports),
   auctions: functionsOf(auctions_exports),
   blocks: functionsOf(blocks_exports),
   customRequests: functionsOf(customRequests_exports),
