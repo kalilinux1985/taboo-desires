@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Gavel } from "lucide-react";
+import { ChevronLeft, ChevronRight, Gavel } from "lucide-react";
+import { useEffect, useState } from "react";
 import { usePaginatedQuery } from "@/lib/backend/react.tsx";
 import { api } from "@/lib/backend/api.ts";
 import type { FunctionArgs } from "@/lib/backend/types.ts";
@@ -160,6 +161,149 @@ export function ShopGrid({
           </Button>
         </div>
       )}
+    </div>
+  );
+}
+
+/** Category page card: photo with the seller's avatar overhanging it, name, title, description, price, bookmark. */
+export function CategoryCard({ listing }: { listing: ListingCardData }) {
+  const liveAuction = listing.auction?.status === "live" ? listing.auction : null;
+  return (
+    <Link
+      href={`/listing/${listing._id}`}
+      className="group flex min-w-0 cursor-pointer flex-col overflow-hidden rounded-[5px] border bg-[#141519] shadow-[0_14px_34px_-8px_rgba(0,0,0,0.3)] transition-colors hover:border-violet-bright"
+    >
+      <div className="relative aspect-[16/9] overflow-hidden bg-muted">
+        {listing.imageUrl && (
+          <img
+            src={listing.imageUrl}
+            alt={listing.title}
+            loading="lazy"
+            className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        )}
+      </div>
+      <div className="relative flex flex-1 flex-col px-5 pb-4 pt-9">
+        <span className="absolute -top-8 left-5 flex size-16 items-center justify-center overflow-hidden rounded-[5px] bg-muted text-xl font-extrabold">
+          {listing.sellerAvatarUrl ? (
+            <img src={listing.sellerAvatarUrl} alt="" className="size-full object-cover" />
+          ) : (
+            listing.sellerName.slice(0, 1).toUpperCase()
+          )}
+        </span>
+        <p className="flex min-w-0 items-center gap-2 text-sm text-violet-600">
+          <span className="truncate">{listing.sellerName}</span>
+          {listing.sellerVerified && <VerifiedBadge />}
+        </p>
+        <h3 className="mt-1 truncate text-base">{listing.title}</h3>
+        <p className="mt-2 line-clamp-2 min-h-[2.8em] text-sm">
+          {listing.description || `${listing.brand} · Size ${listing.size}`}
+        </p>
+        <div className="mt-3 flex items-end justify-between gap-3">
+          <span className="text-2xl text-violet-600 tabular-nums">
+            {formatPrice(listing.priceCents)}
+            <span className="ml-1 text-sm">USD</span>
+          </span>
+          <span className="flex items-center gap-3">
+            {liveAuction && (
+              <span className="flex items-center gap-1 text-xs text-red-500">
+                <Gavel className="size-3.5" /> {liveAuction.bidCount} · <Countdown endsAt={liveAuction.endsAt} className="text-red-500" />
+              </span>
+            )}
+            <FavoriteButton listingId={listing._id} sellerId={listing.sellerId} variant="bookmark" className="[&_svg]:size-6" />
+          </span>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+const PAGE_SIZE = 6;
+
+/** Category page results: a bordered two-column grid with Previous / Next below it. */
+export function CategoryGrid({
+  args,
+  filtered,
+  onClear,
+}: {
+  args: BrowseArgs;
+  filtered: boolean;
+  onClear: () => void;
+}) {
+  const { results, status, loadMore } = usePaginatedQuery(api.listings.browse, args, {
+    initialNumItems: PAGE_SIZE * 2,
+  });
+  const [page, setPage] = useState(0);
+  const argsKey = JSON.stringify(args);
+  // Back to the first page when the filters or sort change
+  useEffect(() => setPage(0), [argsKey]);
+
+  if (status === "LoadingFirstPage") {
+    return (
+      <div className="grid gap-6 sm:grid-cols-2">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className="h-96 w-full" />
+        ))}
+      </div>
+    );
+  }
+  if (results.length === 0) {
+    return (
+      <div className="rounded-[5px] border border-dashed px-6 py-14 text-center">
+        <p>{filtered ? "No listings match these filters." : "Nothing listed here yet."}</p>
+        {filtered ? (
+          <Button variant="secondary" size="sm" className="mt-4 cursor-pointer" onClick={onClear}>
+            Clear filters
+          </Button>
+        ) : (
+          <Button asChild size="sm" className="mt-4 cursor-pointer">
+            <Link href="/sell">List the first item</Link>
+          </Button>
+        )}
+      </div>
+    );
+  }
+
+  const shown = results.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
+  const hasMoreLoaded = (page + 1) * PAGE_SIZE < results.length;
+  const canNext = hasMoreLoaded || status === "CanLoadMore" || status === "LoadingMore";
+  const next = () => {
+    if (!hasMoreLoaded && status === "CanLoadMore") loadMore(PAGE_SIZE * 2);
+    setPage((p) => p + 1);
+  };
+  return (
+    <div className="flex flex-col gap-10">
+      <div className="rounded-[5px] border bg-[#18191d] p-5 shadow-[0_14px_34px_-8px_rgba(0,0,0,0.3)]">
+        {shown.length === 0 ? (
+          <div className="flex justify-center py-24">
+            <Spinner />
+          </div>
+        ) : (
+          <div className="grid gap-x-5 gap-y-12 pt-8 sm:grid-cols-2">
+            {shown.map((l) => (
+              <CategoryCard key={l._id} listing={l} />
+            ))}
+          </div>
+        )}
+      </div>
+      <div className="grid grid-cols-2 rounded-[5px] border border-violet-700">
+        <button
+          type="button"
+          onClick={() => setPage((p) => Math.max(0, p - 1))}
+          disabled={page === 0}
+          className="flex cursor-pointer items-center justify-center gap-2 border-r border-violet-700 py-4 uppercase tracking-wide transition-colors hover:bg-violet-600/20 disabled:cursor-default disabled:opacity-40 disabled:hover:bg-transparent"
+        >
+          <ChevronLeft className="size-5 text-violet-600" /> Previous
+        </button>
+        <button
+          type="button"
+          onClick={next}
+          disabled={!canNext}
+          className="flex cursor-pointer items-center justify-center gap-2 py-4 uppercase tracking-wide transition-colors hover:bg-violet-600/20 disabled:cursor-default disabled:opacity-40 disabled:hover:bg-transparent"
+        >
+          Next <ChevronRight className="size-5 text-violet-600" />
+        </button>
+      </div>
     </div>
   );
 }
