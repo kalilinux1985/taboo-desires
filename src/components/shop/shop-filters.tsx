@@ -1,5 +1,7 @@
 "use client";
 
+import { Checkbox } from "@/components/ui/checkbox.tsx";
+import { Label } from "@/components/ui/label.tsx";
 import { useState } from "react";
 import {
   BadgeCheck,
@@ -347,19 +349,17 @@ export function FilterGroups({
               {group.options.map((o) => {
                 const Icon = o.icon;
                 return (
-                  <label
+                  <Label
                     key={o.value}
-                    className="flex cursor-pointer items-center gap-2.5 py-1 text-[15px] text-muted-foreground transition-colors hover:text-foreground has-[:checked]:text-foreground"
+                    className="cursor-pointer gap-2.5 py-1 text-[15px] font-normal transition-colors"
                   >
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       checked={chosen.includes(o.value)}
-                      onChange={() => onToggle(group, o.value)}
-                      className="size-4 shrink-0 cursor-pointer accent-violet-600"
+                      onCheckedChange={() => onToggle(group, o.value)}
                     />
                     {Icon && <Icon className={cn("size-4 shrink-0", o.iconClass)} aria-hidden />}
                     {o.label}
-                  </label>
+                  </Label>
                 );
               })}
             </AccordionContent>

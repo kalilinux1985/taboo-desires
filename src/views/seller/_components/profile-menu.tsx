@@ -9,8 +9,7 @@ import { ReportDialog } from "@/components/report-button.tsx";
 import { useAccess } from "@/hooks/use-access.ts";
 import { useUpgradeGate } from "@/hooks/use-upgrade-gate.ts";
 import { getErrorMessage } from "@/lib/listings.ts";
-import { cn } from "@/lib/utils.ts";
-import { OUTLINED_ACTION } from "../_lib/profile-design.tsx";
+import { Button } from "@/components/ui/button.tsx";
 
 /**
  * The "..." menu on someone else's profile, above the bio: Follow (buyers
@@ -55,9 +54,9 @@ export default function ProfileMenu({ userId, targetType }: { userId: Id<"users"
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button type="button" aria-label="More options" className={cn(OUTLINED_ACTION, "w-[37px]")}>
+          <Button type="button" variant="outline" size="icon-sm" aria-label="More options" className="cursor-pointer">
             <EllipsisVertical className="size-3.5" />
-          </button>
+          </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
           {canFollow && (

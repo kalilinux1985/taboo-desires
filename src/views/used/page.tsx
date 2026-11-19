@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Funnel } from "lucide-react";
 import { Button } from "@/components/ui/button.tsx";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
 import {
   Sheet,
   SheetContent,
@@ -66,9 +67,9 @@ export default function ShopCategoryPage({ page }: { page: ShopPage }) {
               <Funnel className="size-5 text-violet-600" /> Filter
             </p>
             {active > 0 && (
-              <button type="button" onClick={clear} className="cursor-pointer text-xs font-bold text-violet-600 hover:underline">
+              <Button type="button" variant="link" size="xs" onClick={clear} className="cursor-pointer font-bold">
                 Clear all
-              </button>
+              </Button>
             )}
           </div>
           <div className="pl-4 pr-6 [&_[data-slot=accordion-trigger]]:font-display [&_[data-slot=accordion-trigger]]:text-lg">
@@ -91,20 +92,21 @@ export default function ShopCategoryPage({ page }: { page: ShopPage }) {
                   <span className="rounded-full bg-primary-foreground px-2 text-xs font-bold text-primary">{active}</span>
                 )}
               </Button>
-              <label className="flex flex-col gap-1 text-sm uppercase">
+              <div className="flex flex-col gap-1 text-sm uppercase">
                 Sort by:
-                <select
-                  value={sort}
-                  onChange={(e) => setSort(e.target.value as Sort)}
-                  className="h-10 min-w-48 cursor-pointer rounded-[5px] border-2 border-violet-600 bg-transparent px-3 normal-case sm:min-w-72"
-                >
-                  {SORTS.map((s) => (
-                    <option key={s.value} value={s.value} className="bg-[#18191d]">
-                      {s.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
+                <Select value={sort} onValueChange={(v) => setSort(v as Sort)}>
+                  <SelectTrigger className="h-10 min-w-48 cursor-pointer border-2 border-violet-600 normal-case sm:min-w-72">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SORTS.map((s) => (
+                      <SelectItem key={s.value} value={s.value}>
+                        {s.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 

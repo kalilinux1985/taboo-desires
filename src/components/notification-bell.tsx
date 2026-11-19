@@ -49,12 +49,12 @@ function RequestActions({ followerId }: { followerId: Id<"users"> }) {
   if (done) return <span className="mt-2 block text-sm text-muted-foreground">{done === "accepted" ? "Accepted" : "Deleted"}</span>;
   return (
     <span className="mt-2 flex gap-6 font-display text-base">
-      <button type="button" onClick={() => void answer(true)} className="cursor-pointer text-violet-500 hover:text-violet-400">
+      <Button type="button" variant="link" size="xs" onClick={() => void answer(true)} className="h-auto cursor-pointer p-0 font-display text-base text-violet-500">
         Accept
-      </button>
-      <button type="button" onClick={() => void answer(false)} className="cursor-pointer text-red-600 hover:text-red-500">
+      </Button>
+      <Button type="button" variant="link" size="xs" onClick={() => void answer(false)} className="h-auto cursor-pointer p-0 font-display text-base text-red-600">
         Delete
-      </button>
+      </Button>
     </span>
   );
 }
@@ -164,12 +164,12 @@ export default function NotificationBell({
     <Popover open={open} onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>
         {className ? (
-          <button type="button" aria-label="Notifications" className={cn(triggerClass, "cursor-pointer")}>
+          <Button type="button" variant="ghost" aria-label="Notifications" className={cn(triggerClass, "cursor-pointer")}>
             {icon}
             <HideOnError>
               <CountBadge />
             </HideOnError>
-          </button>
+          </Button>
         ) : (
           <Button size="icon" variant="ghost" aria-label="Notifications" className={triggerClass}>
             {icon}
@@ -185,26 +185,30 @@ export default function NotificationBell({
           <HideOnError>
             <NewCount />
           </HideOnError>
-          <button
+          <Button
             type="button"
+            variant="link"
+            size="xs"
             onClick={() => void markSeen({}).catch(() => {})}
-            className="ml-auto cursor-pointer font-display text-sm text-violet-500 hover:text-violet-400"
+            className="ml-auto h-auto cursor-pointer p-0 font-display text-sm text-violet-500"
           >
             Clear all
-          </button>
+          </Button>
         </div>
         <HideOnError
           fallback={<p className="px-4 py-8 text-center text-sm text-muted-foreground">Notifications aren&apos;t available yet.</p>}
         >
           <DropdownList onPick={() => onOpenChange(false)} />
         </HideOnError>
-        <Link
-          href="/notifications"
-          onClick={() => onOpenChange(false)}
-          className="cursor-pointer border-t border-white/10 py-4 text-center font-display text-xl text-violet-500 hover:text-violet-400"
+        <Button
+          asChild
+          variant="ghost"
+          className="h-auto cursor-pointer rounded-none border-t border-white/10 py-4 font-display text-xl text-violet-500 hover:text-violet-400"
         >
-          View All Notifications
-        </Link>
+          <Link href="/notifications" onClick={() => onOpenChange(false)}>
+            View All Notifications
+          </Link>
+        </Button>
       </PopoverContent>
     </Popover>
   );

@@ -103,8 +103,9 @@ export default function AddImageDialog({ open, onOpenChange }: { open: boolean; 
           <DialogDescription className="sr-only">Upload an image to your profile.</DialogDescription>
         </DialogHeader>
 
-        <button
+        <Button
           type="button"
+          variant="outline"
           onClick={() => inputRef.current?.click()}
           onDragOver={(e) => e.preventDefault()}
           onDrop={(e) => {
@@ -112,7 +113,7 @@ export default function AddImageDialog({ open, onOpenChange }: { open: boolean; 
             choose(e.dataTransfer.files[0]);
           }}
           aria-label="Choose an image"
-          className="flex aspect-video w-full cursor-pointer flex-col items-center justify-center gap-2 overflow-hidden rounded-[5px] border-2 border-dashed transition-colors hover:border-primary"
+          className="aspect-video h-auto w-full cursor-pointer flex-col gap-2 overflow-hidden border-2 border-dashed p-0 hover:border-primary"
         >
           {preview ? (
             <img src={preview} alt="Preview" className="size-full object-contain" />
@@ -123,8 +124,8 @@ export default function AddImageDialog({ open, onOpenChange }: { open: boolean; 
               <span className="text-xs">Up to 10MB</span>
             </>
           )}
-        </button>
-        <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e) => choose(e.target.files?.[0])} />
+        </Button>
+        <Input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e) => choose(e.target.files?.[0])} />
 
         <Textarea
           value={description}
@@ -177,14 +178,15 @@ export default function AddImageDialog({ open, onOpenChange }: { open: boolean; 
         <Button type="button" onClick={() => void submit()} disabled={!file || submitting} className="w-full cursor-pointer">
           {submitting ? <Spinner /> : "Submit"}
         </Button>
-        <button
+        <Button
           type="button"
+          variant="link"
           onClick={() => onOpenChange(false)}
           disabled={submitting}
-          className="cursor-pointer self-center text-sm hover:underline"
+          className="cursor-pointer self-center text-foreground"
         >
           Cancel
-        </button>
+        </Button>
       </DialogContent>
     </Dialog>
   );

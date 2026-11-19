@@ -71,26 +71,29 @@ export default function ProfilePhotos({
           >
             <ZoomImage src={p.url} className="size-full"><img src={p.url} alt="" className="size-full object-cover" /></ZoomImage>
             {isMe && p.photoId && (
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon-xs"
                 aria-label="Remove photo"
                 onClick={() => remove(p.photoId!)}
-                className="absolute right-1 top-1 flex size-7 cursor-pointer items-center justify-center rounded-full bg-black/70 text-white"
+                className="absolute right-1 top-1 size-7 cursor-pointer rounded-full bg-black/70 text-white hover:bg-black/80"
               >
                 <Trash2 className="size-3.5" />
-              </button>
+              </Button>
             )}
           </div>
         ))}
         {isMe && room > 0 && (
-          <button
+          <Button
             type="button"
+            variant="outline"
             onClick={() => setAdding(true)}
-            className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-[5px] border-2 border-dashed text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+            className="aspect-square h-auto cursor-pointer flex-col gap-1 border-2 border-dashed hover:border-primary"
           >
             <ImagePlus className="size-6" />
             <span className="text-xs font-medium">{limit === undefined ? "Add photos" : "Add photo"}</span>
-          </button>
+          </Button>
         )}
       </div>
       {status === "CanLoadMore" && (

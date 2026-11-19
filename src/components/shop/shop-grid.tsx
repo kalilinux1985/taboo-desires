@@ -287,22 +287,24 @@ export function CategoryGrid({
         )}
       </div>
       <div className="grid grid-cols-2 rounded-[5px] border border-violet-700">
-        <button
+        <Button
           type="button"
+          variant="ghost"
           onClick={() => setPage((p) => Math.max(0, p - 1))}
           disabled={page === 0}
-          className="flex cursor-pointer items-center justify-center gap-2 border-r border-violet-700 py-4 uppercase tracking-wide transition-colors hover:bg-violet-600/20 disabled:cursor-default disabled:opacity-40 disabled:hover:bg-transparent"
+          className="h-auto cursor-pointer gap-2 rounded-none border-r border-violet-700 py-4 uppercase tracking-wide hover:bg-violet-600/20"
         >
           <ChevronLeft className="size-5 text-violet-600" /> Previous
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          variant="ghost"
           onClick={next}
           disabled={!canNext}
-          className="flex cursor-pointer items-center justify-center gap-2 py-4 uppercase tracking-wide transition-colors hover:bg-violet-600/20 disabled:cursor-default disabled:opacity-40 disabled:hover:bg-transparent"
+          className="h-auto cursor-pointer gap-2 rounded-none py-4 uppercase tracking-wide hover:bg-violet-600/20"
         >
           Next <ChevronRight className="size-5 text-violet-600" />
-        </button>
+        </Button>
       </div>
     </div>
   );
