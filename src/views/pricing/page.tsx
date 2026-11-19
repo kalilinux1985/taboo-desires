@@ -21,7 +21,7 @@ const REASONS: Record<string, string> = {
   list: "Upgrade to Premium to add listings.",
   message: "Upgrade to Premium to send and reply to messages.",
   post: "Upgrade to Premium to post and comment on the activity feed.",
-  follow: "Upgrade to Premium to follow buyers and other sellers.",
+  follow: "Upgrade to Premium to follow buyers.",
 };
 
 const PERKS = [
@@ -33,7 +33,7 @@ const FEATURES = [
   "List items for sale",
   "Send and reply to messages",
   "Post and comment on the activity feed",
-  "Follow buyers and other sellers",
+  "Follow buyers",
   `Up to ${PLAN_LIMITS.pro.maxPhotos} photos per listing`,
   "Run auctions",
   `Instant Content listings (up to ${LOCKED_MEDIA_MAX} photos, or 1 video)`,

@@ -14,7 +14,7 @@ import { OUTLINED_ACTION } from "../_lib/profile-design.tsx";
 
 /**
  * The "..." menu on someone else's profile, above the bio: Follow (buyers
- * follow sellers, Premium sellers follow anyone), Block and Report.
+ * follow sellers, Premium sellers follow buyers), Block and Report.
  */
 export default function ProfileMenu({ userId, targetType }: { userId: Id<"users">; targetType: "seller" | "buyer" | null }) {
   const { isAuthenticated } = useBackendAuth();
@@ -26,9 +26,12 @@ export default function ProfileMenu({ userId, targetType }: { userId: Id<"users"
   const toggleBlock = useMutation(api.blocks.toggle);
   const [reporting, setReporting] = useState(false);
 
-  // Buyers follow sellers; Premium sellers follow anyone
+  // Buyers follow sellers only; sellers (Premium) follow buyers only
   const canFollow =
-    isAuthenticated && !!access && access.accountType != null && !(access.accountType === "buyer" && targetType !== "seller");
+    isAuthenticated &&
+    !!access &&
+    ((access.accountType === "buyer" && targetType === "seller") ||
+      (access.accountType === "seller" && targetType === "buyer"));
 
   const onFollow = async () => {
     if (follow === "none" && blockAndRedirect("follow")) return;
