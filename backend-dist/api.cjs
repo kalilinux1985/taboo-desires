@@ -3815,9 +3815,11 @@ var toggle3 = mutation({
       await assertNotBlocked(ctx, me._id, sellerId);
       if (me.accountType === "seller" && me.role !== "admin") {
         if (await getPlan(ctx, me._id) !== "pro")
-          throw new AppError({ code: "FORBIDDEN", message: "Upgrade to Premium to follow members" });
+          throw new AppError({ code: "FORBIDDEN", message: "Upgrade to Premium to follow buyers" });
+        if (target.accountType !== "buyer")
+          throw new AppError({ code: "BAD_REQUEST", message: "Sellers can only follow buyers" });
       } else if (target.accountType !== "seller" && target.role !== "admin") {
-        throw new AppError({ code: "BAD_REQUEST", message: "You can only follow sellers" });
+        throw new AppError({ code: "BAD_REQUEST", message: "Buyers can only follow sellers" });
       }
     }
     if (existing) {
