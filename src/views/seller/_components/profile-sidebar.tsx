@@ -1,6 +1,5 @@
 "use client";
 
-import ReportButton from "@/components/report-button.tsx";
 import { useState } from "react";
 import Link from "next/link";
 import { CircleCheck, Star, UserCog } from "lucide-react";
@@ -10,7 +9,7 @@ import { settingsPathFor } from "@/lib/settings.ts";
 import { cn } from "@/lib/utils.ts";
 import { SELLER_DETAIL_FIELDS } from "@/shared/sellerDetails.ts";
 import MessageSellerButton from "./message-seller-dialog.tsx";
-import FollowButton from "./follow-button.tsx";
+import ProfileMenu from "./profile-menu.tsx";
 import ExpandableBio from "./expandable-bio.tsx";
 import { Detail, FILLED_ACTION, Frame, NURMA, OUTLINED_ACTION, SANS, SERIF, joinedAgo } from "../_lib/profile-design.tsx";
 
@@ -119,13 +118,8 @@ export function ProfileHeaderCard({ profile, onReviews }: { profile: Profile; on
             showIcon={false}
           />
         )}
-        {!profile.isMe && <ReportButton target={{ kind: "profile", id: profile._id }} className="px-1" />}
+        {!profile.isMe && <ProfileMenu userId={profile._id} targetType="seller" />}
       </div>
-      {!profile.isMe && (
-        <div className="mt-3">
-          <FollowButton userId={profile._id} targetType="seller" />
-        </div>
-      )}
       {profile.bio && (
         <div className={cn(SANS, "mt-6 text-[14px] leading-6 text-white")}>
           <ExpandableBio text={profile.bio} />

@@ -9,6 +9,7 @@ import {
   publicSellerName,
   requireUser,
 } from "../lib/auth.ts";
+import { assertNotBlocked } from "./blocks.ts";
 import { requireCapability } from "../lib/access.ts";
 
 const MAX_BODY = 2000;
@@ -46,6 +47,7 @@ async function appendMessage(
   senderId: Id<"users">,
   body: string,
 ) {
+  await assertNotBlocked(ctx, convo.buyerId, convo.sellerId);
   await ctx.db.insert("messages", {
     conversationId: convo._id,
     senderId,

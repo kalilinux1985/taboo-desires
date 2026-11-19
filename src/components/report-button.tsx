@@ -7,6 +7,31 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { cn } from "@/lib/utils.ts";
 import ReportForm, { type ReportTarget } from "./report-form.tsx";
 
+/** The report form in a dialog, opened from a button or a menu item. */
+export function ReportDialog({
+  target,
+  open,
+  onOpenChange,
+}: {
+  target: ReportTarget;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Report this {target.kind}</DialogTitle>
+          <DialogDescription>
+            Tell us what's wrong. You don't need an account, and we review every report.
+          </DialogDescription>
+        </DialogHeader>
+        <ReportForm target={target} onDone={() => onOpenChange(false)} />
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 /** A small "Report" button that opens the report form for one listing, post, comment or profile. */
 export default function ReportButton({
   target,
@@ -34,17 +59,7 @@ export default function ReportButton({
       >
         <Flag className="size-4" /> {!iconOnly && label}
       </Button>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Report this {target.kind}</DialogTitle>
-            <DialogDescription>
-              Tell us what's wrong. You don't need an account, and we review every report.
-            </DialogDescription>
-          </DialogHeader>
-          <ReportForm target={target} onDone={() => setOpen(false)} />
-        </DialogContent>
-      </Dialog>
+      <ReportDialog target={target} open={open} onOpenChange={setOpen} />
     </>
   );
 }

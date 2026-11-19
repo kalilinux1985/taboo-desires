@@ -65,6 +65,7 @@ type Fields = {
     reviewedAt?: string;
     reason?: string;
   };
+  blocks: { blockerId: Id<"users">; blockedId: Id<"users"> };
   contentReports: {
     reportType: ReportType;
     targetKind: ReportTargetKind;
@@ -312,6 +313,13 @@ export const TABLES: { [T in DbTable]: TableDef<T> } = {
       requestedAt: c("requested_at", "ts"),
       reviewedAt: c("reviewed_at", "ts"),
       reason: c("reason"),
+    },
+  },
+  blocks: {
+    sqlName: "blocks",
+    columns: {
+      blockerId: c("blocker_id", "uuid"),
+      blockedId: c("blocked_id", "uuid"),
     },
   },
   contentReports: {

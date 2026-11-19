@@ -1,26 +1,18 @@
-import FollowButton from "./follow-button.tsx";
+import ProfileMenu from "./profile-menu.tsx";
 import { useState } from "react";
-import ReportButton from "@/components/report-button.tsx";
 import ZoomImage from "@/components/zoom-image.tsx";
 import Link from "next/link";
-import { EllipsisVertical, Link2, Star, UserCog } from "lucide-react";
+import { Star, UserCog } from "lucide-react";
 import { usePaginatedQuery } from "@/lib/backend/react.tsx";
 import { api } from "@/lib/backend/api.ts";
 import type { FunctionReturnType, Id } from "@/lib/backend/types.ts";
 import { settingsPathFor } from "@/lib/settings.ts";
 import { cn } from "@/lib/utils.ts";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu.tsx";
 import { BUYER_PHOTO_MAX } from "@/shared/accounts.ts";
 import ProfilePhotos from "./profile-photos.tsx";
 import BuyerReviews from "./buyer-reviews.tsx";
 import MessageSellerButton from "./message-seller-dialog.tsx";
-import { copyProfileLink } from "../_lib/profile-share.ts";
 import { Detail, FILLED_ACTION, Frame, NURMA, OUTLINED_ACTION, ProfilePage, ProfilePicture, ProfileTabBar, SANS, SERIF, SectionTitle, imagesLabel, joinedAgo } from "../_lib/profile-design.tsx";
 
 type Profile = NonNullable<FunctionReturnType<typeof api.users.getProfile>>;
@@ -55,7 +47,6 @@ function Header({ profile }: { profile: Profile }) {
             className={FILLED_ACTION}
           />
         )}
-        {!profile.isMe && <ReportButton target={{ kind: "profile", id: profile._id }} className="px-1" />}
         {profile.isMe && (
           <Link
             href={settingsPathFor(profile.accountType)}
@@ -64,24 +55,8 @@ function Header({ profile }: { profile: Profile }) {
             <UserCog className="size-3.5" strokeWidth={1.75} /> Edit Profile
           </Link>
         )}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button type="button" aria-label="More options" className={cn(OUTLINED_ACTION, "w-[37px]")}>
-              <EllipsisVertical className="size-3.5" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <DropdownMenuItem className="cursor-pointer" onSelect={() => copyProfileLink(profile._id)}>
-              <Link2 /> Copy profile link
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {!profile.isMe && <ProfileMenu userId={profile._id} targetType="buyer" />}
       </div>
-      {!profile.isMe && (
-        <div className="mt-3">
-          <FollowButton userId={profile._id} targetType="buyer" />
-        </div>
-      )}
       {profile.bio && (
         <p className={cn(SANS, "mt-6 whitespace-pre-wrap break-words text-[14px] leading-6 text-white")}>{profile.bio}</p>
       )}

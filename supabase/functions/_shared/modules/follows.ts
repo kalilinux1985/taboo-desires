@@ -5,6 +5,7 @@ import { sql } from "../core/sql.ts";
 import { v } from "../core/values.ts";
 import { getCurrentUserDoc, requireUser } from "../lib/auth.ts";
 import { bumpStats } from "../lib/sellerStats.ts";
+import { assertNotBlocked } from "./blocks.ts";
 import { getPlan } from "../lib/subscription.ts";
 import { toCard } from "../lib/listingCard.ts";
 
@@ -48,6 +49,7 @@ export const toggle = mutation({
     const existing = await findFollow(ctx, me._id, sellerId);
     // Unfollowing is always allowed; following is checked below
     if (!existing) {
+      await assertNotBlocked(ctx, me._id, sellerId);
       if (me.accountType === "seller" && me.role !== "admin") {
         // Premium sellers can follow anyone
         if ((await getPlan(ctx, me._id)) !== "pro")
