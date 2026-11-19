@@ -187,6 +187,15 @@
     border-color: #4c1d95 !important;
   }
 
+  /* No focus ring or outline when clicking into a text field */
+  input:focus,
+  input:focus-visible,
+  textarea:focus,
+  textarea:focus-visible {
+    outline: none !important;
+    --tw-ring-shadow: 0 0 #0000 !important;
+  }
+
   /* A field drawn by its container (the header search) */
   input.field-bare {
     background-color: transparent !important;

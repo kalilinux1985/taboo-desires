@@ -96,7 +96,7 @@ function CommentForm({
         onChange={(e) => setBody(e.target.value)}
         className={cn(
           boxClass(variant),
-          "w-full pl-4 pr-10 text-white outline-none focus:ring-1 focus:ring-violet-600/50",
+          "w-full pl-4 pr-10 text-white outline-none",
           variant !== "profile" && "border-0",
           variant === "profile"
             ? "h-[31px] text-[12px] placeholder:text-white/70"
