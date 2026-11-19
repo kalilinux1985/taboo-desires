@@ -77,8 +77,8 @@ export function Frame({
   children: ReactNode;
 }) {
   return (
-    <Card className={cn(OUTER, "gap-0 p-[19px] text-white", className)}>
-      <Card className={cn(INNER, "block h-full gap-0 py-0 text-white", innerClassName)}>{children}</Card>
+    <Card data-slot="card" className={cn(OUTER, "gap-0 p-[19px] text-white", className)}>
+      <Card data-slot="card" className={cn(INNER, "block h-full gap-0 py-0 text-white", innerClassName)}>{children}</Card>
     </Card>
   );
 }
@@ -114,7 +114,7 @@ export function ProfileTabBar<T extends string>({
   onChange: (value: T) => void;
 }) {
   return (
-    <Card className={cn(OUTER, "gap-0 py-[7px] [grid-area:tabs]")}>
+    <Card data-slot="card" className={cn(OUTER, "gap-0 py-[7px] [grid-area:tabs]")}>
       <nav aria-label="Profile sections" className="flex flex-wrap gap-x-5 gap-y-2 px-[19px]">
         {tabs.map((t) => (
           <Button
