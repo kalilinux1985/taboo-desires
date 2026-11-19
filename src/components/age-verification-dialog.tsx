@@ -205,7 +205,6 @@ export default function AgeVerificationDialog() {
               />
               <label className="flex cursor-pointer items-start gap-2 text-sm text-muted-foreground">
                 <Checkbox
-                  type="checkbox"
                   checked={confirmed}
                   onCheckedChange={(c) => setConfirmed(c === true)}
                   className="mt-0.5"

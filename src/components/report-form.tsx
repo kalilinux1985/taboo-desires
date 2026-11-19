@@ -163,7 +163,6 @@ export default function ReportForm({
       {NEEDS_DEPICTED.includes(type) && (
         <label className="flex cursor-pointer items-start gap-3 text-sm">
           <Checkbox
-            type="checkbox"
             name="depicted"
             checked={depicted}
             onCheckedChange={(c) => setDepicted(c === true)}
@@ -179,7 +178,6 @@ export default function ReportForm({
 
       <label className="flex cursor-pointer items-start gap-3 text-sm">
         <Checkbox
-          type="checkbox"
           name="good-faith"
           required
           checked={goodFaith}

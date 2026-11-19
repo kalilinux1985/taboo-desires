@@ -360,7 +360,6 @@ export default function SignInPage() {
             <Checkbox
               id="confirm-18"
               name="confirm-18"
-              type="checkbox"
               required
               checked={is18}
               onCheckedChange={(c) => setIs18(c === true)}
