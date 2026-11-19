@@ -118,7 +118,7 @@ function ShopMenu({ label, short, section }: (typeof MENUS)[number]) {
         {links.map((l) => {
           const href = "page" in l ? shopPageHref(l.page) : l.href;
           return (
-            <DropdownMenuItem key={href} asChild className="cursor-pointer rounded-none border-b border-white/10 px-2 py-[5px] text-[13px] leading-tight text-white transition-colors last:border-b-0 hover:bg-transparent hover:text-violet-600 focus:bg-transparent focus:text-violet-600">
+            <DropdownMenuItem key={href} asChild className="cursor-pointer rounded-none border-b border-white/10 px-2 py-[5px] text-[13px] xl:text-[15px] leading-tight text-white transition-colors last:border-b-0 hover:bg-transparent hover:text-violet-600 focus:bg-transparent focus:text-violet-600">
               <Link href={href}>{l.label}</Link>
             </DropdownMenuItem>
           );
