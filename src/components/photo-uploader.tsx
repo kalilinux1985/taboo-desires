@@ -1,3 +1,5 @@
+import { Input } from "@/components/ui/input.tsx";
+import { Button } from "@/components/ui/button.tsx";
 import { useRef, useState } from "react";
 import { useMutation } from "@/lib/backend/react.tsx";
 import { ImagePlus, X } from "lucide-react";
@@ -70,14 +72,14 @@ export default function PhotoUploader({
               Cover
             </span>
           )}
-          <button
+          <Button variant="plain" size="none"
             type="button"
             aria-label="Remove photo"
             onClick={() => onChange(photos.filter((x) => x.id !== p.id))}
             className="absolute right-1 top-1 flex size-7 cursor-pointer items-center justify-center rounded-full bg-black/70 text-white"
           >
             <X className="size-4" />
-          </button>
+          </Button>
         </div>
       ))}
       {Array.from({ length: uploading }).map((_, i) => (
@@ -89,16 +91,16 @@ export default function PhotoUploader({
         </div>
       ))}
       {photos.length + uploading < maxPhotos && (
-        <button
+        <Button variant="plain" size="none"
           type="button"
           onClick={() => inputRef.current?.click()}
           className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-[5px] border-2 border-dashed text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
         >
           <ImagePlus className="size-6" />
           <span className="text-xs font-medium">Add photos</span>
-        </button>
+        </Button>
       )}
-      <input
+      <Input
         ref={inputRef}
         type="file"
         accept="image/*"

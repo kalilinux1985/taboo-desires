@@ -19,6 +19,8 @@ const buttonVariants = cva(
         ghost:
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-violet-600 underline-offset-4 hover:underline",
+        // No look of its own: the caller's classes style it (still a shadcn Button underneath)
+        plain: "gap-0 rounded-none text-[length:inherit] font-[inherit] whitespace-normal [&_svg:not([class*='size-'])]:size-6",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
@@ -29,6 +31,7 @@ const buttonVariants = cva(
         "icon-xs": "size-6 rounded-[5px] [&_svg:not([class*='size-'])]:size-3",
         "icon-sm": "size-8",
         "icon-lg": "size-10",
+        none: "",
       },
     },
     defaultVariants: {

@@ -82,7 +82,7 @@ export default function BuyerDetailsForm({ initial }: { initial: BuyerDetails })
           {LOOKING_FOR_OPTIONS.map((item) => {
             const on = picks.includes(item);
             return (
-              <button
+              <Button variant="plain" size="none"
                 key={item}
                 type="button"
                 aria-pressed={on}
@@ -93,7 +93,7 @@ export default function BuyerDetailsForm({ initial }: { initial: BuyerDetails })
                 )}
               >
                 {on && <Check className="size-3" />} {item}
-              </button>
+              </Button>
             );
           })}
         </div>

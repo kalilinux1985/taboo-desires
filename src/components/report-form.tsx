@@ -1,5 +1,6 @@
 "use client";
 
+import { Checkbox } from "@/components/ui/checkbox.tsx";
 import { useState, type FormEvent } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
@@ -161,12 +162,12 @@ export default function ReportForm({
 
       {NEEDS_DEPICTED.includes(type) && (
         <label className="flex cursor-pointer items-start gap-3 text-sm">
-          <input
+          <Checkbox
             type="checkbox"
             name="depicted"
             checked={depicted}
-            onChange={(e) => setDepicted(e.target.checked)}
-            className="mt-0.5 size-4 shrink-0 cursor-pointer accent-[#7b3aec]"
+            onCheckedChange={(c) => setDepicted(c === true)}
+            className="mt-0.5"
           />
           <span>
             {type === "copyright"
@@ -177,13 +178,13 @@ export default function ReportForm({
       )}
 
       <label className="flex cursor-pointer items-start gap-3 text-sm">
-        <input
+        <Checkbox
           type="checkbox"
           name="good-faith"
           required
           checked={goodFaith}
-          onChange={(e) => setGoodFaith(e.target.checked)}
-          className="mt-0.5 size-4 shrink-0 cursor-pointer accent-[#7b3aec]"
+          onCheckedChange={(c) => setGoodFaith(c === true)}
+          className="mt-0.5"
         />
         <span>I believe in good faith that this report is accurate and that the content breaks the rules or the law.</span>
       </label>

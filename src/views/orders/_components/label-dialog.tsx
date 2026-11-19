@@ -226,7 +226,7 @@ export default function LabelDialog({ orderId, shipsTo }: { orderId: Id<"orders"
             {rates && (
               <div className="flex flex-col gap-2" role="radiogroup" aria-label="Shipping service">
                 {rates.map((r) => (
-                  <button
+                  <Button variant="plain" size="none"
                     key={r.id}
                     type="button"
                     role="radio"
@@ -242,7 +242,7 @@ export default function LabelDialog({ orderId, shipsTo }: { orderId: Id<"orders"
                       {r.days ? <span className="text-muted-foreground"> · {r.days} day{r.days === 1 ? "" : "s"}</span> : null}
                     </span>
                     <span className="font-semibold">{formatPrice(r.cents)}</span>
-                  </button>
+                  </Button>
                 ))}
                 <Button className="mt-2 cursor-pointer" disabled={!chosen || busy !== null} onClick={buy}>
                   {busy === "buy" ? <Spinner /> : <Printer />} Buy &amp; print label{chosen ? ` · ${formatPrice(chosen.cents)}` : ""}

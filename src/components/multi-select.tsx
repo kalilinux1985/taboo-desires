@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button.tsx";
 import { Check, ChevronDown } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover.tsx";
 import { cn } from "@/lib/utils.ts";
@@ -23,7 +24,7 @@ export default function MultiSelect({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <button
+        <Button variant="plain" size="none"
           id={id}
           type="button"
           data-slot="select-trigger"
@@ -33,13 +34,13 @@ export default function MultiSelect({
             {value.length ? value.join(", ") : placeholder}
           </span>
           <ChevronDown className="size-4 shrink-0 opacity-60" />
-        </button>
+        </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="max-h-72 w-(--radix-popover-trigger-width) overflow-y-auto p-1">
         {options.map((option) => {
           const on = value.includes(option);
           return (
-            <button
+            <Button variant="plain" size="none"
               key={option}
               type="button"
               role="menuitemcheckbox"
@@ -51,7 +52,7 @@ export default function MultiSelect({
                 {on && <Check className="size-3" />}
               </span>
               {option}
-            </button>
+            </Button>
           );
         })}
       </PopoverContent>

@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button.tsx";
 import { useState, type MouseEvent } from "react";
 import { useBackendAuth, useMutation, useQuery } from "@/lib/backend/react.tsx";
 import { BookmarkCheck, BookmarkPlus, Heart } from "lucide-react";
@@ -56,7 +57,7 @@ export default function FavoriteButton({
   if (variant === "bookmark") {
     const Icon = saved ? BookmarkCheck : BookmarkPlus;
     return (
-      <button
+      <Button variant="plain" size="none"
         type="button"
         onClick={onClick}
         disabled={busy}
@@ -65,12 +66,12 @@ export default function FavoriteButton({
         className={cn("cursor-pointer text-violet-600 transition-colors hover:text-violet-600 disabled:opacity-60", className)}
       >
         <Icon className="size-[18px]" strokeWidth={1.5} />
-      </button>
+      </Button>
     );
   }
 
   return (
-    <button
+    <Button variant="plain" size="none"
       type="button"
       onClick={onClick}
       disabled={busy}
@@ -84,6 +85,6 @@ export default function FavoriteButton({
     >
       <Heart className={cn("size-4", saved && "text-violet-600")} strokeWidth={saved ? 3 : 2} />
       {withLabel && (saved ? "Saved" : "Save")}
-    </button>
+    </Button>
   );
 }

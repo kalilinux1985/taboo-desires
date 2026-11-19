@@ -1,3 +1,4 @@
+import { Input } from "@/components/ui/input.tsx";
 import { Card } from "@/components/ui/card.tsx";
 import { useRef, useState } from "react";
 import { useMutation, useQuery } from "@/lib/backend/react.tsx";
@@ -79,7 +80,7 @@ export default function VerificationPanel() {
           {rejected ? "Try again" : "Upload photo"}
         </Button>
       )}
-      <input
+      <Input
         ref={inputRef}
         type="file"
         accept="image/*"

@@ -96,14 +96,14 @@ export default function MessageSellerButton({
           <>
           <div className="flex flex-wrap gap-2">
             {QUICK_MESSAGES.map((q) => (
-              <button
+              <Button variant="plain" size="none"
                 key={q}
                 type="button"
                 onClick={() => setBody(q)}
                 className="cursor-pointer rounded-[5px] border bg-secondary px-2.5 py-1 text-xs font-medium hover:bg-accent hover:text-accent-foreground"
               >
                 {q}
-              </button>
+              </Button>
             ))}
           </div>
           <Textarea

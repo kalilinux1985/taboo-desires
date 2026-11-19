@@ -323,7 +323,7 @@ export default function MobileNav() {
 
         <div className="px-6 py-5">
           {isAuthenticated ? (
-            <button
+            <Button variant="plain" size="none"
               type="button"
               onClick={() => {
                 close();
@@ -332,7 +332,7 @@ export default function MobileNav() {
               className="flex cursor-pointer items-center gap-2 font-display text-2xl italic text-muted-foreground transition-colors hover:text-foreground"
             >
               <LogOut className="size-5" /> Logout
-            </button>
+            </Button>
           ) : (
             <Link
               href="/signin"

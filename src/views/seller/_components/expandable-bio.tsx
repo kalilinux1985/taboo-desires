@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button.tsx";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils.ts";
 
@@ -35,7 +36,7 @@ export default function ExpandableBio({ text, className }: { text: string; class
         {text}
       </p>
       {(cut || open) && (
-        <button
+        <Button variant="plain" size="none"
           type="button"
           aria-expanded={open}
           aria-controls="profile-bio"
@@ -43,7 +44,7 @@ export default function ExpandableBio({ text, className }: { text: string; class
           className="cursor-pointer rounded-[5px] border border-violet-bright px-3 py-1 text-xs font-bold text-violet-600 transition-colors hover:bg-violet-bright hover:text-white"
         >
           {open ? "− See Less" : "+ See More"}
-        </button>
+        </Button>
       )}
     </div>
   );

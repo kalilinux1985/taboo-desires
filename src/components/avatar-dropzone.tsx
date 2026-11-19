@@ -1,3 +1,5 @@
+import { Input } from "@/components/ui/input.tsx";
+import { Button } from "@/components/ui/button.tsx";
 import { useState } from "react";
 import { ImagePlus, X } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner.tsx";
@@ -28,7 +30,7 @@ export default function AvatarDropzone(props: AvatarPickerProps) {
     >
       {previewUrl ? (
         <div className="relative">
-          <button
+          <Button variant="plain" size="none"
             type="button"
             onClick={openPicker}
             disabled={uploading}
@@ -36,8 +38,8 @@ export default function AvatarDropzone(props: AvatarPickerProps) {
             className="block cursor-pointer overflow-hidden rounded-[5px]"
           >
             <img src={previewUrl} alt="Profile" className="h-56 w-44 object-cover sm:h-64 sm:w-52" />
-          </button>
-          <button
+          </Button>
+          <Button variant="plain" size="none"
             type="button"
             onClick={remove}
             disabled={uploading}
@@ -45,7 +47,7 @@ export default function AvatarDropzone(props: AvatarPickerProps) {
             className="absolute -right-3 -top-3 flex size-8 cursor-pointer items-center justify-center rounded-full bg-destructive text-white shadow-md transition-transform hover:scale-110"
           >
             <X className="size-4" />
-          </button>
+          </Button>
           {uploading && (
             <div className="absolute inset-0 flex items-center justify-center rounded-[5px] bg-black/60">
               <Spinner />
@@ -53,7 +55,7 @@ export default function AvatarDropzone(props: AvatarPickerProps) {
           )}
         </div>
       ) : (
-        <button
+        <Button variant="plain" size="none"
           type="button"
           onClick={openPicker}
           disabled={uploading}
@@ -62,9 +64,9 @@ export default function AvatarDropzone(props: AvatarPickerProps) {
           {uploading ? <Spinner /> : <ImagePlus className="size-10 text-violet-600" />}
           <span className="text-sm font-medium text-foreground">Drop an image here or click to upload</span>
           <span className="text-xs">JPG, PNG or WebP up to 5MB</span>
-        </button>
+        </Button>
       )}
-      <input
+      <Input
         ref={inputRef}
         type="file"
         accept="image/*"

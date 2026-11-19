@@ -1,3 +1,4 @@
+import { Checkbox } from "@/components/ui/checkbox.tsx";
 import { useRef, useState } from "react";
 import { Camera, CircleCheck, Clock, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
@@ -45,7 +46,7 @@ function PhotoPick({
   return (
     <div className="space-y-1.5">
       <Label>{label}</Label>
-      <button
+      <Button variant="plain" size="none"
         type="button"
         onClick={() => ref.current?.click()}
         className="flex w-full cursor-pointer items-center gap-3 rounded-[5px] border border-white/[3%] bg-[#0F172A] px-3 py-2.5 text-left text-sm hover:border-violet-bright"
@@ -59,8 +60,8 @@ function PhotoPick({
           <span className="block truncate">{file ? file.name : "Choose or take a photo"}</span>
           <span className="block text-xs text-muted-foreground">{hint}</span>
         </span>
-      </button>
-      <input
+      </Button>
+      <Input
         ref={ref}
         type="file"
         accept="image/*"
@@ -203,11 +204,11 @@ export default function AgeVerificationDialog() {
                 onPick={setSelfie}
               />
               <label className="flex cursor-pointer items-start gap-2 text-sm text-muted-foreground">
-                <input
+                <Checkbox
                   type="checkbox"
                   checked={confirmed}
-                  onChange={(e) => setConfirmed(e.target.checked)}
-                  className="mt-0.5 size-4 shrink-0 cursor-pointer accent-[#7f22fe]"
+                  onCheckedChange={(c) => setConfirmed(c === true)}
+                  className="mt-0.5"
                 />
                 I am {MIN_AGE} or older, and these documents are mine.
               </label>

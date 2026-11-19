@@ -91,9 +91,9 @@ export function SectionTitle({ title, count, onCount }: { title: string; count?:
         <span className="text-[22px] text-white">{title}</span>
         {count &&
           (onCount ? (
-            <button type="button" onClick={onCount} className="cursor-pointer text-[16px] text-[#7b3aec] hover:underline">
+            <Button variant="plain" size="none" type="button" onClick={onCount} className="cursor-pointer text-[16px] text-[#7b3aec] hover:underline">
               {count}
-            </button>
+            </Button>
           ) : (
             <span className="text-[16px] text-[#7b3aec]">{count}</span>
           ))}

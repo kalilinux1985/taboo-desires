@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button.tsx";
 import { Star } from "lucide-react";
 import { cn } from "@/lib/utils.ts";
 
@@ -23,7 +24,7 @@ export function StarInput({ value, onChange }: { value: number; onChange: (v: nu
   return (
     <div className="flex items-center gap-1" role="radiogroup" aria-label="Rating">
       {STARS.map((s) => (
-        <button
+        <Button variant="plain" size="none"
           key={s}
           type="button"
           role="radio"
@@ -35,7 +36,7 @@ export function StarInput({ value, onChange }: { value: number; onChange: (v: nu
           <Star
             className={cn("size-7", s <= value ? "text-violet-600" : "text-muted-foreground/40")}
           />
-        </button>
+        </Button>
       ))}
     </div>
   );

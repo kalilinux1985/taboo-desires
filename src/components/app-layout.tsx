@@ -1,5 +1,6 @@
 "use client";
 
+import { Input } from "@/components/ui/input.tsx";
 import { useState, type FormEvent, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -141,13 +142,13 @@ function HeaderSearch() {
   const field = (autoFocus: boolean) => (
     <form onSubmit={submit} role="search" className="flex h-[41px] w-full items-center gap-2.5 rounded-[5px] bg-background px-3 shadow-[inset_0_3px_8px_rgba(0,0,0,0.28),inset_0_0_3px_rgba(0,0,0,0.28)]">
       <Search className="size-5 shrink-0 text-white" strokeWidth={1.5} />
-      <input
+      <Input
         value={text}
         onChange={(e) => setText(e.target.value)}
         autoFocus={autoFocus}
         aria-label="Search users and listings"
         placeholder="Search Users / Listings..."
-        className="field-bare min-w-0 flex-1 bg-transparent font-serif text-[13px] text-white outline-none placeholder:text-white/70 xl:text-[14px]"
+        className="field-bare h-auto min-w-0 flex-1 border-0 bg-transparent p-0 focus-visible:ring-0 font-serif text-[13px] text-white outline-none placeholder:text-white/70 xl:text-[14px]"
       />
     </form>
   );

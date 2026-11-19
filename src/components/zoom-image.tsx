@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button.tsx";
 import { useState, type ReactNode } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog.tsx";
 import { cn } from "@/lib/utils.ts";
@@ -19,14 +20,14 @@ export default function ZoomImage({
   const [open, setOpen] = useState(false);
   return (
     <>
-      <button
+      <Button variant="plain" size="none"
         type="button"
         onClick={() => setOpen(true)}
         aria-label="View larger"
         className={cn("block cursor-zoom-in", className)}
       >
         {children}
-      </button>
+      </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="w-auto max-w-[95vw] border-0 bg-transparent p-0 shadow-none sm:max-w-[95vw]">
           <DialogTitle className="sr-only">{alt || "Picture"}</DialogTitle>

@@ -94,7 +94,7 @@ function Gallery({
       {images.length > 1 && (
         <div className="grid grid-cols-5 gap-2 sm:grid-cols-8">
           {images.map((img, i) => (
-            <button
+            <Button variant="plain" size="none"
               key={img.id}
               type="button"
               onClick={() => setActive(i)}
@@ -104,7 +104,7 @@ function Gallery({
               )}
             >
               <img src={img.url} alt="" className="size-full object-cover" />
-            </button>
+            </Button>
           ))}
         </div>
       )}
@@ -512,14 +512,14 @@ export default function ListingPage() {
                 <div className="flex flex-col gap-3">
                   {buyBlocked && !isAuction && <UpgradeNotice message={buyBlocked} showUpgrade={false} />}
                   {!isAuction && !locked && !buyBlocked && (
-                    <button
+                    <Button variant="plain" size="none"
                       type="button"
                       className={WIDE_ACTION}
                       disabled={listing.status !== "active"}
                       onClick={comingSoon}
                     >
                       Buy now
-                    </button>
+                    </Button>
                   )}
                   {seller && !buyBlocked && (
                     <MessageSellerButton

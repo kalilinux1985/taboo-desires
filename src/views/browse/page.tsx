@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button.tsx";
 import { useSearchParams } from "@/lib/navigation.ts";
 import { usePaginatedQuery } from "@/lib/backend/react.tsx";
 import { Search, X } from "lucide-react";
@@ -168,7 +169,7 @@ export default function BrowsePage() {
 
         <div className="flex flex-wrap gap-2">
           {[{ value: undefined, label: "All" }, ...CATEGORIES].map((c) => (
-            <button
+            <Button variant="plain" size="none"
               key={c.label}
               type="button"
               onClick={() => chooseCategory(c.value)}
@@ -180,7 +181,7 @@ export default function BrowsePage() {
               )}
             >
               {c.label}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -198,12 +199,12 @@ export default function BrowsePage() {
 
 function FilterPill({ label, onClear }: { label: string; onClear: () => void }) {
   return (
-    <button
+    <Button variant="plain" size="none"
       type="button"
       onClick={onClear}
       className="flex cursor-pointer items-center gap-1.5 rounded-[5px] border border-violet-bright bg-primary px-3 py-1 text-sm font-semibold text-primary-foreground"
     >
       {label} <X className="size-3.5" aria-label="Remove filter" />
-    </button>
+    </Button>
   );
 }

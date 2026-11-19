@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button.tsx";
 import Link from "next/link";
 import { PersonStanding } from "lucide-react";
 import { useQuery } from "@/lib/backend/react.tsx";
@@ -73,9 +74,9 @@ export default function LikerAvatars({
       {postId && total > likers.length && (
         <Dialog>
           <DialogTrigger asChild>
-            <button type="button" className="cursor-pointer text-muted-foreground hover:text-foreground">
+            <Button variant="plain" size="none" type="button" className="cursor-pointer text-muted-foreground hover:text-foreground">
               More+
-            </button>
+            </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-sm">
             <DialogHeader>

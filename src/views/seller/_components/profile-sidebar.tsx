@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button.tsx";
 import { useState } from "react";
 import Link from "next/link";
 import { CircleCheck, Star, UserCog } from "lucide-react";
@@ -60,14 +61,14 @@ export default function SellerAbout({ profile }: { profile: Profile }) {
           </>
         )}
       </dl>
-      <button
+      <Button variant="plain" size="none"
         type="button"
         aria-expanded={more}
         onClick={() => setMore((m) => !m)}
         className="mt-1 cursor-pointer text-[11px] uppercase tracking-[0.06em] text-[#ffffff] hover:text-[#7b3aec]"
       >
         {more ? "Less" : "More"}
-      </button>
+      </Button>
       <dl className="mt-3 flex flex-col">
         <Detail label="Joined" value={joinedAgo(profile.memberSince)} />
         <Detail label="Profile Visits" value={profile.activity.profileVisits.toLocaleString("en-US")} />
@@ -90,7 +91,7 @@ export function ProfileHeaderCard({ profile, onReviews }: { profile: Profile; on
       </p>
       <h1 className={cn(NURMA, "mt-1 truncate text-[24px] uppercase leading-tight tracking-[0.03em] text-white")}>{profile.name}</h1>
       <p className={cn(SERIF, "mt-1 flex flex-wrap items-center gap-x-4 text-[17px] text-[#7b3aec]")}>
-        <button
+        <Button variant="plain" size="none"
           type="button"
           onClick={onReviews}
           className="flex cursor-pointer items-center gap-1 hover:underline"
@@ -98,7 +99,7 @@ export function ProfileHeaderCard({ profile, onReviews }: { profile: Profile; on
         >
           <Star className="size-[18px]" strokeWidth={1.75} />
           {(rating ?? 0).toFixed(1)} ({reviewCount})
-        </button>
+        </Button>
         {country && <span>{country}</span>}
       </p>
       <div className="mt-2 flex flex-wrap items-center gap-[18px]">

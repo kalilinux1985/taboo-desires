@@ -77,7 +77,7 @@ export default function SellDialog({ listingId }: { listingId: Id<"listings"> })
         ) : (
           <div className="flex max-h-72 flex-col gap-1 overflow-y-auto" role="radiogroup" aria-label="Buyer">
             {choices.map((c) => (
-              <button
+              <Button variant="plain" size="none"
                 key={c._id}
                 type="button"
                 role="radio"
@@ -91,7 +91,7 @@ export default function SellDialog({ listingId }: { listingId: Id<"listings"> })
                 <ProfileAvatar name={c.name} url={c.avatarUrl} className="size-8 text-sm" />
                 <span className="flex-1 truncate font-semibold">{c.name}</span>
                 {c.askedAboutIt && <span className="text-xs text-muted-foreground">asked about this</span>}
-              </button>
+              </Button>
             ))}
           </div>
         )}

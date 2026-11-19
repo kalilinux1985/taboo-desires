@@ -1,3 +1,5 @@
+import { Input } from "@/components/ui/input.tsx";
+import { Button } from "@/components/ui/button.tsx";
 import { createContext, useContext, useState } from "react";
 import ReportButton from "@/components/report-button.tsx";
 import { useBackendAuth, usePaginatedQuery, useMutation, useQuery } from "@/lib/backend/react.tsx";
@@ -85,7 +87,7 @@ function CommentForm({
   };
   return (
     <form onSubmit={submit} className="relative min-w-0 flex-1">
-      <input
+      <Input
         value={body}
         maxLength={500}
         autoFocus={autoFocus}
@@ -95,19 +97,20 @@ function CommentForm({
         className={cn(
           boxClass(variant),
           "w-full pl-4 pr-10 text-white outline-none focus:ring-1 focus:ring-violet-600/50",
+          variant !== "profile" && "border-0",
           variant === "profile"
             ? "h-[31px] text-[12px] placeholder:text-white/70"
             : "h-9 text-[13px] placeholder:text-white/70",
         )}
       />
-      <button
+      <Button variant="plain" size="none"
         type="submit"
         aria-label="Send"
         disabled={!body.trim() || sending}
         className="absolute right-2 top-1/2 flex size-7 -translate-y-1/2 cursor-pointer items-center justify-center text-violet-600 disabled:cursor-default"
       >
         {sending ? <Spinner /> : <Send className="size-4" />}
-      </button>
+      </Button>
     </form>
   );
 }
@@ -163,9 +166,9 @@ function CommentItem({
               <span className="flex shrink-0 items-center gap-2 text-[10px] text-white">
                 <span title={new Date(comment._creationTime).toLocaleString()}>{shortAge(comment._creationTime)}</span>
                 {comment.canDelete ? (
-                  <button type="button" aria-label="Delete comment" onClick={remove_} className="cursor-pointer hover:text-red-500">
+                  <Button variant="plain" size="none" type="button" aria-label="Delete comment" onClick={remove_} className="cursor-pointer hover:text-red-500">
                     <Trash2 className="size-3" />
-                  </button>
+                  </Button>
                 ) : (
                   <ReportButton target={{ kind: "comment", id: comment._id }} iconOnly className="size-4 p-0 [&_svg]:size-3" />
                 )}
@@ -177,7 +180,7 @@ function CommentItem({
           {/* Same as the post's actions: outlined violet icons, reply first, then like with its count and likers */}
           <div className="flex flex-wrap items-center gap-x-5 gap-y-1 pl-0.5 text-[12px] text-white">
             <Authenticated>
-              <button
+              <Button variant="plain" size="none"
                 type="button"
                 onClick={() => setReplying((r) => !r)}
                 aria-label={`Reply to ${comment.author.name}`}
@@ -185,10 +188,10 @@ function CommentItem({
                 className={TEXT_ACTION}
               >
                 <MessageCircle className="size-4 text-violet-600" />
-              </button>
+              </Button>
             </Authenticated>
             <div className="flex items-center gap-2.5">
-              <button
+              <Button variant="plain" size="none"
                 type="button"
                 aria-pressed={comment.likedByMe}
                 aria-label={comment.likedByMe ? "Unlike comment" : "Like comment"}
@@ -198,11 +201,11 @@ function CommentItem({
               >
                 <ThumbsUp className="size-4 text-violet-600" />
                 <span>{comment.likeCount}</span>
-              </button>
+              </Button>
               <LikerAvatars likers={comment.likers} total={comment.likeCount} size="sm" />
             </div>
             {isTop && comment.replyCount > 0 && (
-              <button
+              <Button variant="plain" size="none"
                 type="button"
                 onClick={() => setShowReplies((s) => !s)}
                 aria-expanded={showReplies}
@@ -211,7 +214,7 @@ function CommentItem({
                 {showReplies
                   ? "Hide replies"
                   : `View ${comment.replyCount} ${comment.replyCount === 1 ? "reply" : "replies"}`}
-              </button>
+              </Button>
             )}
           </div>
 
@@ -236,14 +239,14 @@ function CommentItem({
             <span className="flex shrink-0 items-center gap-2 text-[10px] text-white">
               <span title={new Date(comment._creationTime).toLocaleString()}>{shortAge(comment._creationTime)}</span>
               {comment.canDelete ? (
-                <button
+                <Button variant="plain" size="none"
                   type="button"
                   aria-label="Delete comment"
                   onClick={() => remove({ commentId: comment._id }).catch((e) => toast.error(getErrorMessage(e, "Could not delete")))}
                   className="cursor-pointer hover:text-red-500"
                 >
                   <Trash2 className="size-3" />
-                </button>
+                </Button>
               ) : (
                 <ReportButton target={{ kind: "comment", id: comment._id }} iconOnly className="size-4 p-0 [&_svg]:size-3" />
               )}
@@ -254,7 +257,7 @@ function CommentItem({
 
         <div className="flex flex-wrap items-center gap-x-7 gap-y-1 pl-0.5 text-[13px] text-white">
           <Authenticated>
-            <button
+            <Button variant="plain" size="none"
               type="button"
               onClick={() => setReplying((r) => !r)}
               aria-label={`Reply to ${comment.author.name}`}
@@ -262,9 +265,9 @@ function CommentItem({
               className={cn(LINK_ACTION, replying && "text-violet-600")}
             >
               <Reply className="size-4 text-violet-600" />
-            </button>
+            </Button>
           </Authenticated>
-          <button
+          <Button variant="plain" size="none"
             type="button"
             aria-pressed={comment.likedByMe}
             onClick={() =>
@@ -276,9 +279,9 @@ function CommentItem({
           >
             <Heart className={cn("size-3.5", comment.likedByMe ? "text-violet-600" : "text-violet-600")} strokeWidth={comment.likedByMe ? 3 : 2} />
             <span className={cn(comment.likedByMe && "text-violet-600")}>{comment.likeCount}</span>
-          </button>
+          </Button>
           {isTop && comment.replyCount > 0 && (
-            <button
+            <Button variant="plain" size="none"
               type="button"
               onClick={() => setShowReplies((s) => !s)}
               aria-expanded={showReplies}
@@ -288,7 +291,7 @@ function CommentItem({
             >
               <MessagesSquare className="size-3.5 text-violet-600" />
               {comment.replyCount}
-            </button>
+            </Button>
           )}
         </div>
 
@@ -324,9 +327,9 @@ function Replies({ postId, parentId }: { postId: Id<"posts">; parentId: Id<"post
         <CommentItem key={r._id} postId={postId} comment={r} threadId={parentId} />
       ))}
       {status === "CanLoadMore" && (
-        <button type="button" onClick={() => loadMore(10)} className={cn(LINK_ACTION, "self-start text-[13px] text-white")}>
+        <Button variant="plain" size="none" type="button" onClick={() => loadMore(10)} className={cn(LINK_ACTION, "self-start text-[13px] text-white")}>
           More replies
-        </button>
+        </Button>
       )}
     </ul>
   );
@@ -355,9 +358,9 @@ function CommentList({ postId }: { postId: Id<"posts"> }) {
         ))}
       </ul>
       {status === "CanLoadMore" && (
-        <button type="button" onClick={() => loadMore(10)} className={cn(LINK_ACTION, "self-start pl-[37px] text-[13px] text-white")}>
+        <Button variant="plain" size="none" type="button" onClick={() => loadMore(10)} className={cn(LINK_ACTION, "self-start pl-[37px] text-[13px] text-white")}>
           View more comments
-        </button>
+        </Button>
       )}
     </>
   );

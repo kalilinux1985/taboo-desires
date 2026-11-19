@@ -1,3 +1,5 @@
+import { Input } from "@/components/ui/input.tsx";
+import { Button } from "@/components/ui/button.tsx";
 import { useEffect, useRef, useState } from "react";
 import { useMutation } from "@/lib/backend/react.tsx";
 import { Film, ImagePlus, Images, Video, X } from "lucide-react";
@@ -156,7 +158,7 @@ export default function LockedMediaUploader({
   };
 
   const modeButton = (m: Mode, label: string, icon: React.ReactNode) => (
-    <button
+    <Button variant="plain" size="none"
       key={m}
       type="button"
       onClick={() => switchMode(m)}
@@ -167,7 +169,7 @@ export default function LockedMediaUploader({
       )}
     >
       {icon} {label}
-    </button>
+    </Button>
   );
 
   return (
@@ -187,14 +189,14 @@ export default function LockedMediaUploader({
                   Cover
                 </span>
               )}
-              <button
+              <Button variant="plain" size="none"
                 type="button"
                 aria-label="Remove photo"
                 onClick={() => removePhoto(item.storageId)}
                 className="absolute right-1 top-1 flex size-7 cursor-pointer items-center justify-center rounded-full bg-black/70 text-white"
               >
                 <X className="size-4" />
-              </button>
+              </Button>
             </div>
           ))}
           {Array.from({ length: uploading }).map((_, i) => (
@@ -203,12 +205,12 @@ export default function LockedMediaUploader({
             </div>
           ))}
           {items.length + uploading < LOCKED_MEDIA_MAX && (
-            <button type="button" onClick={() => photoInput.current?.click()} className={ADD}>
+            <Button variant="plain" size="none" type="button" onClick={() => photoInput.current?.click()} className={ADD}>
               <ImagePlus className="size-6" />
               <span className="text-xs font-medium">Add photos</span>
-            </button>
+            </Button>
           )}
-          <input
+          <Input
             ref={photoInput}
             type="file"
             accept="image/*"
@@ -226,24 +228,24 @@ export default function LockedMediaUploader({
               <span className="absolute bottom-1 left-1 flex items-center gap-1 rounded-[5px] bg-black/70 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white">
                 <Film className="size-3" /> Video
               </span>
-              <button
+              <Button variant="plain" size="none"
                 type="button"
                 aria-label="Remove video"
                 onClick={() => onChange({ items: [], cover })}
                 className="absolute right-1 top-1 flex size-7 cursor-pointer items-center justify-center rounded-full bg-black/70 text-white"
               >
                 <X className="size-4" />
-              </button>
+              </Button>
             </div>
           ) : uploading > 0 && !cover ? (
             <div className={cn(TILE, "flex items-center justify-center")}>
               <Spinner />
             </div>
           ) : (
-            <button type="button" onClick={() => videoInput.current?.click()} className={ADD}>
+            <Button variant="plain" size="none" type="button" onClick={() => videoInput.current?.click()} className={ADD}>
               <Video className="size-6" />
               <span className="text-xs font-medium">Add video</span>
-            </button>
+            </Button>
           )}
           {/* Its thumbnail, shown publicly and not blurred */}
           {cover ? (
@@ -252,23 +254,23 @@ export default function LockedMediaUploader({
               <span className="absolute bottom-1 left-1 rounded-[5px] bg-accent px-1.5 py-0.5 text-[10px] font-bold uppercase text-accent-foreground">
                 Thumbnail
               </span>
-              <button
+              <Button variant="plain" size="none"
                 type="button"
                 aria-label="Remove thumbnail"
                 onClick={() => onChange({ items, cover: null })}
                 className="absolute right-1 top-1 flex size-7 cursor-pointer items-center justify-center rounded-full bg-black/70 text-white"
               >
                 <X className="size-4" />
-              </button>
+              </Button>
             </div>
           ) : (
-            <button type="button" onClick={() => thumbInput.current?.click()} className={ADD}>
+            <Button variant="plain" size="none" type="button" onClick={() => thumbInput.current?.click()} className={ADD}>
               <ImagePlus className="size-6" />
               <span className="text-xs font-medium">Add thumbnail photo</span>
-            </button>
+            </Button>
           )}
-          <input ref={videoInput} type="file" accept="video/*" className="hidden" onChange={(e) => addVideo(e.target.files)} />
-          <input ref={thumbInput} type="file" accept="image/*" className="hidden" onChange={(e) => addThumbnail(e.target.files)} />
+          <Input ref={videoInput} type="file" accept="video/*" className="hidden" onChange={(e) => addVideo(e.target.files)} />
+          <Input ref={thumbInput} type="file" accept="image/*" className="hidden" onChange={(e) => addThumbnail(e.target.files)} />
         </div>
       )}
     </div>

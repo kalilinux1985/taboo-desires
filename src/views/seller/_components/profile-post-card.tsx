@@ -120,7 +120,7 @@ export default function ProfilePostCard({
       )}
 
       <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-[12px] text-white">
-        <button
+        <Button variant="plain" size="none"
           type="button"
           onClick={() => setShowComments((s) => !s)}
           aria-expanded={showComments}
@@ -130,9 +130,9 @@ export default function ProfilePostCard({
         >
           <MessageCircle className="size-4 text-violet-600" />
           <span>{item.commentCount}</span>
-        </button>
+        </Button>
         <div className="flex items-center gap-2.5">
-          <button
+          <Button variant="plain" size="none"
             type="button"
             onClick={like}
             aria-pressed={item.likedByMe}
@@ -142,7 +142,7 @@ export default function ProfilePostCard({
           >
             <ThumbsUp className="size-4 text-violet-600" />
             <span>{item.likeCount}</span>
-          </button>
+          </Button>
           <LikerAvatars likers={item.likers} total={item.likeCount} postId={item._id} size="sm" />
         </div>
       </div>

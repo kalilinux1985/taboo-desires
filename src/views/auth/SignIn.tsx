@@ -1,5 +1,9 @@
 "use client";
 
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import { Checkbox } from "@/components/ui/checkbox.tsx";
+import { Button } from "@/components/ui/button.tsx";
 import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useNavigate, useSearchParams } from "@/lib/navigation.ts";
@@ -200,18 +204,18 @@ export default function SignInPage() {
           <p className={cn(SERIF, "text-[14px]")}>
             We sent it to <span className="text-white">{sentTo}</span>.
           </p>
-          <button type="button" onClick={() => setSentTo(null)} className={cn(FOOTNOTE, FOOT_LINK, "mt-2")}>
+          <Button variant="plain" size="none" type="button" onClick={() => setSentTo(null)} className={cn(FOOTNOTE, FOOT_LINK, "mt-2")}>
             Use a different email
-          </button>
+          </Button>
         </div>
       </Shell>
     );
   }
 
   const switchTo = (next: Mode) => (
-    <button type="button" onClick={() => setMode(next)} className={FOOT_LINK}>
+    <Button variant="plain" size="none" type="button" onClick={() => setMode(next)} className={FOOT_LINK}>
       HERE
-    </button>
+    </Button>
   );
 
   return (
@@ -221,7 +225,7 @@ export default function SignInPage() {
           <Heading title="Welcome Back" sub="Log into your account" />
           <div className="flex flex-col gap-[26px]">
             {/* Accounts are by email, so the field takes an email where the design says username */}
-            <input
+            <Input
               id="email"
               name="email"
               aria-label="Email"
@@ -233,7 +237,7 @@ export default function SignInPage() {
               onChange={(e) => setEmail(e.target.value)}
               className={FIELD}
             />
-            <input
+            <Input
               id="password"
               name="password"
               aria-label="Password"
@@ -246,17 +250,17 @@ export default function SignInPage() {
               className={FIELD}
             />
           </div>
-          <button type="submit" className={SUBMIT} disabled={busy}>
+          <Button variant="plain" size="none" type="submit" className={SUBMIT} disabled={busy}>
             {busy && <Spinner />} Sign-in
-          </button>
+          </Button>
           <p className={FOOTNOTE}>Don&apos;t have an account? Sign-up {switchTo("signup")}</p>
           <p className={cn(FOOTNOTE, "-mt-4 flex flex-wrap justify-center gap-x-3")}>
-            <button type="button" onClick={resetPassword} disabled={busy} className={FOOT_LINK}>
+            <Button variant="plain" size="none" type="button" onClick={resetPassword} disabled={busy} className={FOOT_LINK}>
               Forgot your password?
-            </button>
-            <button type="button" onClick={() => setMode("link")} className={FOOT_LINK}>
+            </Button>
+            <Button variant="plain" size="none" type="button" onClick={() => setMode("link")} className={FOOT_LINK}>
               Email me a sign-in link
-            </button>
+            </Button>
           </p>
         </form>
       )}
@@ -265,7 +269,7 @@ export default function SignInPage() {
         <form onSubmit={signUp} className="flex flex-col gap-[26px]">
           <Heading title="Create Account" sub="Sign up for an account" />
           <div className="flex flex-col gap-[26px]">
-            <input
+            <Input
               id="name"
               name="name"
               aria-label="Username"
@@ -277,7 +281,7 @@ export default function SignInPage() {
               onChange={(e) => setName(e.target.value)}
               className={FIELD}
             />
-            <input
+            <Input
               id="new-email"
               name="email"
               aria-label="Email"
@@ -289,7 +293,7 @@ export default function SignInPage() {
               onChange={(e) => setEmail(e.target.value)}
               className={FIELD}
             />
-            <input
+            <Input
               id="new-password"
               name="new-password"
               aria-label={`Password (at least ${MIN_PASSWORD} characters)`}
@@ -302,51 +306,38 @@ export default function SignInPage() {
               onChange={(e) => setPassword(e.target.value)}
               className={FIELD}
             />
-            <select
-              id="country"
-              name="country"
-              aria-label="Country"
-              autoComplete="country-name"
-              required
-              value={country}
-              onChange={(e) => setCountry(e.target.value)}
-              className={cn(FIELD, "appearance-none [color-scheme:dark]", !country && "text-[#4f5051]")}
-            >
-              <option value="" disabled>COUNTRY</option>
-              {COUNTRIES.map((c) => <option key={c} value={c} className="text-white">{c}</option>)}
-            </select>
+            <Select name="country" required value={country} onValueChange={setCountry}>
+              <SelectTrigger id="country" aria-label="Country" className={cn(FIELD, "justify-between", !country && "text-[#4f5051]")}>
+                <SelectValue placeholder="COUNTRY" />
+              </SelectTrigger>
+              <SelectContent>
+                {COUNTRIES.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+              </SelectContent>
+            </Select>
             <div className="grid grid-cols-[110px_1fr] gap-3">
-              <select
-                id="age"
-                name="age"
-                aria-label="Age"
-                required
-                value={age}
-                onChange={(e) => setAge(e.target.value)}
-                className={cn(FIELD, "appearance-none [color-scheme:dark]", !age && "text-[#4f5051]")}
-              >
-                <option value="" disabled>AGE</option>
-                {AGE_RANGES.map((a) => <option key={a} value={a} className="text-white">{a}</option>)}
-              </select>
-              <select
-                id="gender"
-                name="gender"
-                aria-label="Gender"
-                required
-                value={gender}
-                onChange={(e) => setGender(e.target.value)}
-                className={cn(FIELD, "appearance-none [color-scheme:dark]", !gender && "text-[#4f5051]")}
-              >
-                <option value="" disabled>GENDER</option>
-                {GENDERS.map((g) => <option key={g} value={g} className="text-white">{g}</option>)}
-              </select>
+              <Select name="age" required value={age} onValueChange={setAge}>
+              <SelectTrigger id="age" aria-label="Age" className={cn(FIELD, "justify-between", !age && "text-[#4f5051]")}>
+                <SelectValue placeholder="AGE" />
+              </SelectTrigger>
+              <SelectContent>
+                {AGE_RANGES.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+              </SelectContent>
+            </Select>
+              <Select name="gender" required value={gender} onValueChange={setGender}>
+              <SelectTrigger id="gender" aria-label="Gender" className={cn(FIELD, "justify-between", !gender && "text-[#4f5051]")}>
+                <SelectValue placeholder="GENDER" />
+              </SelectTrigger>
+              <SelectContent>
+                {GENDERS.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+              </SelectContent>
+            </Select>
             </div>
           </div>
           <div role="radiogroup" aria-label="Account type" className="flex flex-col gap-2">
             <p className={cn(FOOTNOTE, "text-[13px]")}>Choose what type of profile you want to signup for?</p>
             <div className="grid grid-cols-2 gap-3">
               {(["buyer", "seller"] as const).map((t) => (
-                <button
+                <Button variant="plain" size="none"
                   key={t}
                   type="button"
                   role="radio"
@@ -361,19 +352,19 @@ export default function SignInPage() {
                   )}
                 >
                   {t}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
           <label className={cn(SERIF, "flex cursor-pointer items-start gap-3 text-[14px] text-white")}>
-            <input
+            <Checkbox
               id="confirm-18"
               name="confirm-18"
               type="checkbox"
               required
               checked={is18}
-              onChange={(e) => setIs18(e.target.checked)}
-              className="mt-0.5 size-4 shrink-0 cursor-pointer accent-[#4c1d95]"
+              onCheckedChange={(c) => setIs18(c === true)}
+              className="mt-0.5"
             />
             <span>I confirm that I am {MIN_AGE} years of age or older.</span>
           </label>
@@ -386,9 +377,9 @@ export default function SignInPage() {
           <p className={cn(FOOTNOTE, "-mt-3 text-[11px]")}>
             Passwords need at least {MIN_PASSWORD} characters.
           </p>
-          <button type="submit" className={SUBMIT} disabled={busy}>
+          <Button variant="plain" size="none" type="submit" className={SUBMIT} disabled={busy}>
             {busy && <Spinner />} Sign-up
-          </button>
+          </Button>
           <p className={FOOTNOTE}>Already have an account? Sign-in {switchTo("signin")}</p>
         </form>
       )}
@@ -396,7 +387,7 @@ export default function SignInPage() {
       {mode === "link" && (
         <form onSubmit={sendLink} className="flex flex-col gap-[26px]">
           <Heading title="Email Link" sub="We'll email you a one-time sign-in link" />
-          <input
+          <Input
             id="link-email"
             name="email"
             aria-label="Email"
@@ -411,9 +402,9 @@ export default function SignInPage() {
           <p className={cn(FOOTNOTE, "-mt-3 text-[11px]")}>
             New here? The link creates your account too. You must be 18 or older.
           </p>
-          <button type="submit" className={SUBMIT} disabled={busy}>
+          <Button variant="plain" size="none" type="submit" className={SUBMIT} disabled={busy}>
             {busy && <Spinner />} Email me a link
-          </button>
+          </Button>
           <p className={FOOTNOTE}>Use a password instead? Sign-in {switchTo("signin")}</p>
         </form>
       )}

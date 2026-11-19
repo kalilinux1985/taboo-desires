@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button.tsx";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Check, ChevronDown, ShoppingBag, SlidersHorizontal, Store } from "lucide-react";
@@ -29,7 +30,7 @@ function FilterPanel({
       aria-label="Filters"
       className="lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-1"
     >
-      <button
+      <Button variant="plain" size="none"
         type="button"
         onClick={() => setMobileOpen((o) => !o)}
         aria-expanded={mobileOpen}
@@ -46,7 +47,7 @@ function FilterPanel({
         <ChevronDown
           className={cn("size-4 text-violet-600 transition-transform", mobileOpen && "rotate-180")}
         />
-      </button>
+      </Button>
 
       <div className={cn("pt-3 lg:block lg:pt-0", !mobileOpen && "hidden")}>
         <div className="flex items-center justify-between pb-1">
@@ -54,13 +55,13 @@ function FilterPanel({
             <SlidersHorizontal className="size-4 text-violet-600" /> Filter
           </p>
           {active > 0 && (
-            <button
+            <Button variant="plain" size="none"
               type="button"
               onClick={onClear}
               className="cursor-pointer text-xs font-bold text-violet-600 hover:underline"
             >
               Clear all
-            </button>
+            </Button>
           )}
         </div>
         <FilterGroups

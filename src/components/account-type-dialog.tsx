@@ -98,7 +98,7 @@ export default function AccountTypeDialog() {
           {OPTIONS.map((o) => {
             const active = choice === o.id;
             return (
-              <button
+              <Button variant="plain" size="none"
                 key={o.id}
                 type="button"
                 onClick={() => setChoice(o.id)}
@@ -132,7 +132,7 @@ export default function AccountTypeDialog() {
                     </li>
                   ))}
                 </ul>
-              </button>
+              </Button>
             );
           })}
         </div>

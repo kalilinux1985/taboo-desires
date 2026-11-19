@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button.tsx";
 import Link from "next/link";
 import { Crown, Gavel, Tag } from "lucide-react";
 import { cn } from "@/lib/utils.ts";
@@ -28,7 +29,7 @@ export default function SaleTypePicker({
         const active = value === o.value;
         const locked = auctionLocked && o.value === "auction" && !active;
         return (
-          <button
+          <Button variant="plain" size="none"
             key={o.value}
             type="button"
             role="radio"
@@ -59,7 +60,7 @@ export default function SaleTypePicker({
               )}
             </span>
             <span className="text-xs text-muted-foreground">{o.body}</span>
-          </button>
+          </Button>
         );
       })}
     </div>

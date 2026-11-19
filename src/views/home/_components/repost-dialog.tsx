@@ -83,7 +83,7 @@ export default function RepostDialog({
           <div className="flex max-h-72 flex-col gap-3 overflow-y-auto">
             <div className="grid grid-cols-3 gap-3">
               {results.map((l) => (
-                <button
+                <Button variant="plain" size="none"
                   key={l._id}
                   type="button"
                   onClick={() => setPicked(l._id)}
@@ -102,7 +102,7 @@ export default function RepostDialog({
                       <Check className="size-4" />
                     </span>
                   )}
-                </button>
+                </Button>
               ))}
             </div>
             {status === "CanLoadMore" && (

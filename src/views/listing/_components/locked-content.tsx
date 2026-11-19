@@ -214,14 +214,14 @@ export function UnlockBox({
         <>
           {status === "declined" && <p className="text-center text-[13px] text-destructive">Your last request was declined. You can try again.</p>}
           {status === "expired" && <p className="text-center text-[13px] text-white">Your 24-hour access has ended. Unlock again to view it.</p>}
-          <button
+          <Button variant="plain" size="none"
             type="button"
             onClick={unlock}
             disabled={!isActive}
             className="flex h-[50px] w-full cursor-pointer items-center justify-center gap-2 rounded-[5px] bg-[#7b3aec] text-[26px] text-white transition-colors hover:bg-[#8a4ff0] disabled:cursor-default disabled:opacity-60"
           >
             <Unlock className="size-6" /> Unlock Now
-          </button>
+          </Button>
         </>
       )}
       <p className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-[13px] text-white">

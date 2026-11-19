@@ -144,36 +144,36 @@ function QuickListingForm({ onPosted }: { onPosted: () => void }) {
           {photos.map((p) => (
             <div key={p.id} className="relative size-14 overflow-hidden rounded-[5px]">
               <img src={p.url} alt="" className="size-full object-cover" />
-              <button
+              <Button variant="plain" size="none"
                 type="button"
                 aria-label="Remove photo"
                 onClick={() => setPhotos((all) => all.filter((x) => x.id !== p.id))}
                 className="absolute right-0.5 top-0.5 flex size-5 cursor-pointer items-center justify-center rounded-full bg-black/70 text-white"
               >
                 <X className="size-3" />
-              </button>
+              </Button>
             </div>
           ))}
         </div>
       )}
       <div className="flex items-center justify-between gap-3">
-        <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={(e) => void addPhotos(e.target.files)} />
-        <button
+        <Input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={(e) => void addPhotos(e.target.files)} />
+        <Button variant="plain" size="none"
           type="button"
           onClick={() => fileRef.current?.click()}
           disabled={uploading || photos.length >= MAX_PHOTOS}
           className="flex cursor-pointer items-center gap-2 rounded-[5px] px-3 py-1.5 text-sm disabled:opacity-50"
         >
           {uploading ? <Spinner /> : <ImageIcon className="size-4 text-violet-600" />} Photo
-        </button>
+        </Button>
         {canList || access === undefined ? (
-          <button
+          <Button variant="plain" size="none"
             type="submit"
             disabled={posting || !canList}
             className="flex cursor-pointer items-center gap-2 rounded-[5px] px-3 py-1.5 text-sm font-semibold hover:bg-violet-bright disabled:opacity-50"
           >
             {posting && <Spinner />} Post Listing
-          </button>
+          </Button>
         ) : (
           <Link href="/pricing" className="text-sm font-semibold text-violet-600 hover:underline">
             Go Pro to post listings
