@@ -161,6 +161,13 @@ var TABLES = {
       reason: c("reason")
     }
   },
+  blocks: {
+    sqlName: "blocks",
+    columns: {
+      blockerId: c("blocker_id", "uuid"),
+      blockedId: c("blocked_id", "uuid")
+    }
+  },
   contentReports: {
     sqlName: "content_reports",
     columns: {
@@ -1453,6 +1460,115 @@ async function getBadges(ctx, user) {
   return candidates.filter(([earned]) => earned).map(([, badge]) => badge);
 }
 
+// supabase/functions/_shared/modules/blocks.ts
+var blocks_exports = {};
+__export(blocks_exports, {
+  assertNotBlocked: () => assertNotBlocked,
+  isBlocked: () => isBlocked,
+  toggle: () => toggle
+});
+
+// supabase/functions/_shared/lib/sellerStats.ts
+async function getStats(ctx, sellerId) {
+  return await ctx.db.first(
+    "sellerStats",
+    sql`where seller_id = ${sellerId}::uuid`
+  );
+}
+async function bumpStats(ctx, sellerId, delta) {
+  const f = delta.followerCount ?? 0;
+  const r = delta.reviewCount ?? 0;
+  const s = delta.ratingSum ?? 0;
+  const n = delta.salesCount ?? 0;
+  await ctx.db.rows(sql`
+    insert into public.seller_stats (seller_id, follower_count, review_count, rating_sum, sales_count)
+    values (${sellerId}::uuid, greatest(0, ${f}::int), greatest(0, ${r}::int), greatest(0, ${s}::int), greatest(0, ${n}::int))
+    on conflict (seller_id) do update set
+      follower_count = greatest(0, seller_stats.follower_count + ${f}::int),
+      review_count = greatest(0, seller_stats.review_count + ${r}::int),
+      rating_sum = greatest(0, seller_stats.rating_sum + ${s}::int),
+      sales_count = greatest(0, seller_stats.sales_count + ${n}::int)`);
+}
+function summarize(stats) {
+  const reviewCount = stats?.reviewCount ?? 0;
+  const ratingSum = stats?.ratingSum ?? 0;
+  return {
+    followerCount: stats?.followerCount ?? 0,
+    salesCount: stats?.salesCount ?? 0,
+    reviewCount,
+    rating: reviewCount ? Math.round(ratingSum / reviewCount * 10) / 10 : null
+  };
+}
+async function canReview(ctx, reviewerId, sellerId) {
+  if (reviewerId === sellerId) return false;
+  ctx.db.touch("conversations", "unlocks");
+  const found = await ctx.db.scalar(sql`
+    select exists (
+      select 1 from public.conversations where buyer_id = ${reviewerId}::uuid and seller_id = ${sellerId}::uuid
+    ) or exists (
+      select 1 from public.unlocks
+       where buyer_id = ${reviewerId}::uuid and seller_id = ${sellerId}::uuid and status = 'granted'
+    )`);
+  return found === true || found === "t";
+}
+
+// supabase/functions/_shared/modules/blocks.ts
+async function assertNotBlocked(ctx, a, b) {
+  const hit = await ctx.db.first(
+    "blocks",
+    sql`where (blocker_id = ${a}::uuid and blocked_id = ${b}::uuid)
+           or (blocker_id = ${b}::uuid and blocked_id = ${a}::uuid)`
+  );
+  if (hit)
+    throw new AppError({
+      code: "FORBIDDEN",
+      message: "You can't do this with a member who is blocked"
+    });
+}
+var isBlocked = query({
+  args: { userId: v.id("users") },
+  handler: async (ctx, { userId }) => {
+    const me = await getCurrentUserDoc(ctx);
+    if (!me) return false;
+    return !!await ctx.db.first(
+      "blocks",
+      sql`where blocker_id = ${me._id}::uuid and blocked_id = ${userId}::uuid`
+    );
+  }
+});
+var toggle = mutation({
+  args: { userId: v.id("users") },
+  handler: async (ctx, { userId }) => {
+    const me = await requireUser(ctx);
+    if (me._id === userId)
+      throw new AppError({ code: "BAD_REQUEST", message: "You can't block yourself" });
+    if (!await ctx.db.get("users", userId))
+      throw new AppError({ code: "NOT_FOUND", message: "Member not found" });
+    const existing = await ctx.db.first(
+      "blocks",
+      sql`where blocker_id = ${me._id}::uuid and blocked_id = ${userId}::uuid`
+    );
+    if (existing) {
+      await ctx.db.delete("blocks", existing._id);
+      return false;
+    }
+    await ctx.db.insert("blocks", { blockerId: me._id, blockedId: userId });
+    for (const [follower, followed] of [
+      [me._id, userId],
+      [userId, me._id]
+    ]) {
+      const f = await ctx.db.first(
+        "follows",
+        sql`where follower_id = ${follower}::uuid and seller_id = ${followed}::uuid`
+      );
+      if (!f) continue;
+      await ctx.db.delete("follows", f._id);
+      if (f.status === "accepted") await bumpStats(ctx, followed, { followerCount: -1 });
+    }
+    return true;
+  }
+});
+
 // supabase/functions/_shared/modules/auctions.ts
 var auctions_exports = {};
 __export(auctions_exports, {
@@ -2101,50 +2217,6 @@ function shippingError(e, fallback) {
   }
   console.error(fallback, e);
   return new AppError({ code: "INTERNAL", message: fallback });
-}
-
-// supabase/functions/_shared/lib/sellerStats.ts
-async function getStats(ctx, sellerId) {
-  return await ctx.db.first(
-    "sellerStats",
-    sql`where seller_id = ${sellerId}::uuid`
-  );
-}
-async function bumpStats(ctx, sellerId, delta) {
-  const f = delta.followerCount ?? 0;
-  const r = delta.reviewCount ?? 0;
-  const s = delta.ratingSum ?? 0;
-  const n = delta.salesCount ?? 0;
-  await ctx.db.rows(sql`
-    insert into public.seller_stats (seller_id, follower_count, review_count, rating_sum, sales_count)
-    values (${sellerId}::uuid, greatest(0, ${f}::int), greatest(0, ${r}::int), greatest(0, ${s}::int), greatest(0, ${n}::int))
-    on conflict (seller_id) do update set
-      follower_count = greatest(0, seller_stats.follower_count + ${f}::int),
-      review_count = greatest(0, seller_stats.review_count + ${r}::int),
-      rating_sum = greatest(0, seller_stats.rating_sum + ${s}::int),
-      sales_count = greatest(0, seller_stats.sales_count + ${n}::int)`);
-}
-function summarize(stats) {
-  const reviewCount = stats?.reviewCount ?? 0;
-  const ratingSum = stats?.ratingSum ?? 0;
-  return {
-    followerCount: stats?.followerCount ?? 0,
-    salesCount: stats?.salesCount ?? 0,
-    reviewCount,
-    rating: reviewCount ? Math.round(ratingSum / reviewCount * 10) / 10 : null
-  };
-}
-async function canReview(ctx, reviewerId, sellerId) {
-  if (reviewerId === sellerId) return false;
-  ctx.db.touch("conversations", "unlocks");
-  const found = await ctx.db.scalar(sql`
-    select exists (
-      select 1 from public.conversations where buyer_id = ${reviewerId}::uuid and seller_id = ${sellerId}::uuid
-    ) or exists (
-      select 1 from public.unlocks
-       where buyer_id = ${reviewerId}::uuid and seller_id = ${sellerId}::uuid and status = 'granted'
-    )`);
-  return found === true || found === "t";
 }
 
 // supabase/functions/_shared/modules/orders.ts
@@ -3619,7 +3691,7 @@ __export(favorites_exports, {
   followedSellers: () => followedSellers,
   isFavorite: () => isFavorite,
   mine: () => mine2,
-  toggle: () => toggle
+  toggle: () => toggle2
 });
 async function findFavorite(ctx, userId, listingId) {
   return await ctx.db.first(
@@ -3635,7 +3707,7 @@ var isFavorite = query({
     return !!await findFavorite(ctx, me._id, listingId);
   }
 });
-var toggle = mutation({
+var toggle2 = mutation({
   args: { listingId: v.id("listings") },
   handler: async (ctx, { listingId }) => {
     const me = await requireUser(ctx);
@@ -3707,7 +3779,7 @@ __export(follows_exports, {
   feed: () => feed,
   isFollowing: () => isFollowing,
   respond: () => respond2,
-  toggle: () => toggle2
+  toggle: () => toggle3
 });
 var FEED_SELLERS_MAX = 100;
 var FEED_PER_SELLER = 12;
@@ -3727,7 +3799,7 @@ var isFollowing = query({
     return !f ? "none" : f.status === "pending" ? "pending" : "following";
   }
 });
-var toggle2 = mutation({
+var toggle3 = mutation({
   args: { sellerId: v.id("users") },
   handler: async (ctx, { sellerId }) => {
     const me = await requireUser(ctx);
@@ -3740,6 +3812,7 @@ var toggle2 = mutation({
     if (!target) throw new AppError({ code: "NOT_FOUND", message: "Member not found" });
     const existing = await findFollow(ctx, me._id, sellerId);
     if (!existing) {
+      await assertNotBlocked(ctx, me._id, sellerId);
       if (me.accountType === "seller" && me.role !== "admin") {
         if (await getPlan(ctx, me._id) !== "pro")
           throw new AppError({ code: "FORBIDDEN", message: "Upgrade to Premium to follow members" });
@@ -3967,6 +4040,7 @@ async function requireParticipant(ctx, conversationId) {
   return { user, convo, isBuyer: convo.buyerId === user._id };
 }
 async function appendMessage(ctx, convo, senderId, body) {
+  await assertNotBlocked(ctx, convo.buyerId, convo.sellerId);
   await ctx.db.insert("messages", {
     conversationId: convo._id,
     senderId,
@@ -6257,6 +6331,7 @@ var registry = {
   activity: functionsOf(activity_exports),
   ageVerification: functionsOf(ageVerification_exports),
   auctions: functionsOf(auctions_exports),
+  blocks: functionsOf(blocks_exports),
   customRequests: functionsOf(customRequests_exports),
   favorites: functionsOf(favorites_exports),
   follows: functionsOf(follows_exports),
