@@ -52,7 +52,7 @@ export default function ProfilePhotos({
   };
 
   return (
-    <section className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3">
       {isMe && limit !== undefined && (
         <p className="self-end font-mono text-xs text-muted-foreground">
           {ownCount ?? total}/{limit}
@@ -103,6 +103,6 @@ export default function ProfilePhotos({
       )}
       {status === "LoadingMore" && <Spinner className="self-center" />}
       {isMe && <AddImageDialog open={adding} onOpenChange={setAdding} />}
-    </section>
+    </div>
   );
 }

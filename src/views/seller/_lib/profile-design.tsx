@@ -3,6 +3,8 @@ import ZoomImage from "@/components/zoom-image.tsx";
 import { formatDistanceToNow } from "date-fns";
 import { ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils.ts";
+import { Button } from "@/components/ui/button.tsx";
+import { Card } from "@/components/ui/card.tsx";
 
 // Profile design shared by buyer and seller profiles: #191a1f page, #212227
 // outer cards, #141519 inner cards with a faint edge, violet #7b3aec, grey
@@ -75,9 +77,9 @@ export function Frame({
   children: ReactNode;
 }) {
   return (
-    <section className={cn(OUTER, "p-[19px]", className)}>
-      <div className={cn(INNER, "h-full", innerClassName)}>{children}</div>
-    </section>
+    <Card className={cn(OUTER, "gap-0 p-[19px] text-white", className)}>
+      <Card className={cn(INNER, "block h-full gap-0 py-0 text-white", innerClassName)}>{children}</Card>
+    </Card>
   );
 }
 
@@ -112,23 +114,26 @@ export function ProfileTabBar<T extends string>({
   onChange: (value: T) => void;
 }) {
   return (
-    <nav aria-label="Profile sections" className={cn(OUTER, "flex flex-wrap gap-x-5 gap-y-2 px-[19px] py-[7px] [grid-area:tabs]")}>
-      {tabs.map((t) => (
-        <button
-          key={t.value}
-          type="button"
-          aria-current={value === t.value ? "page" : undefined}
-          onClick={() => onChange(t.value)}
-          className={cn(
-            SERIF,
-            "h-[30px] cursor-pointer rounded-[5px] bg-[#141519] px-[14px] text-[17px] transition-colors hover:text-[#7b3aec]",
-            value === t.value ? "text-[#7b3aec]" : "text-white",
-          )}
-        >
-          {t.label}
-        </button>
-      ))}
-    </nav>
+    <Card className={cn(OUTER, "gap-0 py-[7px] [grid-area:tabs]")}>
+      <nav aria-label="Profile sections" className="flex flex-wrap gap-x-5 gap-y-2 px-[19px]">
+        {tabs.map((t) => (
+          <Button
+            key={t.value}
+            type="button"
+            variant="ghost"
+            aria-current={value === t.value ? "page" : undefined}
+            onClick={() => onChange(t.value)}
+            className={cn(
+              SERIF,
+              "h-[30px] cursor-pointer rounded-[5px] bg-[#141519] px-[14px] text-[17px] font-normal transition-colors hover:bg-[#141519] hover:text-[#7b3aec]",
+              value === t.value ? "text-[#7b3aec]" : "text-white",
+            )}
+          >
+            {t.label}
+          </Button>
+        ))}
+      </nav>
+    </Card>
   );
 }
 

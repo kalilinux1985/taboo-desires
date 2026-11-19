@@ -152,7 +152,7 @@ export default function SellerReviews({
   );
 
   return (
-    <section className="flex flex-col gap-6" id="reviews">
+    <div className="flex flex-col gap-6" id="reviews">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="flex flex-col gap-1">
           <h2 className="font-display text-3xl">Reviews</h2>
@@ -224,6 +224,6 @@ export default function SellerReviews({
           </Button>
         </div>
       )}
-    </section>
+    </div>
   );
 }

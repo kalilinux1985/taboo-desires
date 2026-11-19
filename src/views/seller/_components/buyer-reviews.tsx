@@ -30,7 +30,7 @@ export default function BuyerReviews({ buyerId, isMe }: { buyerId: Id<"users">; 
   }
 
   return (
-    <section className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6">
       {results.length === 0 && status === "Exhausted" ? (
         <Empty className="border">
           <EmptyHeader>
@@ -83,6 +83,6 @@ export default function BuyerReviews({ buyerId, isMe }: { buyerId: Id<"users">; 
           </Button>
         </div>
       )}
-    </section>
+    </div>
   );
 }
