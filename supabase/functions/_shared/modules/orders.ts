@@ -24,6 +24,7 @@ import { requireCapability } from "../lib/access.ts";
 import { getCurrentUserDoc, publicSellerName, requireUser } from "../lib/auth.ts";
 import { shippingError, verifyAddress } from "../lib/easypost.ts";
 import { bumpStats } from "../lib/sellerStats.ts";
+import { queueEmail } from "../lib/email.ts";
 
 export const addressValidator = v.object({
   name: v.string(),
@@ -134,13 +135,44 @@ export async function createOrder(
   },
 ): Promise<Id<"orders">> {
   const shipTo = await getSavedAddress(ctx, fields.buyerId, "ship_to");
-  return await ctx.db.insert("orders", {
+  const title = fields.title.slice(0, 120) || "Order";
+  const id = await ctx.db.insert("orders", {
     ...fields,
-    title: fields.title.slice(0, 120) || "Order",
+    title,
     status: shipTo ? "ready_to_ship" : "awaiting_address",
     shipTo: shipTo ?? undefined,
     updatedAt: nowIso(ctx),
   });
+  const [buyer, seller] = await Promise.all([
+    ctx.db.get("users", fields.buyerId),
+    ctx.db.get("users", fields.sellerId),
+  ]);
+  if (buyer)
+    await queueEmail(ctx, {
+      to: buyer,
+      kind: "order_placed",
+      transactional: true,
+      subject: `Your order: ${title}`,
+      heading: "Thanks for your order",
+      lines: [
+        `Your order for "${title}" is placed with ${seller ? publicSellerName(seller) : "the seller"}.`,
+        shipTo ? "We have your shipping address on file." : "Add your shipping address so the seller can ship it.",
+      ],
+      button: { label: "View order", path: "/orders" },
+      dedupeKey: `order_buyer:${id}`,
+    });
+  if (seller)
+    await queueEmail(ctx, {
+      to: seller,
+      kind: "order_received",
+      transactional: true,
+      subject: `New order: ${title}`,
+      heading: "You have a new order",
+      lines: [`You have a new order for "${title}".`],
+      button: { label: "View order", path: "/orders" },
+      dedupeKey: `order_seller:${id}`,
+    });
+  return id;
 }
 
 /** The live (not cancelled) order for a listing, if any. */

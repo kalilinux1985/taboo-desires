@@ -10,6 +10,7 @@ import {
   requireUser,
 } from "../lib/auth.ts";
 import { assertNotBlocked } from "./blocks.ts";
+import { queueEmail, throttleKey } from "../lib/email.ts";
 import { requireCapability } from "../lib/access.ts";
 
 const MAX_BODY = 2000;
@@ -61,6 +62,21 @@ async function appendMessage(
     buyerUnread: !senderIsBuyer,
     sellerUnread: senderIsBuyer,
   });
+  // Email the other person (at most once every 6 hours per conversation)
+  const [sender, recipient] = await Promise.all([
+    ctx.db.get("users", senderId),
+    ctx.db.get("users", senderIsBuyer ? convo.sellerId : convo.buyerId),
+  ]);
+  if (sender && recipient)
+    await queueEmail(ctx, {
+      to: recipient,
+      kind: "message",
+      subject: `New message from ${publicSellerName(sender)}`,
+      heading: "You have a new message",
+      lines: [`${publicSellerName(sender)} sent you a message on Taboo Desires.`],
+      button: { label: "Open messages", path: "/messages" },
+      dedupeKey: throttleKey(ctx, "message", recipient._id, convo._id),
+    });
 }
 
 async function summarize(

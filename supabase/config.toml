@@ -19,3 +19,7 @@ verify_jwt = true
 # EasyPost tracking updates. EasyPost sends no JWT; the function only trusts
 # what it reads back from EasyPost's API, so the gateway check is off.
 verify_jwt = false
+
+[functions.send-emails]
+# Called by the pg_cron schedule with the project's publishable key; the JWT check stays on.
+verify_jwt = true

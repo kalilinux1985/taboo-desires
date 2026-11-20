@@ -6,6 +6,8 @@ import { v } from "../core/values.ts";
 import { getCurrentUserDoc, requireUser } from "../lib/auth.ts";
 import { bumpStats } from "../lib/sellerStats.ts";
 import { assertNotBlocked } from "./blocks.ts";
+import { publicSellerName } from "../lib/auth.ts";
+import { queueEmail, throttleKey } from "../lib/email.ts";
 import { getPlan } from "../lib/subscription.ts";
 import { toCard } from "../lib/listingCard.ts";
 
@@ -69,6 +71,15 @@ export const toggle = mutation({
     }
     // A follow is a request until the seller accepts it
     await ctx.db.insert("follows", { followerId: me._id, sellerId, status: "pending" });
+    await queueEmail(ctx, {
+      to: target,
+      kind: "follow_request",
+      subject: `${publicSellerName(me)} wants to follow you`,
+      heading: "New follow request",
+      lines: [`${publicSellerName(me)} sent you a follow request. Accept or delete it from your notifications.`],
+      button: { label: "View notifications", path: "/notifications" },
+      dedupeKey: throttleKey(ctx, "follow_request", target._id, me._id),
+    });
     return "pending" as const;
   },
 });
@@ -88,6 +99,17 @@ export const respond = mutation({
     if (req.status === "pending") {
       await ctx.db.patch("follows", req._id, { status: "accepted" });
       await bumpStats(ctx, me._id, { followerCount: 1 });
+      const follower = await ctx.db.get("users", followerId);
+      if (follower)
+        await queueEmail(ctx, {
+          to: follower,
+          kind: "follow_accepted",
+          subject: `${publicSellerName(me)} accepted your follow request`,
+          heading: "Follow request accepted",
+          lines: [`${publicSellerName(me)} accepted your follow request.`],
+          button: { label: "View profile", path: `/seller/${me._id}` },
+          dedupeKey: `follow_accepted:${req._id}`,
+        });
     }
     return null;
   },
