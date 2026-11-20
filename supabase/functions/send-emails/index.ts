@@ -3,9 +3,14 @@
 //
 //   POST /functions/v1/send-emails
 //
-// Secrets: RESEND_API_KEY (required), EMAIL_FROM (optional, for example
-// "Taboo Desires <no-reply@yourdomain.com>"; defaults to Resend's test sender,
-// which only delivers to the Resend account owner), EMAIL_REPLY_TO (optional).
+// Secrets: RESEND_API_KEY (required).
+//   EMAIL_FROM           sender for content-report emails (the report inbox alerts)
+//   EMAIL_FROM_REPORTS   same, takes priority over EMAIL_FROM when both are set
+//   EMAIL_FROM_GENERAL   sender for every other email (messages, follows, orders);
+//                        until it is set they use Resend's test sender, which only
+//                        delivers to the Resend account owner
+//   EMAIL_REPLY_TO       optional default reply-to
+// A sender can be "Name <address>" or just an address.
 // SUPABASE_DB_URL is provided by Supabase. The gateway JWT check stays on.
 
 import postgres from "npm:postgres@3.4.5";
@@ -20,19 +25,24 @@ const db = postgres(Deno.env.get("SUPABASE_DB_URL")!, {
 const MAX_ATTEMPTS = 5;
 const BATCH = 20;
 
-type Row = { id: string; to_email: string; reply_to: string | null; subject: string; html: string; text_body: string; attempts: number };
+type Row = { id: string; kind: string; to_email: string; reply_to: string | null; subject: string; html: string; text_body: string; attempts: number };
 
 Deno.serve(async (req) => {
   if (req.method !== "POST") return new Response(null, { status: 405 });
   const key = Deno.env.get("RESEND_API_KEY")?.trim();
   if (!key) return new Response("RESEND_API_KEY is not set", { status: 500 });
-  const from = Deno.env.get("EMAIL_FROM")?.trim() || "Taboo Desires <onboarding@resend.dev>";
+  const named = (v: string | undefined) => {
+    const t = v?.trim();
+    return t ? (t.includes("<") ? t : `Taboo Desires <${t}>`) : undefined;
+  };
+  const reportsFrom = named(Deno.env.get("EMAIL_FROM_REPORTS")) ?? named(Deno.env.get("EMAIL_FROM"));
+  const generalFrom = named(Deno.env.get("EMAIL_FROM_GENERAL")) ?? "Taboo Desires <onboarding@resend.dev>";
   const replyTo = Deno.env.get("EMAIL_REPLY_TO")?.trim();
 
   // Claim a batch; rows locked by another run are skipped
   const rows = await db.begin(async (tx) => {
     const claimed = await tx<Row[]>`
-      select id, to_email, reply_to, subject, html, text_body, attempts
+      select id, kind, to_email, reply_to, subject, html, text_body, attempts
         from public.email_outbox
        where status = 'pending'
        order by created_at
@@ -55,7 +65,7 @@ Deno.serve(async (req) => {
           "Idempotency-Key": r.id,
         },
         body: JSON.stringify({
-          from,
+          from: r.kind === "content_report" ? (reportsFrom ?? generalFrom) : generalFrom,
           to: [r.to_email],
           subject: r.subject,
           html: r.html,
