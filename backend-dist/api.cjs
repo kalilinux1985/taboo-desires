@@ -1591,7 +1591,8 @@ var albums_exports = {};
 __export(albums_exports, {
   byUser: () => byUser,
   create: () => create,
-  mine: () => mine2
+  mine: () => mine2,
+  remove: () => remove
 });
 var NAME_MAX = 40;
 var ALBUMS_MAX = 50;
@@ -1639,6 +1640,26 @@ var byUser = query({
        limit ${ALBUMS_MAX}::int`);
     const mine6 = me?._id === userId;
     return rows.filter((r) => mine6 || Number(r.photos) > 0).map((r) => ({ _id: String(r.id), name: String(r.name), photos: Number(r.photos) }));
+  }
+});
+var remove = mutation({
+  args: { albumId: v.id("photoAlbums") },
+  handler: async (ctx, { albumId }) => {
+    const me = await requireUser(ctx);
+    const album = await ctx.db.get("photoAlbums", albumId);
+    if (!album) return 0;
+    if (album.userId !== me._id)
+      throw new AppError({ code: "FORBIDDEN", message: "Not your album" });
+    const photos = await ctx.db.select(
+      "profilePhotos",
+      sql`where album_id = ${albumId}::uuid and user_id = ${me._id}::uuid`
+    );
+    for (const p of photos) {
+      ctx.storage.delete(p.storageId);
+      await ctx.db.delete("profilePhotos", p._id);
+    }
+    await ctx.db.delete("photoAlbums", albumId);
+    return photos.length;
   }
 });
 
@@ -2199,7 +2220,7 @@ __export(listings_exports, {
   get: () => get,
   listingStatusValidator: () => listingStatusValidator,
   mediaKindValidator: () => mediaKindValidator,
-  remove: () => remove,
+  remove: () => remove2,
   saleTypeValidator: () => saleTypeValidator,
   setStatus: () => setStatus,
   shopPage: () => shopPage,
@@ -3826,7 +3847,7 @@ var setStatus = mutation({
     return null;
   }
 });
-var remove = mutation({
+var remove2 = mutation({
   args: { listingId: v.id("listings") },
   handler: async (ctx, { listingId }) => {
     const listing = await requireOwnListing(ctx, listingId);
@@ -4693,7 +4714,7 @@ __export(posts_exports, {
   likers: () => likers,
   listComments: () => listComments,
   onlineAuthors: () => onlineAuthors,
-  remove: () => remove2,
+  remove: () => remove3,
   removeComment: () => removeComment2,
   repostListing: () => repostListing,
   toggleCommentLike: () => toggleCommentLike,
@@ -4798,7 +4819,7 @@ var repostListing = mutation({
     );
   }
 });
-var remove2 = mutation({
+var remove3 = mutation({
   args: { postId: v.id("posts") },
   handler: async (ctx, { postId }) => {
     const me = await requireUser(ctx);
@@ -5151,13 +5172,13 @@ var resolve = mutation({
     remove: v.boolean(),
     note: v.optional(v.string())
   },
-  handler: async (ctx, { reportId, remove: remove4, note }) => {
+  handler: async (ctx, { reportId, remove: remove5, note }) => {
     const admin2 = await requireAdmin(ctx);
     const report = await ctx.db.get("contentReports", reportId);
     if (!report || report.status !== "open") throw bad2("This report is already closed");
     const text = note?.trim();
     if (text && text.length > 500) throw bad2("The note is too long");
-    if (remove4 && report.targetId) {
+    if (remove5 && report.targetId) {
       if (report.targetKind === "listing") {
         const listing = await ctx.db.get("listings", report.targetId);
         if (listing) await deleteListingCascade(ctx, listing);
@@ -5169,7 +5190,7 @@ var resolve = mutation({
       }
     }
     await ctx.db.patch("contentReports", reportId, {
-      status: remove4 ? "removed" : "dismissed",
+      status: remove5 ? "removed" : "dismissed",
       resolvedAt: new Date(ctx.now()).toISOString(),
       resolvedBy: admin2._id,
       resolutionNote: text || void 0
@@ -5184,7 +5205,7 @@ __export(reviews_exports, {
   listByReviewer: () => listByReviewer,
   listForSeller: () => listForSeller,
   myReview: () => myReview,
-  remove: () => remove3,
+  remove: () => remove4,
   save: () => save
 });
 var BODY_MAX = 1e3;
@@ -5318,7 +5339,7 @@ var save = mutation({
     return null;
   }
 });
-var remove3 = mutation({
+var remove4 = mutation({
   args: { sellerId: v.id("users") },
   handler: async (ctx, { sellerId }) => {
     const me = await requireUser(ctx);
