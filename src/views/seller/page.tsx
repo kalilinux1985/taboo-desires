@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/empty.tsx";
 import RequireAuth from "@/components/require-auth.tsx";
 import SellerListings from "@/components/seller-listings.tsx";
+import { ShopHeader, ShopTab } from "./_components/shop-tab.tsx";
+import ProfileMenu from "./_components/profile-menu.tsx";
 import ProfilePhotos from "./_components/profile-photos.tsx";
 import SellerReviews from "./_components/seller-reviews.tsx";
 import BuyerProfile from "./_components/buyer-profile.tsx";
@@ -84,6 +86,31 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
     { value: "reviews", label: "Reviews" },
   ];
 
+  // The Shop tab is full width: small header, tab bar, then the listing grid
+  if (tab === "shop") {
+    return (
+      <div className="profile-design min-h-[calc(100dvh-3.5rem)] bg-[#0C0F15]">
+        <div className="mx-auto flex max-w-[1170px] flex-col gap-[22px] px-5 py-6">
+          <ShopHeader
+            name={profile.name}
+            avatarUrl={profile.avatarUrl}
+            rating={profile.stats.rating}
+            reviewCount={profile.stats.reviewCount}
+            verified={profile.verified}
+            onReviews={() => setTab("reviews")}
+          />
+          <ProfileTabBar
+            tabs={tabs}
+            value={tab}
+            onChange={setTab}
+            trailing={!profile.isMe ? <ProfileMenu userId={profile._id} targetType="seller" /> : undefined}
+          />
+          <ShopTab sellerId={profile._id} total={profile.counts.listings} isMe={profile.isMe} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <ProfilePage>
       <ProfilePicture url={profile.avatarUrl} name={profile.name} />
@@ -103,11 +130,6 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
             <PhotosSection userId={profile._id} count={profile.counts.photos} onViewAll={() => setTab("photos")} />
             <ActivitySection authorId={profile._id} />
           </>
-        )}
-        {tab === "shop" && (
-          <ProfilePanel title="Shop" count={`${profile.counts.listings} Listings`}>
-            <SellerListings sellerId={profile._id} isMe={profile.isMe} kind="items" />
-          </ProfilePanel>
         )}
         {tab === "instant" && (
           <ProfilePanel title="Instant Content" count={`${profile.counts.instantContent} Items`}>

@@ -108,14 +108,17 @@ export function ProfileTabBar<T extends string>({
   tabs,
   value,
   onChange,
+  trailing,
 }: {
   tabs: { value: T; label: string }[];
   value: T;
   onChange: (value: T) => void;
+  /** Shown after the last tab (the ⋮ menu) */
+  trailing?: ReactNode;
 }) {
   return (
     <Card data-slot="card" className={cn(OUTER, "gap-0 py-[7px] [grid-area:tabs]")}>
-      <nav aria-label="Profile sections" className="flex flex-wrap gap-x-5 gap-y-2 px-[19px]">
+      <nav aria-label="Profile sections" className="flex flex-wrap items-center gap-x-5 gap-y-2 px-[19px]">
         {tabs.map((t) => (
           <Button
             key={t.value}
@@ -132,6 +135,7 @@ export function ProfileTabBar<T extends string>({
             {t.label}
           </Button>
         ))}
+        {trailing}
       </nav>
     </Card>
   );
