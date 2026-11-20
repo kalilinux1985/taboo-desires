@@ -28,7 +28,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import LikerAvatars from "@/views/home/_components/liker-avatars.tsx";
 import { shortAge } from "@/views/home/_lib/feed.ts";
 import AddImageDialog from "./add-image-dialog.tsx";
-import { CARD, SANS, SERIF } from "../_lib/profile-design.tsx";
+import { CARD, Frame, SANS, SERIF, SectionTitle, imagesLabel } from "../_lib/profile-design.tsx";
 
 type Photo = FunctionReturnType<typeof api.users.photosByUser>["page"][number];
 
@@ -161,7 +161,7 @@ function PhotoCard({ photo, isMe, onRemove }: { photo: Photo; isMe: boolean; onR
   };
 
   return (
-    <div className={cn(CARD, "group relative flex min-w-0 flex-col gap-3 bg-[#141519] p-[10px]")}>
+    <div className={cn(CARD, "group relative flex min-w-0 flex-col gap-3 p-[10px]")}>
       <div className="relative aspect-square overflow-hidden rounded-[5px] border border-white/10 bg-[#8b8b90]">
         <ZoomImage src={photo.url} className="size-full">
           <img src={photo.url} alt={photo.caption} loading="lazy" className="size-full object-cover" />
@@ -252,19 +252,14 @@ export function PhotosTab({
       toast.error(getErrorMessage(e, "Could not delete album"));
     }
   };
-  const label = `${total} ${total === 1 ? "image" : "images"}`;
   const room = limit === undefined ? Infinity : limit - (ownCount ?? total);
 
   return (
-    <div className="flex flex-col gap-[22px]">
+    <>
+    {/* Same Frame as Overview sections: OUTER #202227 around INNER #141519, with the same inner padding. */}
+    <Frame innerClassName="flex flex-col gap-[30px] px-[22px] py-[28px]">
       <div className="flex items-start justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <h2 className={cn(SANS, "flex flex-wrap items-baseline gap-x-2.5 leading-tight")}>
-            <span className="text-[22px] text-white">Photos</span>
-            <span className="text-[20px] tracking-[0.02em] text-[#7b3aec]">{label}</span>
-          </h2>
-          <span className="h-0.5 w-[60px] bg-[#7b3aec]" />
-        </div>
+        <SectionTitle title="Photos" count={imagesLabel(total)} />
         {isMe && room > 0 && (
           <Button type="button" variant="outline" onClick={() => setAdding(true)} className="h-[38px] cursor-pointer gap-2 border-2 border-[#7b3aec] text-white hover:bg-[#7b3aec]/20">
             <ImagePlus className="size-4 text-[#7b3aec]" /> Add photo
@@ -339,23 +334,21 @@ export function PhotosTab({
         {status === "LoadingFirstPage" ? "Loading photos…" : `Showing ${results.length} ${results.length === 1 ? "image" : "images"}`}
       </p>
 
-      <div className="rounded-[5px] bg-[#18191d] p-[17px]">
-        {status === "LoadingFirstPage" ? (
-          <div className="grid gap-[17px] sm:grid-cols-2 lg:grid-cols-3">
-            {[0, 1, 2].map((i) => (
-              <Skeleton key={i} className="aspect-square w-full" />
-            ))}
-          </div>
-        ) : results.length === 0 ? (
-          <p className={cn(SERIF, "py-16 text-center text-white")}>{album === "all" ? "No photos yet" : "No photos in this album yet"}</p>
-        ) : (
-          <div className="grid gap-[17px] sm:grid-cols-2 lg:grid-cols-3">
-            {results.map((p) => (
-              <PhotoCard key={p._id} photo={p} isMe={isMe} onRemove={remove} />
-            ))}
-          </div>
-        )}
-      </div>
+      {status === "LoadingFirstPage" ? (
+        <div className="grid gap-[17px] sm:grid-cols-2 lg:grid-cols-3">
+          {[0, 1, 2].map((i) => (
+            <Skeleton key={i} className="aspect-square w-full" />
+          ))}
+        </div>
+      ) : results.length === 0 ? (
+        <p className={cn(SERIF, "py-16 text-center text-white")}>{album === "all" ? "No photos yet" : "No photos in this album yet"}</p>
+      ) : (
+        <div className="grid gap-[17px] sm:grid-cols-2 lg:grid-cols-3">
+          {results.map((p) => (
+            <PhotoCard key={p._id} photo={p} isMe={isMe} onRemove={remove} />
+          ))}
+        </div>
+      )}
 
       {status === "CanLoadMore" && (
         <Button variant="outline" onClick={() => loadMore(24)} className={cn(SANS, "h-[48px] cursor-pointer border-2 border-[#5e2faf] uppercase tracking-[0.02em] text-white hover:bg-[#7b3aec]/20")}>
@@ -363,7 +356,8 @@ export function PhotosTab({
         </Button>
       )}
       {status === "LoadingMore" && <Spinner className="self-center" />}
-      {isMe && <AddImageDialog open={adding} onOpenChange={setAdding} />}
-    </div>
+    </Frame>
+    {isMe && <AddImageDialog open={adding} onOpenChange={setAdding} />}
+    </>
   );
 }
