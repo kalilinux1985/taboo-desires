@@ -120,7 +120,7 @@ export type Liker = { _id: Id<"users">; name: string; avatarUrl: string | null }
 export const POST_LIKERS_SHOWN = 9;
 export const COMMENT_LIKERS_SHOWN = 3;
 
-async function toLikers(ctx: QueryCtx, userIds: string[]): Promise<Liker[]> {
+export async function toLikers(ctx: QueryCtx, userIds: string[]): Promise<Liker[]> {
   const authors = await Promise.all(userIds.map((id) => loadFeedAuthor(ctx, id as Id<"users">)));
   return authors
     .filter((a) => a.name !== "Deleted user")

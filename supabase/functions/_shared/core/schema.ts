@@ -103,6 +103,8 @@ type Fields = {
     description?: string;
   };
   photoAlbums: { userId: Id<"users">; name: string };
+  photoLikes: { photoId: Id<"profilePhotos">; userId: Id<"users"> };
+  photoComments: { photoId: Id<"profilePhotos">; authorId: Id<"users">; body: string };
   subscriptions: {
     userId: Id<"users">;
     plan: "pro";
@@ -380,6 +382,14 @@ export const TABLES: { [T in DbTable]: TableDef<T> } = {
   photoAlbums: {
     sqlName: "photo_albums",
     columns: { userId: c("user_id", "uuid"), name: c("name") },
+  },
+  photoLikes: {
+    sqlName: "photo_likes",
+    columns: { photoId: c("photo_id", "uuid"), userId: c("user_id", "uuid") },
+  },
+  photoComments: {
+    sqlName: "photo_comments",
+    columns: { photoId: c("photo_id", "uuid"), authorId: c("author_id", "uuid"), body: c("body") },
   },
   subscriptions: {
     sqlName: "subscriptions",

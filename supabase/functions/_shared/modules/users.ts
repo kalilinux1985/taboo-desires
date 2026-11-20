@@ -1,7 +1,7 @@
 import { AppError } from "../core/errors.ts";
 import { mutation, query, type QueryCtx } from "../core/functions.ts";
 import type { Id } from "../core/schema.ts";
-import { sql } from "../core/sql.ts";
+import { raw, sql } from "../core/sql.ts";
 import { paginationOptsValidator, v } from "../core/values.ts";
 import {
   getCurrentUserDoc,
@@ -12,6 +12,7 @@ import { isAgeVerified } from "../domain/age.ts";
 import { getPlan } from "../lib/subscription.ts";
 import { getCapabilities } from "../lib/access.ts";
 import { assertOwnFiles } from "../lib/files.ts";
+import { toLikers } from "../lib/posts.ts";
 import { BUYER_PHOTO_MAX, PROFILE_PHOTO_PREVIEW } from "../domain/accounts.ts";
 import { getStats, summarize } from "../lib/sellerStats.ts";
 import { invalidSellerDetail } from "../domain/sellerDetails.ts";
@@ -241,17 +242,22 @@ async function listProfilePhotos(ctx: QueryCtx, userId: Id<"users">) {
 export const photosByUser = query({
   args: { userId: v.id("users"), paginationOpts: paginationOptsValidator },
   handler: async (ctx, { userId, paginationOpts }) => {
-    ctx.db.touch("profilePhotos", "posts");
+    ctx.db.touch("profilePhotos", "posts", "photoLikes", "photoComments", "postLikes");
+    const me = await getCurrentUserDoc(ctx);
     const limit = Math.min(Math.max(1, Math.floor(paginationOpts.numItems)), 100);
     const cursor = paginationOpts.cursor;
     const offset = cursor?.startsWith("o:") ? Math.max(0, Number(cursor.slice(2)) || 0) : 0;
     const rows = await ctx.db.rows(sql`
       select * from (
-        select id::text as source_id, storage_id, created_at, 0::int as ord, true as own
-          from public.profile_photos
-         where user_id = ${userId}::uuid
+        select pp.id::text as source_id, pp.storage_id, pp.created_at, 0::int as ord, true as own,
+               pp.description as caption,
+               (select count(*) from public.photo_likes l where l.photo_id = pp.id)::int as likes,
+               (select count(*) from public.photo_comments c where c.photo_id = pp.id)::int as comments
+          from public.profile_photos pp
+         where pp.user_id = ${userId}::uuid
         union all
-        select p.id::text, t.img, p.created_at, t.ord::int, false
+        select p.id::text, t.img, p.created_at, t.ord::int, false,
+               p.body, p.like_count, p.comment_count
           from public.posts p
          cross join lateral unnest(p.image_ids) with ordinality as t(img, ord)
          where p.author_id = ${userId}::uuid and p.kind <> 'listing'
@@ -260,15 +266,59 @@ export const photosByUser = query({
       limit ${limit + 1} offset ${offset}`);
     const pageRows = rows.slice(0, limit);
     const urls = await Promise.all(pageRows.map((r) => ctx.storage.getUrl(String(r.storage_id) as Id<"_storage">)));
+
+    // Who liked each photo (newest few) and whether the viewer did
+    const ownIds = [...new Set(pageRows.filter((r) => r.own === true).map((r) => String(r.source_id)))];
+    const postIds = [...new Set(pageRows.filter((r) => r.own !== true).map((r) => String(r.source_id)))];
+    const likerIds = new Map<string, string[]>();
+    const likedByMe = new Set<string>();
+    const collect = async (table: "photo_likes" | "post_likes", col: "photo_id" | "post_id", ids: string[]) => {
+      if (ids.length === 0) return;
+      const found = await ctx.db.rows(sql`
+        select ${raw(col)}::text as target, user_id::text as user_id from (
+          select ${raw(col)}, user_id,
+                 row_number() over (partition by ${raw(col)} order by created_at desc, id desc) as n
+            from public.${raw(table)}
+           where ${raw(col)} = any(${ids}::uuid[])
+        ) ranked where n <= ${PHOTO_LIKERS_SHOWN}::int
+        order by target, n`);
+      for (const r of found)
+        likerIds.set(String(r.target), [...(likerIds.get(String(r.target)) ?? []), String(r.user_id)]);
+      if (me) {
+        const mine = await ctx.db.rows(sql`
+          select ${raw(col)}::text as target from public.${raw(table)}
+           where user_id = ${me._id}::uuid and ${raw(col)} = any(${ids}::uuid[])`);
+        for (const r of mine) likedByMe.add(String(r.target));
+      }
+    };
+    await Promise.all([
+      collect("photo_likes", "photo_id", ownIds),
+      collect("post_likes", "post_id", postIds),
+    ]);
+    const allLikers = [...new Set([...likerIds.values()].flat())];
+    const likerDocs = new Map(
+      (await toLikers(ctx, allLikers)).map((l) => [String(l._id), l]),
+    );
+
     const page = pageRows.flatMap((r, i) => {
       const url = urls[i];
       if (!url) return [];
       const own = r.own === true;
+      const sourceId = String(r.source_id);
       return [
         {
-          _id: `${own ? "profile" : "post"}:${String(r.source_id)}:${Number(r.ord)}`,
+          _id: `${own ? "profile" : "post"}:${sourceId}:${Number(r.ord)}`,
           url,
-          photoId: own ? (String(r.source_id) as Id<"profilePhotos">) : null,
+          photoId: own ? (sourceId as Id<"profilePhotos">) : null,
+          postId: own ? null : (sourceId as Id<"posts">),
+          caption: r.caption ? String(r.caption) : "",
+          likeCount: Number(r.likes ?? 0),
+          commentCount: Number(r.comments ?? 0),
+          likedByMe: likedByMe.has(sourceId),
+          likers: (likerIds.get(sourceId) ?? []).flatMap((id) => {
+            const l = likerDocs.get(id);
+            return l ? [l] : [];
+          }),
         },
       ];
     });
@@ -279,6 +329,8 @@ export const photosByUser = query({
     };
   },
 });
+
+const PHOTO_LIKERS_SHOWN = 6;
 
 /** A private profile is visible only to its owner and admins. */
 const isPrivateProfile = (user: { settings?: SellerSettings }) => user.settings?.profilePrivate === "yes";

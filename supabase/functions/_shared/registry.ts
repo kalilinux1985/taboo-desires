@@ -6,6 +6,7 @@ import * as ageVerification from "./modules/ageVerification.ts";
 import * as activity from "./modules/activity.ts";
 import * as blocks from "./modules/blocks.ts";
 import * as albums from "./modules/albums.ts";
+import * as photos from "./modules/photos.ts";
 import * as auctions from "./modules/auctions.ts";
 import * as customRequests from "./modules/customRequests.ts";
 import * as favorites from "./modules/favorites.ts";
@@ -50,6 +51,7 @@ export const registry = {
   activity: functionsOf(activity),
   ageVerification: functionsOf(ageVerification),
   albums: functionsOf(albums),
+  photos: functionsOf(photos),
   auctions: functionsOf(auctions),
   blocks: functionsOf(blocks),
   customRequests: functionsOf(customRequests),

@@ -17,8 +17,8 @@ import {
 import RequireAuth from "@/components/require-auth.tsx";
 import SellerListings from "@/components/seller-listings.tsx";
 import { ShopHeader, ShopTab } from "./_components/shop-tab.tsx";
+import { PhotosTab } from "./_components/photos-tab.tsx";
 import ProfileMenu from "./_components/profile-menu.tsx";
-import ProfilePhotos from "./_components/profile-photos.tsx";
 import SellerReviews from "./_components/seller-reviews.tsx";
 import BuyerProfile from "./_components/buyer-profile.tsx";
 import SellerAbout, { ProfileHeaderCard } from "./_components/profile-sidebar.tsx";
@@ -29,7 +29,7 @@ import {
   ProfilePanel,
   ShopSection,
 } from "./_components/profile-sections.tsx";
-import { imagesLabel, ProfilePage, ProfilePicture, ProfileTabBar } from "./_lib/profile-design.tsx";
+import { ProfilePage, ProfilePicture, ProfileTabBar } from "./_lib/profile-design.tsx";
 import { useRecordProfileVisit } from "@/hooks/use-activity.ts";
 
 const TABS = ["overview", "shop", "instant", "photos", "reviews"] as const;
@@ -86,8 +86,8 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
     { value: "reviews", label: "Reviews" },
   ];
 
-  // The Shop tab is full width: small header, tab bar, then the listing grid
-  if (tab === "shop") {
+  // The Shop and Photos tabs are full width: small header, tab bar, then the tab's grid
+  if (tab === "shop" || tab === "photos") {
     return (
       <div className="profile-design min-h-[calc(100dvh-3.5rem)] bg-[#0C0F15]">
         <div className="mx-auto flex max-w-[1170px] flex-col gap-[22px] px-5 py-6">
@@ -105,7 +105,11 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
             onChange={setTab}
             trailing={!profile.isMe ? <ProfileMenu userId={profile._id} targetType="seller" /> : undefined}
           />
-          <ShopTab sellerId={profile._id} total={profile.counts.listings} isMe={profile.isMe} />
+          {tab === "shop" ? (
+            <ShopTab sellerId={profile._id} total={profile.counts.listings} isMe={profile.isMe} />
+          ) : (
+            <PhotosTab userId={profile._id} isMe={profile.isMe} total={profile.counts.photos} />
+          )}
         </div>
       </div>
     );
@@ -134,15 +138,6 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
         {tab === "instant" && (
           <ProfilePanel title="Instant Content" count={`${profile.counts.instantContent} Items`}>
             <SellerListings sellerId={profile._id} isMe={profile.isMe} kind="instant" />
-          </ProfilePanel>
-        )}
-        {tab === "photos" && (
-          <ProfilePanel title="Photos" count={imagesLabel(profile.counts.photos)}>
-            {profile.isMe || profile.counts.photos > 0 ? (
-              <ProfilePhotos userId={profile._id} isMe={profile.isMe} total={profile.counts.photos} />
-            ) : (
-              <p className="text-sm text-[#ffffff]">No photos yet</p>
-            )}
           </ProfilePanel>
         )}
         {tab === "reviews" && (
