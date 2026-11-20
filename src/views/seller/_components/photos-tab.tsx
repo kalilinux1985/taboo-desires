@@ -24,7 +24,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog.tsx";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog.tsx";
 import LikerAvatars from "@/views/home/_components/liker-avatars.tsx";
 import { shortAge } from "@/views/home/_lib/feed.ts";
 import AddImageDialog from "./add-image-dialog.tsx";
@@ -41,7 +40,7 @@ type CommentRow = {
 };
 
 /** Comments on one photo: profile photos have their own, photos on a post use the post's. */
-function CommentsDialog({ photo, onClose }: { photo: Photo; onClose: () => void }) {
+function CommentsPanel({ photo }: { photo: Photo }) {
   const { isAuthenticated } = useBackendAuth();
   const own = useQuery(api.photos.comments, photo.photoId ? { photoId: photo.photoId } : "skip");
   const post = usePaginatedQuery(
@@ -82,13 +81,8 @@ function CommentsDialog({ photo, onClose }: { photo: Photo; onClose: () => void 
   };
 
   return (
-    <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className={SERIF}>Comments</DialogTitle>
-          <DialogDescription className="sr-only">Comments on this photo</DialogDescription>
-        </DialogHeader>
-        <div className="flex max-h-[50vh] flex-col gap-4 overflow-y-auto">
+    <div className="flex flex-col gap-3 px-1 pb-1">
+        <div className="flex max-h-[320px] flex-col gap-4 overflow-y-auto">
           {rows === undefined ? (
             <Skeleton className="h-24 w-full" />
           ) : rows.length === 0 ? (
@@ -135,8 +129,7 @@ function CommentsDialog({ photo, onClose }: { photo: Photo; onClose: () => void 
         ) : (
           <p className="text-sm text-white">Sign in to comment.</p>
         )}
-      </DialogContent>
-    </Dialog>
+    </div>
   );
 }
 
@@ -182,7 +175,7 @@ function PhotoCard({ photo, isMe, onRemove }: { photo: Photo; isMe: boolean; onR
       {photo.caption && <p className={cn(SERIF, "line-clamp-4 break-words px-1 text-[14px] leading-[20px] text-white")}>{photo.caption}</p>}
       <div className="mt-auto flex flex-col gap-2 border-t border-white/15 px-1 pt-2">
         <div className="flex min-w-0 items-center gap-3 text-[13px] text-white">
-          <Button variant="plain" size="none" type="button" onClick={() => setCommenting(true)} aria-label="Comments" className="flex cursor-pointer items-center gap-1 hover:text-[#7b3aec]">
+          <Button variant="plain" size="none" type="button" onClick={() => setCommenting((v) => !v)} aria-label={commenting ? "Hide comments" : "Show comments"} aria-expanded={commenting} className="flex cursor-pointer items-center gap-1 hover:text-[#7b3aec]">
             {photo.commentCount} <MessageCircle className="size-[15px]" strokeWidth={1.5} />
           </Button>
           <span className="h-4 w-px bg-white/20" />
@@ -202,7 +195,7 @@ function PhotoCard({ photo, isMe, onRemove }: { photo: Photo; isMe: boolean; onR
           </span>
         </div>
       </div>
-      {commenting && <CommentsDialog photo={photo} onClose={() => setCommenting(false)} />}
+      {commenting && <CommentsPanel photo={photo} />}
     </div>
   );
 }
