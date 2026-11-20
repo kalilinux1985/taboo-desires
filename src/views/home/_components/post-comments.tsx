@@ -47,7 +47,7 @@ const PROFILE_BOX =
   "comment-surface rounded-[5px] border border-white/[3%] bg-background shadow-[inset_0_3px_8px_rgba(0,0,0,0.28),inset_0_0_3px_rgba(0,0,0,0.28)]";
 const boxClass = (v: Variant) => (v === "profile" ? PROFILE_BOX : COMMENT_BOX);
 
-const LINK_ACTION = "flex cursor-pointer items-center gap-1.5 transition-colors hover:text-[#f2f6ff]";
+const LINK_ACTION = "flex cursor-pointer items-center gap-1.5 transition-colors hover:text-white";
 
 function CommentForm({
   postId,
@@ -151,7 +151,7 @@ function CommentItem({
   );
 
   if (variant === "profile") {
-    const TEXT_ACTION = "cursor-pointer transition-colors hover:text-[#f9f9f9]";
+    const TEXT_ACTION = "cursor-pointer transition-colors hover:text-white";
     return (
       <li className="flex gap-1.5">
         <Link href={profile} className="h-fit shrink-0 cursor-pointer">

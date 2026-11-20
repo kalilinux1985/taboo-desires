@@ -136,12 +136,12 @@ function CtaPanel({
           >
             {title}
           </h2>
-          <p className="mt-1 text-white/80">{lead}</p>
+          <p className="mt-1 text-white">{lead}</p>
         </div>
       </div>
       <ul className="relative flex flex-col gap-2">
         {points.map((p) => (
-          <li key={p} className="flex items-start gap-2.5 text-white/90">
+          <li key={p} className="flex items-start gap-2.5 text-white">
             <Check
               className={cn(
                 "mt-0.5 size-4 shrink-0",
