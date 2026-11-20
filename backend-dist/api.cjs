@@ -221,6 +221,14 @@ var TABLES = {
     sqlName: "photo_albums",
     columns: { userId: c("user_id", "uuid"), name: c("name") }
   },
+  photoLikes: {
+    sqlName: "photo_likes",
+    columns: { photoId: c("photo_id", "uuid"), userId: c("user_id", "uuid") }
+  },
+  photoComments: {
+    sqlName: "photo_comments",
+    columns: { photoId: c("photo_id", "uuid"), authorId: c("author_id", "uuid"), body: c("body") }
+  },
   subscriptions: {
     sqlName: "subscriptions",
     columns: {
@@ -1617,6 +1625,214 @@ var create = mutation({
   }
 });
 
+// supabase/functions/_shared/modules/photos.ts
+var photos_exports = {};
+__export(photos_exports, {
+  addComment: () => addComment,
+  comments: () => comments,
+  removeComment: () => removeComment,
+  toggleLike: () => toggleLike
+});
+
+// supabase/functions/_shared/lib/posts.ts
+var POST_BODY_MAX = 1e3;
+var COMMENT_MAX = 500;
+var POST_IMAGES_MAX = 4;
+function cleanBody(raw2, max, label, required) {
+  const text = raw2.trim();
+  if (required && !text)
+    throw new AppError({
+      code: "BAD_REQUEST",
+      message: `${label} can't be empty`
+    });
+  if (text.length > max) {
+    throw new AppError({
+      code: "BAD_REQUEST",
+      message: `${label} must be under ${max} characters`
+    });
+  }
+  return text;
+}
+async function insertListingPost(ctx, listing, repost, body = "") {
+  return await ctx.db.insert("posts", {
+    authorId: listing.sellerId,
+    kind: "listing",
+    repost,
+    body,
+    imageIds: [],
+    listingId: listing._id,
+    likeCount: 0,
+    commentCount: 0
+  });
+}
+async function deletePostCascade(ctx, post) {
+  post.imageIds.forEach((id) => ctx.storage.delete(id));
+  await ctx.db.delete("posts", post._id);
+}
+async function loadFeedAuthor(ctx, userId) {
+  const user = await ctx.db.get("users", userId);
+  if (!user) {
+    return {
+      _id: userId,
+      name: "Deleted user",
+      avatarUrl: null,
+      accountType: null,
+      country: null,
+      verified: false,
+      isPro: false
+    };
+  }
+  const details = user.accountType === "buyer" ? user.buyerDetails : user.sellerDetails;
+  return {
+    _id: user._id,
+    name: publicSellerName(user),
+    avatarUrl: user.avatarStorageId ? await ctx.storage.getUrl(user.avatarStorageId) : null,
+    accountType: user.accountType ?? null,
+    country: details?.country ?? null,
+    verified: !!user.verified,
+    isPro: user.accountType === "seller" && await getPlan(ctx, user._id) === "pro"
+  };
+}
+async function loadListingPreview(ctx, listingId) {
+  const listing = await ctx.db.get("listings", listingId);
+  if (!listing) return null;
+  return {
+    _id: listing._id,
+    title: listing.title,
+    priceCents: listing.priceCents,
+    status: listing.status,
+    isLocked: !!listing.paywall,
+    imageUrl: listing.imageIds[0] ? await ctx.storage.getUrl(listing.imageIds[0]) : null
+  };
+}
+var POST_LIKERS_SHOWN = 9;
+var COMMENT_LIKERS_SHOWN = 3;
+async function toLikers(ctx, userIds) {
+  const authors = await Promise.all(userIds.map((id) => loadFeedAuthor(ctx, id)));
+  return authors.filter((a) => a.name !== "Deleted user").map((a) => ({ _id: a._id, name: a.name, avatarUrl: a.avatarUrl }));
+}
+async function loadPostLikers(ctx, postId, limit) {
+  ctx.db.touch("postLikes");
+  const rows = await ctx.db.rows(sql`
+    select user_id from public.post_likes
+     where post_id = ${postId}::uuid
+     order by created_at desc, id desc
+     limit ${limit}`);
+  return toLikers(ctx, rows.map((r) => String(r.user_id)));
+}
+async function loadCommentLikers(ctx, commentIds, perComment) {
+  const byComment = /* @__PURE__ */ new Map();
+  if (commentIds.length === 0) return byComment;
+  ctx.db.touch("postCommentLikes");
+  const rows = await ctx.db.rows(sql`
+    select comment_id, user_id from (
+      select comment_id, user_id,
+             row_number() over (partition by comment_id order by created_at desc, id desc) as n
+        from public.post_comment_likes
+       where comment_id = any(${commentIds}::uuid[])
+    ) ranked
+     where n <= ${perComment}
+     order by comment_id, n`);
+  const ids = /* @__PURE__ */ new Map();
+  for (const r of rows) {
+    const key = String(r.comment_id);
+    ids.set(key, [...ids.get(key) ?? [], String(r.user_id)]);
+  }
+  await Promise.all(
+    [...ids].map(async ([key, users]) => byComment.set(key, await toLikers(ctx, users)))
+  );
+  return byComment;
+}
+async function toFeedItem(ctx, post, me) {
+  const [author, imageUrls, listing, myLike, likers2] = await Promise.all([
+    loadFeedAuthor(ctx, post.authorId),
+    Promise.all(post.imageIds.map((id) => ctx.storage.getUrl(id))),
+    post.listingId ? loadListingPreview(ctx, post.listingId) : null,
+    me ? ctx.db.first(
+      "postLikes",
+      sql`where post_id = ${post._id}::uuid and user_id = ${me._id}::uuid`
+    ) : null,
+    post.likeCount > 0 ? loadPostLikers(ctx, post._id, POST_LIKERS_SHOWN) : []
+  ]);
+  return {
+    _id: post._id,
+    _creationTime: post._creationTime,
+    kind: post.kind,
+    repost: post.repost,
+    body: post.body,
+    images: imageUrls.filter((u) => u !== null),
+    listing,
+    likeCount: post.likeCount,
+    commentCount: post.commentCount,
+    likedByMe: !!myLike,
+    likers: likers2,
+    canDelete: !!me && (me._id === post.authorId || me.role === "admin"),
+    author
+  };
+}
+
+// supabase/functions/_shared/modules/photos.ts
+var COMMENTS_SHOWN = 100;
+var toggleLike = mutation({
+  args: { photoId: v.id("profilePhotos") },
+  handler: async (ctx, { photoId }) => {
+    const me = await requireUser(ctx);
+    const photo = await ctx.db.get("profilePhotos", photoId);
+    if (!photo) throw new AppError({ code: "NOT_FOUND", message: "Photo not found" });
+    const existing = await ctx.db.first(
+      "photoLikes",
+      sql`where photo_id = ${photoId}::uuid and user_id = ${me._id}::uuid`
+    );
+    if (existing) {
+      await ctx.db.delete("photoLikes", existing._id);
+      return false;
+    }
+    await ctx.db.insert("photoLikes", { photoId, userId: me._id });
+    return true;
+  }
+});
+var comments = query({
+  args: { photoId: v.id("profilePhotos") },
+  handler: async (ctx, { photoId }) => {
+    const me = await getCurrentUserDoc(ctx);
+    const rows = await ctx.db.select(
+      "photoComments",
+      sql`where photo_id = ${photoId}::uuid order by created_at desc, id desc limit ${COMMENTS_SHOWN}::int`
+    );
+    return await Promise.all(
+      rows.map(async (c2) => ({
+        _id: c2._id,
+        _creationTime: c2._creationTime,
+        body: c2.body,
+        author: await loadFeedAuthor(ctx, c2.authorId),
+        canDelete: !!me && (me._id === c2.authorId || me.role === "admin")
+      }))
+    );
+  }
+});
+var addComment = mutation({
+  args: { photoId: v.id("profilePhotos"), body: v.string() },
+  handler: async (ctx, { photoId, body }) => {
+    const me = await requireUser(ctx);
+    const photo = await ctx.db.get("profilePhotos", photoId);
+    if (!photo) throw new AppError({ code: "NOT_FOUND", message: "Photo not found" });
+    const text = cleanBody(body, COMMENT_MAX, "Comment", true);
+    return await ctx.db.insert("photoComments", { photoId, authorId: me._id, body: text });
+  }
+});
+var removeComment = mutation({
+  args: { commentId: v.id("photoComments") },
+  handler: async (ctx, { commentId }) => {
+    const me = await requireUser(ctx);
+    const comment = await ctx.db.get("photoComments", commentId);
+    if (!comment) return null;
+    if (comment.authorId !== me._id && me.role !== "admin")
+      throw new AppError({ code: "FORBIDDEN", message: "You can't delete this comment" });
+    await ctx.db.delete("photoComments", commentId);
+    return null;
+  }
+});
+
 // supabase/functions/_shared/modules/auctions.ts
 var auctions_exports = {};
 __export(auctions_exports, {
@@ -2910,143 +3126,6 @@ async function deleteListingCascade(ctx, listing) {
   listing.imageIds.forEach((id) => ctx.storage.delete(id));
   listing.paywall?.media.forEach((m) => ctx.storage.delete(m.storageId));
   await ctx.db.delete("listings", listing._id);
-}
-
-// supabase/functions/_shared/lib/posts.ts
-var POST_BODY_MAX = 1e3;
-var COMMENT_MAX = 500;
-var POST_IMAGES_MAX = 4;
-function cleanBody(raw2, max, label, required) {
-  const text = raw2.trim();
-  if (required && !text)
-    throw new AppError({
-      code: "BAD_REQUEST",
-      message: `${label} can't be empty`
-    });
-  if (text.length > max) {
-    throw new AppError({
-      code: "BAD_REQUEST",
-      message: `${label} must be under ${max} characters`
-    });
-  }
-  return text;
-}
-async function insertListingPost(ctx, listing, repost, body = "") {
-  return await ctx.db.insert("posts", {
-    authorId: listing.sellerId,
-    kind: "listing",
-    repost,
-    body,
-    imageIds: [],
-    listingId: listing._id,
-    likeCount: 0,
-    commentCount: 0
-  });
-}
-async function deletePostCascade(ctx, post) {
-  post.imageIds.forEach((id) => ctx.storage.delete(id));
-  await ctx.db.delete("posts", post._id);
-}
-async function loadFeedAuthor(ctx, userId) {
-  const user = await ctx.db.get("users", userId);
-  if (!user) {
-    return {
-      _id: userId,
-      name: "Deleted user",
-      avatarUrl: null,
-      accountType: null,
-      country: null,
-      verified: false,
-      isPro: false
-    };
-  }
-  const details = user.accountType === "buyer" ? user.buyerDetails : user.sellerDetails;
-  return {
-    _id: user._id,
-    name: publicSellerName(user),
-    avatarUrl: user.avatarStorageId ? await ctx.storage.getUrl(user.avatarStorageId) : null,
-    accountType: user.accountType ?? null,
-    country: details?.country ?? null,
-    verified: !!user.verified,
-    isPro: user.accountType === "seller" && await getPlan(ctx, user._id) === "pro"
-  };
-}
-async function loadListingPreview(ctx, listingId) {
-  const listing = await ctx.db.get("listings", listingId);
-  if (!listing) return null;
-  return {
-    _id: listing._id,
-    title: listing.title,
-    priceCents: listing.priceCents,
-    status: listing.status,
-    isLocked: !!listing.paywall,
-    imageUrl: listing.imageIds[0] ? await ctx.storage.getUrl(listing.imageIds[0]) : null
-  };
-}
-var POST_LIKERS_SHOWN = 9;
-var COMMENT_LIKERS_SHOWN = 3;
-async function toLikers(ctx, userIds) {
-  const authors = await Promise.all(userIds.map((id) => loadFeedAuthor(ctx, id)));
-  return authors.filter((a) => a.name !== "Deleted user").map((a) => ({ _id: a._id, name: a.name, avatarUrl: a.avatarUrl }));
-}
-async function loadPostLikers(ctx, postId, limit) {
-  ctx.db.touch("postLikes");
-  const rows = await ctx.db.rows(sql`
-    select user_id from public.post_likes
-     where post_id = ${postId}::uuid
-     order by created_at desc, id desc
-     limit ${limit}`);
-  return toLikers(ctx, rows.map((r) => String(r.user_id)));
-}
-async function loadCommentLikers(ctx, commentIds, perComment) {
-  const byComment = /* @__PURE__ */ new Map();
-  if (commentIds.length === 0) return byComment;
-  ctx.db.touch("postCommentLikes");
-  const rows = await ctx.db.rows(sql`
-    select comment_id, user_id from (
-      select comment_id, user_id,
-             row_number() over (partition by comment_id order by created_at desc, id desc) as n
-        from public.post_comment_likes
-       where comment_id = any(${commentIds}::uuid[])
-    ) ranked
-     where n <= ${perComment}
-     order by comment_id, n`);
-  const ids = /* @__PURE__ */ new Map();
-  for (const r of rows) {
-    const key = String(r.comment_id);
-    ids.set(key, [...ids.get(key) ?? [], String(r.user_id)]);
-  }
-  await Promise.all(
-    [...ids].map(async ([key, users]) => byComment.set(key, await toLikers(ctx, users)))
-  );
-  return byComment;
-}
-async function toFeedItem(ctx, post, me) {
-  const [author, imageUrls, listing, myLike, likers2] = await Promise.all([
-    loadFeedAuthor(ctx, post.authorId),
-    Promise.all(post.imageIds.map((id) => ctx.storage.getUrl(id))),
-    post.listingId ? loadListingPreview(ctx, post.listingId) : null,
-    me ? ctx.db.first(
-      "postLikes",
-      sql`where post_id = ${post._id}::uuid and user_id = ${me._id}::uuid`
-    ) : null,
-    post.likeCount > 0 ? loadPostLikers(ctx, post._id, POST_LIKERS_SHOWN) : []
-  ]);
-  return {
-    _id: post._id,
-    _creationTime: post._creationTime,
-    kind: post.kind,
-    repost: post.repost,
-    body: post.body,
-    images: imageUrls.filter((u) => u !== null),
-    listing,
-    likeCount: post.likeCount,
-    commentCount: post.commentCount,
-    likedByMe: !!myLike,
-    likers: likers2,
-    canDelete: !!me && (me._id === post.authorId || me.role === "admin"),
-    author
-  };
 }
 
 // supabase/functions/_shared/domain/sellerDetails.ts
@@ -4591,17 +4670,17 @@ var markSeen = mutation({
 // supabase/functions/_shared/modules/posts.ts
 var posts_exports = {};
 __export(posts_exports, {
-  addComment: () => addComment,
+  addComment: () => addComment2,
   create: () => create4,
   feed: () => feed2,
   likers: () => likers,
   listComments: () => listComments,
   onlineAuthors: () => onlineAuthors,
   remove: () => remove2,
-  removeComment: () => removeComment,
+  removeComment: () => removeComment2,
   repostListing: () => repostListing,
   toggleCommentLike: () => toggleCommentLike,
-  toggleLike: () => toggleLike
+  toggleLike: () => toggleLike2
 });
 var ONLINE_WINDOW_MS = 5 * 60 * 1e3;
 var filterValidator = v.union(
@@ -4715,7 +4794,7 @@ var remove2 = mutation({
     return null;
   }
 });
-var toggleLike = mutation({
+var toggleLike2 = mutation({
   args: { postId: v.id("posts") },
   handler: async (ctx, { postId }) => {
     const me = await requireUser(ctx);
@@ -4796,7 +4875,7 @@ var likers = query({
     return loadPostLikers(ctx, postId, 100);
   }
 });
-var addComment = mutation({
+var addComment2 = mutation({
   args: {
     postId: v.id("posts"),
     body: v.string(),
@@ -4835,7 +4914,7 @@ var addComment = mutation({
     return id;
   }
 });
-var removeComment = mutation({
+var removeComment2 = mutation({
   args: { commentId: v.id("postComments") },
   handler: async (ctx, { commentId }) => {
     const me = await requireUser(ctx);
@@ -6060,17 +6139,22 @@ async function listProfilePhotos(ctx, userId) {
 var photosByUser = query({
   args: { userId: v.id("users"), paginationOpts: paginationOptsValidator },
   handler: async (ctx, { userId, paginationOpts }) => {
-    ctx.db.touch("profilePhotos", "posts");
+    ctx.db.touch("profilePhotos", "posts", "photoLikes", "photoComments", "postLikes");
+    const me = await getCurrentUserDoc(ctx);
     const limit = Math.min(Math.max(1, Math.floor(paginationOpts.numItems)), 100);
     const cursor = paginationOpts.cursor;
     const offset = cursor?.startsWith("o:") ? Math.max(0, Number(cursor.slice(2)) || 0) : 0;
     const rows = await ctx.db.rows(sql`
       select * from (
-        select id::text as source_id, storage_id, created_at, 0::int as ord, true as own
-          from public.profile_photos
-         where user_id = ${userId}::uuid
+        select pp.id::text as source_id, pp.storage_id, pp.created_at, 0::int as ord, true as own,
+               pp.description as caption,
+               (select count(*) from public.photo_likes l where l.photo_id = pp.id)::int as likes,
+               (select count(*) from public.photo_comments c where c.photo_id = pp.id)::int as comments
+          from public.profile_photos pp
+         where pp.user_id = ${userId}::uuid
         union all
-        select p.id::text, t.img, p.created_at, t.ord::int, false
+        select p.id::text, t.img, p.created_at, t.ord::int, false,
+               p.body, p.like_count, p.comment_count
           from public.posts p
          cross join lateral unnest(p.image_ids) with ordinality as t(img, ord)
          where p.author_id = ${userId}::uuid and p.kind <> 'listing'
@@ -6079,15 +6163,56 @@ var photosByUser = query({
       limit ${limit + 1} offset ${offset}`);
     const pageRows = rows.slice(0, limit);
     const urls = await Promise.all(pageRows.map((r) => ctx.storage.getUrl(String(r.storage_id))));
+    const ownIds = [...new Set(pageRows.filter((r) => r.own === true).map((r) => String(r.source_id)))];
+    const postIds = [...new Set(pageRows.filter((r) => r.own !== true).map((r) => String(r.source_id)))];
+    const likerIds = /* @__PURE__ */ new Map();
+    const likedByMe = /* @__PURE__ */ new Set();
+    const collect = async (table, col, ids) => {
+      if (ids.length === 0) return;
+      const found = await ctx.db.rows(sql`
+        select ${raw(col)}::text as target, user_id::text as user_id from (
+          select ${raw(col)}, user_id,
+                 row_number() over (partition by ${raw(col)} order by created_at desc, id desc) as n
+            from public.${raw(table)}
+           where ${raw(col)} = any(${ids}::uuid[])
+        ) ranked where n <= ${PHOTO_LIKERS_SHOWN}::int
+        order by target, n`);
+      for (const r of found)
+        likerIds.set(String(r.target), [...likerIds.get(String(r.target)) ?? [], String(r.user_id)]);
+      if (me) {
+        const mine6 = await ctx.db.rows(sql`
+          select ${raw(col)}::text as target from public.${raw(table)}
+           where user_id = ${me._id}::uuid and ${raw(col)} = any(${ids}::uuid[])`);
+        for (const r of mine6) likedByMe.add(String(r.target));
+      }
+    };
+    await Promise.all([
+      collect("photo_likes", "photo_id", ownIds),
+      collect("post_likes", "post_id", postIds)
+    ]);
+    const allLikers = [...new Set([...likerIds.values()].flat())];
+    const likerDocs = new Map(
+      (await toLikers(ctx, allLikers)).map((l) => [String(l._id), l])
+    );
     const page = pageRows.flatMap((r, i) => {
       const url = urls[i];
       if (!url) return [];
       const own = r.own === true;
+      const sourceId = String(r.source_id);
       return [
         {
-          _id: `${own ? "profile" : "post"}:${String(r.source_id)}:${Number(r.ord)}`,
+          _id: `${own ? "profile" : "post"}:${sourceId}:${Number(r.ord)}`,
           url,
-          photoId: own ? String(r.source_id) : null
+          photoId: own ? sourceId : null,
+          postId: own ? null : sourceId,
+          caption: r.caption ? String(r.caption) : "",
+          likeCount: Number(r.likes ?? 0),
+          commentCount: Number(r.comments ?? 0),
+          likedByMe: likedByMe.has(sourceId),
+          likers: (likerIds.get(sourceId) ?? []).flatMap((id) => {
+            const l = likerDocs.get(id);
+            return l ? [l] : [];
+          })
         }
       ];
     });
@@ -6098,6 +6223,7 @@ var photosByUser = query({
     };
   }
 });
+var PHOTO_LIKERS_SHOWN = 6;
 var isPrivateProfile = (user) => user.settings?.profilePrivate === "yes";
 var canViewProfile = (user, me) => !isPrivateProfile(user) || me?._id === user._id || me?.role === "admin";
 var profileAccess = query({
@@ -6523,6 +6649,7 @@ var registry = {
   activity: functionsOf(activity_exports),
   ageVerification: functionsOf(ageVerification_exports),
   albums: functionsOf(albums_exports),
+  photos: functionsOf(photos_exports),
   auctions: functionsOf(auctions_exports),
   blocks: functionsOf(blocks_exports),
   customRequests: functionsOf(customRequests_exports),
