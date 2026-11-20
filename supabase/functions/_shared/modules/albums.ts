@@ -62,3 +62,25 @@ export const byUser = query({
       .map((r) => ({ _id: String(r.id) as Id<"photoAlbums">, name: String(r.name), photos: Number(r.photos) }));
   },
 });
+
+/** Deletes an album and every photo in it (their likes and comments go too). */
+export const remove = mutation({
+  args: { albumId: v.id("photoAlbums") },
+  handler: async (ctx, { albumId }) => {
+    const me = await requireUser(ctx);
+    const album = await ctx.db.get("photoAlbums", albumId);
+    if (!album) return 0;
+    if (album.userId !== me._id)
+      throw new AppError({ code: "FORBIDDEN", message: "Not your album" });
+    const photos = await ctx.db.select(
+      "profilePhotos",
+      sql`where album_id = ${albumId}::uuid and user_id = ${me._id}::uuid`,
+    );
+    for (const p of photos) {
+      ctx.storage.delete(p.storageId);
+      await ctx.db.delete("profilePhotos", p._id);
+    }
+    await ctx.db.delete("photoAlbums", albumId);
+    return photos.length;
+  },
+});

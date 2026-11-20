@@ -13,6 +13,17 @@ import { Button } from "@/components/ui/button.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { Spinner } from "@/components/ui/spinner.tsx";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog.tsx";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog.tsx";
 import LikerAvatars from "@/views/home/_components/liker-avatars.tsx";
 import { shortAge } from "@/views/home/_lib/feed.ts";
@@ -220,6 +231,7 @@ export function PhotosTab({
     { initialNumItems: 24 },
   );
   const removePhoto = useMutation(api.users.removeProfilePhoto);
+  const removeAlbum = useMutation(api.albums.remove);
   const [adding, setAdding] = useState(false);
 
   const remove = async (photoId: Id<"profilePhotos">) => {
@@ -227,6 +239,17 @@ export function PhotosTab({
       await removePhoto({ photoId });
     } catch (e) {
       toast.error(getErrorMessage(e, "Could not remove photo"));
+    }
+  };
+  const current = albums?.find((a) => a._id === album);
+  const deleteAlbum = async () => {
+    if (album === "all") return;
+    try {
+      const n = await removeAlbum({ albumId: album });
+      setAlbum("all");
+      toast.success(`Album deleted${n ? ` with ${n} ${n === 1 ? "photo" : "photos"}` : ""}`);
+    } catch (e) {
+      toast.error(getErrorMessage(e, "Could not delete album"));
     }
   };
   const label = `${total} ${total === 1 ? "image" : "images"}`;
@@ -281,6 +304,34 @@ export function PhotosTab({
               <span className={cn("text-xs", album === a._id ? "text-white" : "text-[#7b3aec]")}>{a.photos}</span>
             </Button>
           ))}
+          {isMe && current && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className={cn(SERIF, "h-9 shrink-0 cursor-pointer gap-2 rounded-[5px] border border-red-500/40 px-3 text-[14px] text-red-500 hover:bg-red-500/10 hover:text-red-500")}
+                >
+                  <Trash2 className="size-4" /> Delete album
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete the album “{current.name}”?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This also permanently deletes {current.photos === 0 ? "any photos" : current.photos === 1 ? "the 1 photo" : `all ${current.photos} photos`} in this
+                    album, along with their likes and comments. This can’t be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={deleteAlbum} className="cursor-pointer bg-red-600 text-white hover:bg-red-700">
+                    Delete album and photos
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
         </div>
       )}
 
