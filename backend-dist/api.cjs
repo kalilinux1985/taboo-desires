@@ -1969,6 +1969,7 @@ __export(listings_exports, {
   remove: () => remove,
   saleTypeValidator: () => saleTypeValidator,
   setStatus: () => setStatus,
+  shopPage: () => shopPage,
   update: () => update
 });
 
@@ -3564,6 +3565,31 @@ var bySeller = query({
     return {
       ...result,
       page: await Promise.all(result.page.map((l) => toCard(ctx, l)))
+    };
+  }
+});
+var shopPage = query({
+  args: {
+    sellerId: v.id("users"),
+    page: v.number(),
+    category: v.optional(categoryValidator)
+  },
+  handler: async (ctx, { sellerId, page, category }) => {
+    const PAGE_SIZE = 20;
+    ctx.db.touch("listings");
+    const where = sql`seller_id = ${sellerId}::uuid and status = 'active' and paywall is null${category ? sql` and category = ${category}` : empty}`;
+    const total = Number(
+      await ctx.db.scalar(sql`select count(*) from public.listings where ${where}`) ?? 0
+    );
+    const offset = Math.max(0, Math.floor(page)) * PAGE_SIZE;
+    const docs = await ctx.db.docs(
+      "listings",
+      sql`select * from public.listings where ${where} order by created_at desc, id desc limit ${PAGE_SIZE}::int offset ${offset}::int`
+    );
+    return {
+      total,
+      pageSize: PAGE_SIZE,
+      items: await Promise.all(docs.map((l) => toCard(ctx, l)))
     };
   }
 });
