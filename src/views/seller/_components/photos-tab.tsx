@@ -161,8 +161,8 @@ function PhotoCard({ photo, isMe, onRemove }: { photo: Photo; isMe: boolean; onR
   };
 
   return (
-    <div className={cn(CARD, "group relative flex min-w-0 flex-col gap-3 p-[10px]")}>
-      <div className="relative aspect-square overflow-hidden rounded-[5px] border border-white/10 bg-[#8b8b90]">
+    <div className={cn(CARD, "group relative flex min-w-0 flex-col gap-3 border-0 p-[10px]")}>
+      <div className="relative aspect-square overflow-hidden rounded-[5px] bg-[#8b8b90]">
         <ZoomImage src={photo.url} className="size-full">
           <img src={photo.url} alt={photo.caption} loading="lazy" className="size-full object-cover" />
         </ZoomImage>
@@ -257,7 +257,7 @@ export function PhotosTab({
   return (
     <>
     {/* Same Frame as Overview sections: OUTER #202227 around INNER #141519, with the same inner padding. */}
-    <Frame innerClassName="flex flex-col gap-[30px] px-[22px] py-[28px]">
+    <Frame className="border-0" innerClassName="flex flex-col gap-[30px] border-0 px-[22px] py-[28px]">
       <div className="flex items-start justify-between gap-4">
         <SectionTitle title="Photos" count={imagesLabel(total)} />
         {isMe && room > 0 && (
