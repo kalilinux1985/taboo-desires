@@ -28,7 +28,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import LikerAvatars from "@/views/home/_components/liker-avatars.tsx";
 import { shortAge } from "@/views/home/_lib/feed.ts";
 import AddImageDialog from "./add-image-dialog.tsx";
-import { CARD, Frame, SANS, SERIF, SectionTitle, imagesLabel } from "../_lib/profile-design.tsx";
+import { Frame, SANS, SERIF, SectionTitle, imagesLabel } from "../_lib/profile-design.tsx";
 
 type Photo = FunctionReturnType<typeof api.users.photosByUser>["page"][number];
 
@@ -161,8 +161,8 @@ function PhotoCard({ photo, isMe, onRemove }: { photo: Photo; isMe: boolean; onR
   };
 
   return (
-    <div className={cn(CARD, "group relative flex min-w-0 flex-col gap-3 border-0 p-[10px]")}>
-      <div className="relative aspect-square overflow-hidden rounded-[5px] bg-[#8b8b90]">
+    <div className="group relative flex min-w-0 flex-col gap-3">
+      <div className="relative aspect-square overflow-hidden rounded-[5px] shadow-[0_4px_10px_rgba(0,0,0,0.3)]">
         <ZoomImage src={photo.url} className="size-full">
           <img src={photo.url} alt={photo.caption} loading="lazy" className="size-full object-cover" />
         </ZoomImage>
