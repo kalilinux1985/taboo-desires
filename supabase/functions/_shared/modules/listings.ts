@@ -339,6 +339,7 @@ export const get = query({
       getAuctionByListing(ctx, listingId),
       getStats(ctx, listing.sellerId),
     ]);
+    if (listing.status === "hidden" && me?._id !== listing.sellerId && me?.role !== "admin") return null;
     const { paywall, ...publicFields } = listing;
     return {
       ...publicFields,

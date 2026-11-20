@@ -436,9 +436,10 @@ export default function ListingPage() {
       )}
       {listing.status === "sold" && <Badge variant="destructive">Sold</Badge>}
       {listing.status === "ended" && <Badge variant="secondary">Unsold</Badge>}
+      {listing.status === "hidden" && <Badge variant="destructive">Hidden: under review</Badge>}
     </>
   );
-  const hasBadges = isAuction || !!locked || listing.status === "sold" || listing.status === "ended";
+  const hasBadges = isAuction || !!locked || listing.status === "sold" || listing.status === "ended" || listing.status === "hidden";
 
   return (
     <div className="profile-design min-h-[calc(100dvh-3.5rem)] bg-[#0C0F15]">

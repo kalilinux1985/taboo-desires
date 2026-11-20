@@ -23,7 +23,8 @@ export const CONDITIONS = [
 export type Condition = (typeof CONDITIONS)[number];
 
 // "ended" = auction closed with no bids (unsold)
-export const LISTING_STATUSES = ["active", "sold", "ended"] as const;
+// "hidden" = held back after 2 or more reports, until an admin decides
+export const LISTING_STATUSES = ["active", "sold", "ended", "hidden"] as const;
 export type ListingStatus = (typeof LISTING_STATUSES)[number];
 
 export const SALE_TYPES = ["fixed", "auction"] as const;

@@ -7,7 +7,8 @@ import { getCurrentUserDoc, publicSellerName } from "../lib/auth.ts";
 import { deleteListingCascade } from "../lib/listingDelete.ts";
 import { deletePostCascade } from "../lib/posts.ts";
 import { requireAdmin } from "../lib/subscription.ts";
-import { queueEmailToAddress, reportInbox, siteUrl } from "../lib/email.ts";
+import { queueEmail, queueEmailToAddress, reportInbox, siteUrl } from "../lib/email.ts";
+import { getAuctionByListing } from "../lib/auctionState.ts";
 
 const HOUR = 3_600_000;
 /** Reports of intimate images shared without consent, or of anyone under 18, are due within 48 hours. */
@@ -43,7 +44,62 @@ const targetValidator = v.union(
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+type QueryCtxLike = Parameters<typeof requireAdmin>[0];
+
 const bad = (message: string) => new AppError({ code: "BAD_REQUEST", message });
+
+/** Content with this many different people's open reports is hidden until an admin decides. */
+const AUTO_HIDE_AT = 2;
+
+/** How many different people have an open report on this content. */
+async function openReporters(ctx: QueryCtxLike, kind: ReportTargetKind, id: string): Promise<number> {
+  const rows = await ctx.db.rows(sql`
+    select count(distinct reporter_email)::int as n from public.content_reports
+     where status = 'open' and target_kind = ${kind} and target_id = ${id}`);
+  return Number((rows[0] as { n: number } | undefined)?.n ?? 0);
+}
+
+/** Hides a listing, post or comment. Returns the owner (to tell them) or null when nothing changed. */
+async function hideTarget(ctx: QueryCtxLike, kind: ReportTargetKind, id: string) {
+  if (kind === "listing") {
+    const l = await ctx.db.get("listings", id as Id<"listings">);
+    if (!l || l.status === "hidden") return null;
+    await ctx.db.patch("listings", l._id, { status: "hidden", hiddenPrevStatus: l.status });
+    return { ownerId: l.sellerId, what: `your listing "${l.title}"` };
+  }
+  if (kind === "post") {
+    const p = await ctx.db.get("posts", id as Id<"posts">);
+    if (!p || p.hidden) return null;
+    await ctx.db.patch("posts", p._id, { hidden: true });
+    return { ownerId: p.authorId, what: "one of your posts" };
+  }
+  if (kind === "comment") {
+    const c = await ctx.db.get("postComments", id as Id<"postComments">);
+    if (!c || c.hidden) return null;
+    await ctx.db.patch("postComments", c._id, { hidden: true });
+    return { ownerId: c.authorId, what: "one of your comments" };
+  }
+  return null;
+}
+
+/** Puts hidden content back (after the reports against it were dismissed). */
+async function unhideTarget(ctx: QueryCtxLike, kind: ReportTargetKind, id: string) {
+  if (kind === "listing") {
+    const l = await ctx.db.get("listings", id as Id<"listings">);
+    if (!l || l.status !== "hidden") return;
+    let status = l.hiddenPrevStatus ?? "active";
+    // An auction that finished while the listing was hidden: settle it the way the close job would
+    const auction = await getAuctionByListing(ctx, l._id);
+    if (auction?.status === "ended") status = (auction.bidCount ?? 0) > 0 ? "sold" : "ended";
+    await ctx.db.patch("listings", l._id, { status, hiddenPrevStatus: undefined });
+  } else if (kind === "post") {
+    const p = await ctx.db.get("posts", id as Id<"posts">);
+    if (p?.hidden) await ctx.db.patch("posts", p._id, { hidden: false });
+  } else if (kind === "comment") {
+    const c = await ctx.db.get("postComments", id as Id<"postComments">);
+    if (c?.hidden) await ctx.db.patch("postComments", c._id, { hidden: false });
+  }
+}
 
 /**
  * Anyone can report content or ask for a takedown, signed in or not
@@ -104,6 +160,30 @@ export const submit = mutation({
       status: "open",
       dueAt,
     });
+    // Two or more different people reporting the same content hides it until an admin decides
+    let hiddenNow = false;
+    if (targetId && (args.targetKind === "listing" || args.targetKind === "post" || args.targetKind === "comment")) {
+      const reporters = await openReporters(ctx, args.targetKind, targetId);
+      if (reporters >= AUTO_HIDE_AT) {
+        const owner = await hideTarget(ctx, args.targetKind, targetId);
+        if (owner) {
+          hiddenNow = true;
+          const ownerDoc = await ctx.db.get("users", owner.ownerId);
+          if (ownerDoc)
+            await queueEmail(ctx, {
+              to: ownerDoc,
+              kind: "content_hidden",
+              transactional: true,
+              subject: "Your content is hidden while we review it",
+              heading: "Hidden while we review",
+              lines: [
+                `We hid ${owner.what} because it was reported more than once. Our team will review it. If it follows our rules, it will be put back. If not, it will be removed.`,
+              ],
+              dedupeKey: `content_hidden:${args.targetKind}:${targetId}:${reportId}`,
+            });
+        }
+      }
+    }
     // Alert the content-report mailbox (reply goes to the person who reported)
     const urgent = URGENT_TYPES.includes(args.reportType);
     const location = targetUrl ?? (targetId ? `${args.targetKind} ${targetId}` : "");
@@ -120,6 +200,7 @@ export const submit = mutation({
         `Reported by: ${reporterName} <${reporterEmail}>${me ? " (signed in member)" : " (not signed in)"}`,
         `Person shown in the content: ${args.isDepicted ? "Yes, the reporter is shown in it" : "No"}`,
         `Signed: ${signature}`,
+        ...(hiddenNow ? ["Auto-hidden: this content has 2 or more reports, so it is now hidden until you decide."] : []),
         `Respond by: ${new Date(dueAt).toUTCString()}`,
         "Details:",
         description,
@@ -251,6 +332,11 @@ export const resolve = mutation({
       resolvedBy: admin._id,
       resolutionNote: text || undefined,
     });
+    // Dismissed: put the content back once fewer than 2 people still have it reported
+    if (!remove && report.targetId && report.targetKind !== "profile" && report.targetKind !== "other") {
+      if ((await openReporters(ctx, report.targetKind, report.targetId)) < AUTO_HIDE_AT)
+        await unhideTarget(ctx, report.targetKind, report.targetId);
+    }
     return null;
   },
 });

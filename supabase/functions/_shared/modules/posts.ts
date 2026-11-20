@@ -1,6 +1,6 @@
 import { AppError } from "../core/errors.ts";
 import { mutation, query } from "../core/functions.ts";
-import { sql, type Sql } from "../core/sql.ts";
+import { empty, sql, type Sql } from "../core/sql.ts";
 import type { Doc } from "../core/schema.ts";
 import type { OrderColumn } from "../core/db.ts";
 import { paginationOptsValidator, v } from "../core/values.ts";
@@ -55,6 +55,7 @@ export const feed = query({
         where: [
           filter === "all" ? null : sql`kind = ${filter}`,
           authorId ? sql`author_id = ${authorId}::uuid` : null,
+          me?.role === "admin" ? null : sql`not hidden`,
         ]
           .filter((w): w is NonNullable<typeof w> => w !== null)
           .reduce<Sql | undefined>((acc, w) => (acc ? sql`${acc} and ${w}` : w), undefined),
@@ -184,9 +185,11 @@ export const listComments = query({
     const result = await ctx.db.paginate(
       "postComments",
       {
-        where: parentId
-          ? sql`post_id = ${postId}::uuid and parent_id = ${parentId}::uuid`
-          : sql`post_id = ${postId}::uuid and parent_id is null`,
+        where: sql`${
+          parentId
+            ? sql`post_id = ${postId}::uuid and parent_id = ${parentId}::uuid`
+            : sql`post_id = ${postId}::uuid and parent_id is null`
+        }${me?.role === "admin" ? empty : sql` and not hidden`}`,
         order: [{ column: "created_at", cast: "timestamptz" }],
         // Newest comments first; replies read top to bottom in order
         direction: parentId ? "asc" : "desc",
@@ -246,7 +249,7 @@ export const addComment = mutation({
   handler: async (ctx, { postId, body, parentId }) => {
     const me = await requireCapability(ctx, "post");
     const post = await ctx.db.get("posts", postId);
-    if (!post)
+    if (!post || (post.hidden && me.role !== "admin"))
       throw new AppError({ code: "NOT_FOUND", message: "Post not found" });
     let parent: Doc<"postComments"> | null = null;
     if (parentId) {

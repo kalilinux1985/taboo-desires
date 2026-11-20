@@ -260,7 +260,7 @@ export const photosByUser = query({
                p.body, p.like_count, p.comment_count
           from public.posts p
          cross join lateral unnest(p.image_ids) with ordinality as t(img, ord)
-         where p.author_id = ${userId}::uuid and p.kind <> 'listing'${albumId ? sql` and false` : empty}
+         where p.author_id = ${userId}::uuid and p.kind <> 'listing'${albumId ? sql` and false` : empty}${me?.role === "admin" ? empty : sql` and not p.hidden`}
       ) photos
       order by created_at desc, source_id desc, ord
       limit ${limit + 1} offset ${offset}`);
@@ -427,7 +427,7 @@ async function profileCounts(ctx: QueryCtx, userId: Id<"users">) {
       (select count(*)::int from public.follows where follower_id = ${userId}::uuid and status = 'accepted') as following,
       (select count(*)::int from public.profile_photos where user_id = ${userId}::uuid)
         + (select coalesce(sum(cardinality(image_ids)), 0)::int from public.posts
-            where author_id = ${userId}::uuid and kind <> 'listing') as photos,
+            where author_id = ${userId}::uuid and kind <> 'listing' and not hidden) as photos,
       (select count(*)::int from public.profile_photos where user_id = ${userId}::uuid) as profile_photos`);
   return {
     listings: Number(row.listings),

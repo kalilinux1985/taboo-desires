@@ -130,6 +130,8 @@ type Fields = {
     priceCents: number;
     imageIds: Id<"_storage">[];
     status: ListingStatus;
+    /** The status a hidden listing goes back to */
+    hiddenPrevStatus?: Exclude<ListingStatus, "hidden">;
     saleType: SaleType;
     paywall?: { media: LockedMedia[] };
   };
@@ -206,6 +208,8 @@ type Fields = {
     repost: boolean;
     likeCount: number;
     commentCount: number;
+    /** Held back after 2 or more reports */
+    hidden?: boolean;
   };
   postLikes: { postId: Id<"posts">; userId: Id<"users"> };
   postComments: {
@@ -216,6 +220,8 @@ type Fields = {
     parentId?: Id<"postComments">;
     likeCount: number;
     replyCount: number;
+    /** Held back after 2 or more reports */
+    hidden?: boolean;
   };
   postCommentLikes: { commentId: Id<"postComments">; userId: Id<"users"> };
   messages: {
@@ -416,6 +422,7 @@ export const TABLES: { [T in DbTable]: TableDef<T> } = {
       size: c("size"),
       condition: c("condition"),
       priceCents: c("price_cents", "int"),
+      hiddenPrevStatus: c("hidden_prev_status"),
       imageIds: c("image_ids", "textArray"),
       status: c("status"),
       saleType: c("sale_type"),
@@ -523,6 +530,7 @@ export const TABLES: { [T in DbTable]: TableDef<T> } = {
       repost: c("repost", "bool"),
       likeCount: c("like_count", "int"),
       commentCount: c("comment_count", "int"),
+      hidden: c("hidden", "bool"),
     },
   },
   postLikes: {
@@ -538,6 +546,7 @@ export const TABLES: { [T in DbTable]: TableDef<T> } = {
       parentId: c("parent_id", "uuid"),
       likeCount: c("like_count", "int"),
       replyCount: c("reply_count", "int"),
+      hidden: c("hidden", "bool"),
     },
   },
   postCommentLikes: {
