@@ -2267,6 +2267,164 @@ function shippingError(e, fallback) {
   return new AppError({ code: "INTERNAL", message: fallback });
 }
 
+// supabase/functions/_shared/domain/sellerSettings.ts
+var PAYMENT_METHODS = [
+  "PayPal",
+  "Cash App",
+  "Venmo",
+  "Zelle",
+  "Bank transfer",
+  "Wise",
+  "Revolut",
+  "Crypto",
+  "Gift cards"
+];
+var OFFERINGS = [
+  "Used panties",
+  "Used bras",
+  "Used lingerie",
+  "Used socks & hosiery",
+  "Used shoes",
+  "Used gym clothes",
+  "Used clothing",
+  "Used sex toys",
+  "Photo sets",
+  "Video clips",
+  "Feet pics",
+  "Custom requests",
+  "Sexting",
+  "Dick ratings",
+  "Experiences"
+];
+var YES_NO = [
+  { value: "yes", label: "Yes" },
+  { value: "no", label: "No" }
+];
+var SETTING_FIELDS = [
+  {
+    key: "profilePrivate",
+    label: "Set Profile to Private",
+    choices: [
+      { value: "no", label: "No - Keep my profile visible" },
+      { value: "yes", label: "Yes - Make my profile private" }
+    ],
+    defaultValue: "no",
+    hint: "A private profile can only be seen by you. Everyone else sees that it's private. Your listings can still be found and bought."
+  },
+  {
+    key: "siteVisibility",
+    label: "Site Visibility",
+    choices: [
+      { value: "all", label: "All our sites - Maximise sales potential" },
+      { value: "this", label: "This site only" }
+    ],
+    defaultValue: "all",
+    hint: "Select whether your profile appears on all our sister sites or only on this one.",
+    comingSoon: true
+  },
+  {
+    key: "emailNotifications",
+    label: "Platform Email Notifications",
+    choices: YES_NO,
+    defaultValue: "yes",
+    hint: "Get some platform notifications by email, for example when you receive a message. To reduce spam, we only send you a new email notification once every 6 hours.",
+    comingSoon: true
+  },
+  {
+    key: "marketingEmails",
+    label: "Marketing Emails",
+    choices: YES_NO,
+    defaultValue: "no",
+    hint: "Get promotional emails such as newsletters, offers and information about new product features."
+  },
+  {
+    key: "webPush",
+    label: "Web Push Notifications",
+    choices: YES_NO,
+    defaultValue: "no",
+    hint: "Get instant notifications in your browser.",
+    comingSoon: true
+  },
+  {
+    key: "messagesFrom",
+    label: "Receive Messages From All Buyers",
+    choices: [
+      { value: "all", label: "Yes - Allow messages from all buyers" },
+      { value: "existing", label: "No - Only buyers already talking to me" }
+    ],
+    defaultValue: "all",
+    hint: "Choose No to stop new conversations. Buyers you're already talking to can still message you."
+  },
+  {
+    key: "socialFeature",
+    label: "Be Featured on our Social Media",
+    choices: [
+      { value: "no", label: "No - I do not want extra exposure" },
+      { value: "yes", label: "Yes - Feature me for extra exposure" }
+    ],
+    defaultValue: "no",
+    hint: "Get more exposure by being featured on our social media platforms."
+  }
+];
+function withDefaults(settings) {
+  const out = { paymentMethods: settings?.paymentMethods ?? [], offerings: settings?.offerings ?? [] };
+  for (const f of SETTING_FIELDS) {
+    out[f.key] = settings?.[f.key] ?? f.defaultValue;
+  }
+  return out;
+}
+function invalidSetting(settings) {
+  for (const f of SETTING_FIELDS) {
+    const value = settings[f.key];
+    if (value !== void 0 && !f.choices.some((c2) => c2.value === value))
+      return `Invalid choice for ${f.label}`;
+  }
+  const lists = [
+    ["payment method", PAYMENT_METHODS, settings.paymentMethods],
+    ["offering", OFFERINGS, settings.offerings]
+  ];
+  for (const [name, allowed, chosen] of lists) {
+    if (chosen?.some((x) => !allowed.includes(x))) return `Invalid ${name}`;
+  }
+  return null;
+}
+var acceptsNewMessages = (settings) => (settings?.messagesFrom ?? "all") !== "existing";
+
+// supabase/functions/_shared/lib/email.ts
+var SITE_FALLBACK = "https://taboo-desires.vercel.app";
+function siteUrl() {
+  const deno = globalThis.Deno;
+  return (deno?.env.get("SITE_URL")?.trim() || SITE_FALLBACK).replace(/\/+$/, "");
+}
+var esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+function renderEmail(opts) {
+  const url = opts.button ? `${siteUrl()}${opts.button.path}` : null;
+  const html = `<!doctype html><html><body style="margin:0;background:#0C0F15;padding:24px;font-family:Arial,Helvetica,sans-serif;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
+<table role="presentation" width="480" cellpadding="0" cellspacing="0" style="max-width:480px;background:#202227;border-radius:5px;padding:28px;">
+<tr><td style="color:#ffffff;font-size:20px;font-weight:bold;padding-bottom:12px;">${esc(opts.heading)}</td></tr>
+${opts.lines.map((l) => `<tr><td style="color:#ffffff;font-size:14px;line-height:1.6;padding-bottom:10px;">${esc(l)}</td></tr>`).join("")}
+${url ? `<tr><td style="padding:12px 0;"><a href="${esc(url)}" style="background:#7b3aec;color:#ffffff;text-decoration:none;padding:10px 18px;border-radius:5px;font-size:14px;display:inline-block;">${esc(opts.button.label)}</a></td></tr>` : ""}
+<tr><td style="color:#ffffff;font-size:12px;padding-top:14px;opacity:.7;">You get this because of your Taboo Desires account. Turn these emails off any time in your settings: ${esc(siteUrl())}/settings</td></tr>
+</table></td></tr></table></body></html>`;
+  const text = [opts.heading, "", ...opts.lines, ...url ? ["", `${opts.button.label}: ${url}`] : [], "", `Turn these emails off in your settings: ${siteUrl()}/settings`].join("\n");
+  return { html, text };
+}
+async function queueEmail(ctx, a) {
+  if (!a.to.email) return;
+  if (!a.transactional && withDefaults(a.to.settings).emailNotifications === "no") return;
+  const { html, text } = renderEmail(a);
+  await ctx.db.rows(sql`
+    insert into public.email_outbox (user_id, to_email, kind, subject, html, text_body, dedupe_key)
+    values (${a.to._id}::uuid, ${a.to.email}, ${a.kind}, ${a.subject.slice(0, 200)}, ${html}, ${text}, ${a.dedupeKey})
+    on conflict (dedupe_key) do nothing
+  `);
+}
+var SIX_HOURS = 6 * 60 * 60 * 1e3;
+function throttleKey(ctx, kind, userId, extra = "") {
+  return `${kind}:${userId}:${extra}:${Math.floor(ctx.now() / SIX_HOURS)}`;
+}
+
 // supabase/functions/_shared/modules/orders.ts
 var addressValidator = v.object({
   name: v.string(),
@@ -2329,13 +2487,44 @@ async function saveAddressRow(ctx, userId, kind, address) {
 }
 async function createOrder(ctx, fields) {
   const shipTo = await getSavedAddress(ctx, fields.buyerId, "ship_to");
-  return await ctx.db.insert("orders", {
+  const title = fields.title.slice(0, 120) || "Order";
+  const id = await ctx.db.insert("orders", {
     ...fields,
-    title: fields.title.slice(0, 120) || "Order",
+    title,
     status: shipTo ? "ready_to_ship" : "awaiting_address",
     shipTo: shipTo ?? void 0,
     updatedAt: nowIso(ctx)
   });
+  const [buyer, seller] = await Promise.all([
+    ctx.db.get("users", fields.buyerId),
+    ctx.db.get("users", fields.sellerId)
+  ]);
+  if (buyer)
+    await queueEmail(ctx, {
+      to: buyer,
+      kind: "order_placed",
+      transactional: true,
+      subject: `Your order: ${title}`,
+      heading: "Thanks for your order",
+      lines: [
+        `Your order for "${title}" is placed with ${seller ? publicSellerName(seller) : "the seller"}.`,
+        shipTo ? "We have your shipping address on file." : "Add your shipping address so the seller can ship it."
+      ],
+      button: { label: "View order", path: "/orders" },
+      dedupeKey: `order_buyer:${id}`
+    });
+  if (seller)
+    await queueEmail(ctx, {
+      to: seller,
+      kind: "order_received",
+      transactional: true,
+      subject: `New order: ${title}`,
+      heading: "You have a new order",
+      lines: [`You have a new order for "${title}".`],
+      button: { label: "View order", path: "/orders" },
+      dedupeKey: `order_seller:${id}`
+    });
+  return id;
 }
 async function liveOrderForListing(ctx, listingId) {
   return await ctx.db.first(
@@ -3876,6 +4065,15 @@ var toggle3 = mutation({
       return "none";
     }
     await ctx.db.insert("follows", { followerId: me._id, sellerId, status: "pending" });
+    await queueEmail(ctx, {
+      to: target,
+      kind: "follow_request",
+      subject: `${publicSellerName(me)} wants to follow you`,
+      heading: "New follow request",
+      lines: [`${publicSellerName(me)} sent you a follow request. Accept or delete it from your notifications.`],
+      button: { label: "View notifications", path: "/notifications" },
+      dedupeKey: throttleKey(ctx, "follow_request", target._id, me._id)
+    });
     return "pending";
   }
 });
@@ -3893,6 +4091,17 @@ var respond2 = mutation({
     if (req.status === "pending") {
       await ctx.db.patch("follows", req._id, { status: "accepted" });
       await bumpStats(ctx, me._id, { followerCount: 1 });
+      const follower = await ctx.db.get("users", followerId);
+      if (follower)
+        await queueEmail(ctx, {
+          to: follower,
+          kind: "follow_accepted",
+          subject: `${publicSellerName(me)} accepted your follow request`,
+          heading: "Follow request accepted",
+          lines: [`${publicSellerName(me)} accepted your follow request.`],
+          button: { label: "View profile", path: `/seller/${me._id}` },
+          dedupeKey: `follow_accepted:${req._id}`
+        });
     }
     return null;
   }
@@ -3942,131 +4151,6 @@ __export(messages_exports, {
   startWithSeller: () => startWithSeller,
   unreadCount: () => unreadCount
 });
-
-// supabase/functions/_shared/domain/sellerSettings.ts
-var PAYMENT_METHODS = [
-  "PayPal",
-  "Cash App",
-  "Venmo",
-  "Zelle",
-  "Bank transfer",
-  "Wise",
-  "Revolut",
-  "Crypto",
-  "Gift cards"
-];
-var OFFERINGS = [
-  "Used panties",
-  "Used bras",
-  "Used lingerie",
-  "Used socks & hosiery",
-  "Used shoes",
-  "Used gym clothes",
-  "Used clothing",
-  "Used sex toys",
-  "Photo sets",
-  "Video clips",
-  "Feet pics",
-  "Custom requests",
-  "Sexting",
-  "Dick ratings",
-  "Experiences"
-];
-var YES_NO = [
-  { value: "yes", label: "Yes" },
-  { value: "no", label: "No" }
-];
-var SETTING_FIELDS = [
-  {
-    key: "profilePrivate",
-    label: "Set Profile to Private",
-    choices: [
-      { value: "no", label: "No - Keep my profile visible" },
-      { value: "yes", label: "Yes - Make my profile private" }
-    ],
-    defaultValue: "no",
-    hint: "A private profile can only be seen by you. Everyone else sees that it's private. Your listings can still be found and bought."
-  },
-  {
-    key: "siteVisibility",
-    label: "Site Visibility",
-    choices: [
-      { value: "all", label: "All our sites - Maximise sales potential" },
-      { value: "this", label: "This site only" }
-    ],
-    defaultValue: "all",
-    hint: "Select whether your profile appears on all our sister sites or only on this one.",
-    comingSoon: true
-  },
-  {
-    key: "emailNotifications",
-    label: "Platform Email Notifications",
-    choices: YES_NO,
-    defaultValue: "yes",
-    hint: "Get some platform notifications by email, for example when you receive a message. To reduce spam, we only send you a new email notification once every 6 hours.",
-    comingSoon: true
-  },
-  {
-    key: "marketingEmails",
-    label: "Marketing Emails",
-    choices: YES_NO,
-    defaultValue: "no",
-    hint: "Get promotional emails such as newsletters, offers and information about new product features."
-  },
-  {
-    key: "webPush",
-    label: "Web Push Notifications",
-    choices: YES_NO,
-    defaultValue: "no",
-    hint: "Get instant notifications in your browser.",
-    comingSoon: true
-  },
-  {
-    key: "messagesFrom",
-    label: "Receive Messages From All Buyers",
-    choices: [
-      { value: "all", label: "Yes - Allow messages from all buyers" },
-      { value: "existing", label: "No - Only buyers already talking to me" }
-    ],
-    defaultValue: "all",
-    hint: "Choose No to stop new conversations. Buyers you're already talking to can still message you."
-  },
-  {
-    key: "socialFeature",
-    label: "Be Featured on our Social Media",
-    choices: [
-      { value: "no", label: "No - I do not want extra exposure" },
-      { value: "yes", label: "Yes - Feature me for extra exposure" }
-    ],
-    defaultValue: "no",
-    hint: "Get more exposure by being featured on our social media platforms."
-  }
-];
-function withDefaults(settings) {
-  const out = { paymentMethods: settings?.paymentMethods ?? [], offerings: settings?.offerings ?? [] };
-  for (const f of SETTING_FIELDS) {
-    out[f.key] = settings?.[f.key] ?? f.defaultValue;
-  }
-  return out;
-}
-function invalidSetting(settings) {
-  for (const f of SETTING_FIELDS) {
-    const value = settings[f.key];
-    if (value !== void 0 && !f.choices.some((c2) => c2.value === value))
-      return `Invalid choice for ${f.label}`;
-  }
-  const lists = [
-    ["payment method", PAYMENT_METHODS, settings.paymentMethods],
-    ["offering", OFFERINGS, settings.offerings]
-  ];
-  for (const [name, allowed, chosen] of lists) {
-    if (chosen?.some((x) => !allowed.includes(x))) return `Invalid ${name}`;
-  }
-  return null;
-}
-var acceptsNewMessages = (settings) => (settings?.messagesFrom ?? "all") !== "existing";
-
-// supabase/functions/_shared/modules/messages.ts
 var MAX_BODY = 2e3;
 var INBOX_LIMIT = 50;
 function cleanBody2(body) {
@@ -4104,6 +4188,20 @@ async function appendMessage(ctx, convo, senderId, body) {
     buyerUnread: !senderIsBuyer,
     sellerUnread: senderIsBuyer
   });
+  const [sender, recipient] = await Promise.all([
+    ctx.db.get("users", senderId),
+    ctx.db.get("users", senderIsBuyer ? convo.sellerId : convo.buyerId)
+  ]);
+  if (sender && recipient)
+    await queueEmail(ctx, {
+      to: recipient,
+      kind: "message",
+      subject: `New message from ${publicSellerName(sender)}`,
+      heading: "You have a new message",
+      lines: [`${publicSellerName(sender)} sent you a message on Taboo Desires.`],
+      button: { label: "Open messages", path: "/messages" },
+      dedupeKey: throttleKey(ctx, "message", recipient._id, convo._id)
+    });
 }
 async function summarize2(ctx, convo, me) {
   const isBuyer = convo.buyerId === me;
