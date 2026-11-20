@@ -10,7 +10,8 @@ import { settingsPathFor } from "@/lib/settings.ts";
 import { cn } from "@/lib/utils.ts";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { BUYER_PHOTO_MAX } from "@/shared/accounts.ts";
-import ProfilePhotos from "./profile-photos.tsx";
+import { ShopHeader } from "./shop-tab.tsx";
+import { PhotosTab } from "./photos-tab.tsx";
 import BuyerReviews from "./buyer-reviews.tsx";
 import MessageSellerButton from "./message-seller-dialog.tsx";
 import { Detail, FILLED_ACTION, Frame, NURMA, OUTLINED_ACTION, ProfilePage, ProfilePicture, ProfileTabBar, SANS, SERIF, SectionTitle, imagesLabel, joinedAgo } from "../_lib/profile-design.tsx";
@@ -111,40 +112,53 @@ function PhotosOverview({ userId, count, onOpen }: { userId: Id<"users">; count:
 /** Buyer profile, laid out like the buyer profile design. */
 export default function BuyerProfile({ profile }: { profile: Profile }) {
   const [tab, setTab] = useState<Tab>("overview");
+  const tabs: { value: Tab; label: string }[] = [
+    { value: "overview", label: "Overview" },
+    { value: "photos", label: "Photos" },
+    { value: "reviews", label: "Reviews" },
+  ];
+
+  // The Photos tab is full width: small header, tab bar, then the photo grid
+  if (tab === "photos") {
+    const written = profile.reviewsWritten ?? { count: 0, average: 0 };
+    return (
+      <div className="profile-design min-h-[calc(100dvh-3.5rem)] bg-[#0C0F15]">
+        <div className="mx-auto flex max-w-[1170px] flex-col gap-[22px] px-5 py-6">
+          <ShopHeader
+            name={profile.name}
+            avatarUrl={profile.avatarUrl}
+            rating={written.average}
+            reviewCount={written.count}
+            verified={profile.verified}
+            onReviews={() => setTab("reviews")}
+          />
+          <ProfileTabBar
+            tabs={tabs}
+            value={tab}
+            onChange={setTab}
+            trailing={!profile.isMe ? <ProfileMenu userId={profile._id} targetType="buyer" /> : undefined}
+          />
+          <PhotosTab
+            userId={profile._id}
+            isMe={profile.isMe}
+            total={profile.counts.photos}
+            ownCount={profile.counts.profilePhotos}
+            limit={BUYER_PHOTO_MAX}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <ProfilePage>
       <ProfilePicture url={profile.avatarUrl} name={profile.name} />
       <Header profile={profile} />
-      <ProfileTabBar
-        tabs={[
-          { value: "overview", label: "Overview" },
-          { value: "photos", label: "Photos" },
-          { value: "reviews", label: "Reviews" },
-        ]}
-        value={tab}
-        onChange={setTab}
-      />
+      <ProfileTabBar tabs={tabs} value={tab} onChange={setTab} />
       <About profile={profile} />
 
       {tab === "overview" && (
         <PhotosOverview userId={profile._id} count={profile.counts.photos} onOpen={() => setTab("photos")} />
-      )}
-      {tab === "photos" && (
-        <Frame className="[grid-area:content]" innerClassName="flex flex-col gap-6 px-[22px] py-[28px] lg:min-h-[345px]">
-          <SectionTitle title="Photos" count={imagesLabel(profile.counts.photos)} />
-          {profile.isMe || profile.counts.photos > 0 ? (
-            <ProfilePhotos
-              userId={profile._id}
-              isMe={profile.isMe}
-              total={profile.counts.photos}
-              ownCount={profile.counts.profilePhotos}
-              limit={BUYER_PHOTO_MAX}
-            />
-          ) : (
-            <p className={cn(SANS, "text-sm text-[#ffffff]")}>No photos yet.</p>
-          )}
-        </Frame>
       )}
       {tab === "reviews" && (
         <Frame className="[grid-area:content]" innerClassName="flex flex-col gap-6 px-[22px] py-[28px] lg:min-h-[345px]">

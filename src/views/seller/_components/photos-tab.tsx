@@ -197,7 +197,21 @@ function PhotoCard({ photo, isMe, onRemove }: { photo: Photo; isMe: boolean; onR
 }
 
 /** The Photos tab body: title, "Showing n images", and a 3-column grid with captions, comments and likes. */
-export function PhotosTab({ userId, isMe, total }: { userId: Id<"users">; isMe: boolean; total: number }) {
+export function PhotosTab({
+  userId,
+  isMe,
+  total,
+  limit,
+  ownCount,
+}: {
+  userId: Id<"users">;
+  isMe: boolean;
+  total: number;
+  /** Most profile photos this member may have (buyers); leave out for no limit */
+  limit?: number;
+  /** Profile photos only (the limit counts these, not photos on posts) */
+  ownCount?: number;
+}) {
   const { results, status, loadMore } = usePaginatedQuery(api.users.photosByUser, { userId }, { initialNumItems: 24 });
   const removePhoto = useMutation(api.users.removeProfilePhoto);
   const [adding, setAdding] = useState(false);
@@ -210,6 +224,7 @@ export function PhotosTab({ userId, isMe, total }: { userId: Id<"users">; isMe: 
     }
   };
   const label = `${total} ${total === 1 ? "image" : "images"}`;
+  const room = limit === undefined ? Infinity : limit - (ownCount ?? total);
 
   return (
     <div className="flex flex-col gap-[22px]">
@@ -221,10 +236,20 @@ export function PhotosTab({ userId, isMe, total }: { userId: Id<"users">; isMe: 
           </h2>
           <span className="h-0.5 w-[60px] bg-[#7b3aec]" />
         </div>
-        {isMe && (
+        {isMe && room > 0 && (
           <Button type="button" variant="outline" onClick={() => setAdding(true)} className="h-[38px] cursor-pointer gap-2 border-2 border-[#7b3aec] text-white hover:bg-[#7b3aec]/20">
             <ImagePlus className="size-4 text-[#7b3aec]" /> Add photo
+            {limit !== undefined && (
+              <span className="font-mono text-xs text-white/70">
+                {ownCount ?? total}/{limit}
+              </span>
+            )}
           </Button>
+        )}
+        {isMe && room <= 0 && limit !== undefined && (
+          <span className="font-mono text-xs text-white/70">
+            {ownCount ?? total}/{limit} photos
+          </span>
         )}
       </div>
 
