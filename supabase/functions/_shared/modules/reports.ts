@@ -7,6 +7,7 @@ import { getCurrentUserDoc, publicSellerName } from "../lib/auth.ts";
 import { deleteListingCascade } from "../lib/listingDelete.ts";
 import { deletePostCascade } from "../lib/posts.ts";
 import { requireAdmin } from "../lib/subscription.ts";
+import { queueEmailToAddress, reportInbox, siteUrl } from "../lib/email.ts";
 
 const HOUR = 3_600_000;
 /** Reports of intimate images shared without consent, or of anyone under 18, are due within 48 hours. */
@@ -14,6 +15,14 @@ const URGENT_HOURS = 48;
 const NORMAL_HOURS = 24 * 7;
 const URGENT_TYPES: ReportType[] = ["nonconsensual_intimate", "underage"];
 const HOURLY_LIMIT = 5;
+const REPORT_TYPE_LABEL: Record<ReportType, string> = {
+  nonconsensual_intimate: "Intimate image shared without consent",
+  underage: "Person under 18",
+  copyright: "Copyright",
+  illegal: "Illegal content",
+  harassment: "Harassment",
+  other: "Other",
+};
 
 const typeValidator = v.union(
   v.literal("nonconsensual_intimate"),
@@ -80,7 +89,8 @@ export const submit = mutation({
       throw bad("Too many reports from this email. Please try again later.");
 
     const hours = URGENT_TYPES.includes(args.reportType) ? URGENT_HOURS : NORMAL_HOURS;
-    await ctx.db.insert("contentReports", {
+    const dueAt = new Date(ctx.now() + hours * HOUR).toISOString();
+    const reportId = await ctx.db.insert("contentReports", {
       reportType: args.reportType,
       targetKind: args.targetKind,
       targetId,
@@ -92,7 +102,31 @@ export const submit = mutation({
       isDepicted: args.isDepicted,
       signature,
       status: "open",
-      dueAt: new Date(ctx.now() + hours * HOUR).toISOString(),
+      dueAt,
+    });
+    // Alert the content-report mailbox (reply goes to the person who reported)
+    const urgent = URGENT_TYPES.includes(args.reportType);
+    const location = targetUrl ?? (targetId ? `${args.targetKind} ${targetId}` : "");
+    await queueEmailToAddress(ctx, {
+      toEmail: reportInbox(),
+      replyTo: reporterEmail,
+      kind: "content_report",
+      subject: `${urgent ? "URGENT: " : ""}Content report: ${REPORT_TYPE_LABEL[args.reportType]}`,
+      heading: urgent ? "Urgent content report" : "New content report",
+      lines: [
+        `Type: ${REPORT_TYPE_LABEL[args.reportType]}`,
+        `What it is: ${args.targetKind}`,
+        `Where: ${location}`,
+        `Reported by: ${reporterName} <${reporterEmail}>${me ? " (signed in member)" : " (not signed in)"}`,
+        `Person shown in the content: ${args.isDepicted ? "Yes, the reporter is shown in it" : "No"}`,
+        `Signed: ${signature}`,
+        `Respond by: ${new Date(dueAt).toUTCString()}`,
+        "Details:",
+        description,
+      ],
+      button: { label: "Open the report queue", path: "/admin" },
+      footer: `Sent to the content-report inbox. Reply to this email to answer ${reporterName}. Queue: ${siteUrl()}/admin`,
+      dedupeKey: `content_report:${reportId}`,
     });
     return null;
   },

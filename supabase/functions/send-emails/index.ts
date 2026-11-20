@@ -20,7 +20,7 @@ const db = postgres(Deno.env.get("SUPABASE_DB_URL")!, {
 const MAX_ATTEMPTS = 5;
 const BATCH = 20;
 
-type Row = { id: string; to_email: string; subject: string; html: string; text_body: string; attempts: number };
+type Row = { id: string; to_email: string; reply_to: string | null; subject: string; html: string; text_body: string; attempts: number };
 
 Deno.serve(async (req) => {
   if (req.method !== "POST") return new Response(null, { status: 405 });
@@ -32,7 +32,7 @@ Deno.serve(async (req) => {
   // Claim a batch; rows locked by another run are skipped
   const rows = await db.begin(async (tx) => {
     const claimed = await tx<Row[]>`
-      select id, to_email, subject, html, text_body, attempts
+      select id, to_email, reply_to, subject, html, text_body, attempts
         from public.email_outbox
        where status = 'pending'
        order by created_at
@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
           subject: r.subject,
           html: r.html,
           text: r.text_body,
-          ...(replyTo ? { reply_to: replyTo } : {}),
+          ...(r.reply_to || replyTo ? { reply_to: r.reply_to || replyTo } : {}),
         }),
       });
       if (res.ok) {
