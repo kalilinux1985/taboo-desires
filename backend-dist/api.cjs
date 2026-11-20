@@ -254,6 +254,7 @@ var TABLES = {
       size: c("size"),
       condition: c("condition"),
       priceCents: c("price_cents", "int"),
+      hiddenPrevStatus: c("hidden_prev_status"),
       imageIds: c("image_ids", "textArray"),
       status: c("status"),
       saleType: c("sale_type"),
@@ -360,7 +361,8 @@ var TABLES = {
       listingId: c("listing_id", "uuid"),
       repost: c("repost", "bool"),
       likeCount: c("like_count", "int"),
-      commentCount: c("comment_count", "int")
+      commentCount: c("comment_count", "int"),
+      hidden: c("hidden", "bool")
     }
   },
   postLikes: {
@@ -375,7 +377,8 @@ var TABLES = {
       body: c("body"),
       parentId: c("parent_id", "uuid"),
       likeCount: c("like_count", "int"),
-      replyCount: c("reply_count", "int")
+      replyCount: c("reply_count", "int"),
+      hidden: c("hidden", "bool")
     }
   },
   postCommentLikes: {
@@ -3109,7 +3112,7 @@ var CONDITIONS = [
   "week",
   "custom_wear"
 ];
-var LISTING_STATUSES = ["active", "sold", "ended"];
+var LISTING_STATUSES = ["active", "sold", "ended", "hidden"];
 var SALE_TYPES = ["fixed", "auction"];
 var MEDIA_KINDS = ["image", "video"];
 
@@ -3630,6 +3633,7 @@ var get = query({
       getAuctionByListing(ctx, listingId),
       getStats(ctx, listing.sellerId)
     ]);
+    if (listing.status === "hidden" && me?._id !== listing.sellerId && me?.role !== "admin") return null;
     const { paywall, ...publicFields } = listing;
     return {
       ...publicFields,
@@ -4759,7 +4763,8 @@ var feed2 = query({
       {
         where: [
           filter === "all" ? null : sql`kind = ${filter}`,
-          authorId ? sql`author_id = ${authorId}::uuid` : null
+          authorId ? sql`author_id = ${authorId}::uuid` : null,
+          me?.role === "admin" ? null : sql`not hidden`
         ].filter((w) => w !== null).reduce((acc, w) => acc ? sql`${acc} and ${w}` : w, void 0),
         order,
         direction: "desc"
@@ -4878,7 +4883,7 @@ var listComments = query({
     const result = await ctx.db.paginate(
       "postComments",
       {
-        where: parentId ? sql`post_id = ${postId}::uuid and parent_id = ${parentId}::uuid` : sql`post_id = ${postId}::uuid and parent_id is null`,
+        where: sql`${parentId ? sql`post_id = ${postId}::uuid and parent_id = ${parentId}::uuid` : sql`post_id = ${postId}::uuid and parent_id is null`}${me?.role === "admin" ? empty : sql` and not hidden`}`,
         order: [{ column: "created_at", cast: "timestamptz" }],
         // Newest comments first; replies read top to bottom in order
         direction: parentId ? "asc" : "desc"
@@ -4934,7 +4939,7 @@ var addComment2 = mutation({
   handler: async (ctx, { postId, body, parentId }) => {
     const me = await requireCapability(ctx, "post");
     const post = await ctx.db.get("posts", postId);
-    if (!post)
+    if (!post || post.hidden && me.role !== "admin")
       throw new AppError({ code: "NOT_FOUND", message: "Post not found" });
     let parent = null;
     if (parentId) {
@@ -5055,6 +5060,50 @@ var targetValidator = v.union(
 var UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 var EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 var bad2 = (message) => new AppError({ code: "BAD_REQUEST", message });
+var AUTO_HIDE_AT = 2;
+async function openReporters(ctx, kind, id) {
+  const rows = await ctx.db.rows(sql`
+    select count(distinct reporter_email)::int as n from public.content_reports
+     where status = 'open' and target_kind = ${kind} and target_id = ${id}`);
+  return Number(rows[0]?.n ?? 0);
+}
+async function hideTarget(ctx, kind, id) {
+  if (kind === "listing") {
+    const l = await ctx.db.get("listings", id);
+    if (!l || l.status === "hidden") return null;
+    await ctx.db.patch("listings", l._id, { status: "hidden", hiddenPrevStatus: l.status });
+    return { ownerId: l.sellerId, what: `your listing "${l.title}"` };
+  }
+  if (kind === "post") {
+    const p = await ctx.db.get("posts", id);
+    if (!p || p.hidden) return null;
+    await ctx.db.patch("posts", p._id, { hidden: true });
+    return { ownerId: p.authorId, what: "one of your posts" };
+  }
+  if (kind === "comment") {
+    const c2 = await ctx.db.get("postComments", id);
+    if (!c2 || c2.hidden) return null;
+    await ctx.db.patch("postComments", c2._id, { hidden: true });
+    return { ownerId: c2.authorId, what: "one of your comments" };
+  }
+  return null;
+}
+async function unhideTarget(ctx, kind, id) {
+  if (kind === "listing") {
+    const l = await ctx.db.get("listings", id);
+    if (!l || l.status !== "hidden") return;
+    let status = l.hiddenPrevStatus ?? "active";
+    const auction = await getAuctionByListing(ctx, l._id);
+    if (auction?.status === "ended") status = (auction.bidCount ?? 0) > 0 ? "sold" : "ended";
+    await ctx.db.patch("listings", l._id, { status, hiddenPrevStatus: void 0 });
+  } else if (kind === "post") {
+    const p = await ctx.db.get("posts", id);
+    if (p?.hidden) await ctx.db.patch("posts", p._id, { hidden: false });
+  } else if (kind === "comment") {
+    const c2 = await ctx.db.get("postComments", id);
+    if (c2?.hidden) await ctx.db.patch("postComments", c2._id, { hidden: false });
+  }
+}
 var submit2 = mutation({
   args: {
     reportType: typeValidator,
@@ -5106,6 +5155,29 @@ var submit2 = mutation({
       status: "open",
       dueAt
     });
+    let hiddenNow = false;
+    if (targetId && (args.targetKind === "listing" || args.targetKind === "post" || args.targetKind === "comment")) {
+      const reporters = await openReporters(ctx, args.targetKind, targetId);
+      if (reporters >= AUTO_HIDE_AT) {
+        const owner = await hideTarget(ctx, args.targetKind, targetId);
+        if (owner) {
+          hiddenNow = true;
+          const ownerDoc = await ctx.db.get("users", owner.ownerId);
+          if (ownerDoc)
+            await queueEmail(ctx, {
+              to: ownerDoc,
+              kind: "content_hidden",
+              transactional: true,
+              subject: "Your content is hidden while we review it",
+              heading: "Hidden while we review",
+              lines: [
+                `We hid ${owner.what} because it was reported more than once. Our team will review it. If it follows our rules, it will be put back. If not, it will be removed.`
+              ],
+              dedupeKey: `content_hidden:${args.targetKind}:${targetId}:${reportId}`
+            });
+        }
+      }
+    }
     const urgent = URGENT_TYPES.includes(args.reportType);
     const location = targetUrl ?? (targetId ? `${args.targetKind} ${targetId}` : "");
     await queueEmailToAddress(ctx, {
@@ -5121,6 +5193,7 @@ var submit2 = mutation({
         `Reported by: ${reporterName} <${reporterEmail}>${me ? " (signed in member)" : " (not signed in)"}`,
         `Person shown in the content: ${args.isDepicted ? "Yes, the reporter is shown in it" : "No"}`,
         `Signed: ${signature}`,
+        ...hiddenNow ? ["Auto-hidden: this content has 2 or more reports, so it is now hidden until you decide."] : [],
         `Respond by: ${new Date(dueAt).toUTCString()}`,
         "Details:",
         description
@@ -5239,6 +5312,10 @@ var resolve = mutation({
       resolvedBy: admin2._id,
       resolutionNote: text || void 0
     });
+    if (!remove5 && report.targetId && report.targetKind !== "profile" && report.targetKind !== "other") {
+      if (await openReporters(ctx, report.targetKind, report.targetId) < AUTO_HIDE_AT)
+        await unhideTarget(ctx, report.targetKind, report.targetId);
+    }
     return null;
   }
 });
@@ -6239,7 +6316,7 @@ var photosByUser = query({
                p.body, p.like_count, p.comment_count
           from public.posts p
          cross join lateral unnest(p.image_ids) with ordinality as t(img, ord)
-         where p.author_id = ${userId}::uuid and p.kind <> 'listing'${albumId ? sql` and false` : empty}
+         where p.author_id = ${userId}::uuid and p.kind <> 'listing'${albumId ? sql` and false` : empty}${me?.role === "admin" ? empty : sql` and not p.hidden`}
       ) photos
       order by created_at desc, source_id desc, ord
       limit ${limit + 1} offset ${offset}`);
@@ -6385,7 +6462,7 @@ async function profileCounts(ctx, userId) {
       (select count(*)::int from public.follows where follower_id = ${userId}::uuid and status = 'accepted') as following,
       (select count(*)::int from public.profile_photos where user_id = ${userId}::uuid)
         + (select coalesce(sum(cardinality(image_ids)), 0)::int from public.posts
-            where author_id = ${userId}::uuid and kind <> 'listing') as photos,
+            where author_id = ${userId}::uuid and kind <> 'listing' and not hidden) as photos,
       (select count(*)::int from public.profile_photos where user_id = ${userId}::uuid) as profile_photos`);
   return {
     listings: Number(row.listings),
