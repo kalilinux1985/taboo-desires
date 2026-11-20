@@ -23,7 +23,7 @@ import PostComments from "@/views/home/_components/post-comments.tsx";
 import LikerAvatars from "@/views/home/_components/liker-avatars.tsx";
 import { activityVerb, shortAge, type FeedItem } from "@/views/home/_lib/feed.ts";
 
-const ACTION = "flex cursor-pointer items-center gap-1.5 transition-colors hover:text-[#f9f9f9]";
+const ACTION = "flex cursor-pointer items-center gap-1.5 transition-colors hover:text-white";
 
 /**
  * A post in the profile's Latest Activity, laid out like the design: square

@@ -77,19 +77,19 @@
 :root {
   --radius: 5px; /* every corner is 5px (circles stay round) */
   --background: #191a1f;
-  --foreground: #f2f6ff;
+  --foreground: #ffffff;
   --card: rgb(3 9 23 / 50%); /* #030917 at 50% */
-  --card-foreground: #f2f6ff;
+  --card-foreground: #ffffff;
   --popover: #091021; /* #030917 at 50% over the page, solid for menus */
-  --popover-foreground: #f2f6ff;
+  --popover-foreground: #ffffff;
   --primary: #7f22fe;
   --primary-foreground: #ffffff;
   --secondary: #1f2235;
-  --secondary-foreground: #f2f6ff;
+  --secondary-foreground: #ffffff;
   --muted: #0f172a;
   --muted-foreground: #ffffff;
   --accent: #1f2235;
-  --accent-foreground: #ede9fe;
+  --accent-foreground: #ffffff;
   --destructive: oklch(0.66 0.22 18);
   --border: rgb(255 255 255 / 25%); /* white at 25% */
   --input: rgb(255 255 255 / 25%); /* white at 25% */
@@ -104,7 +104,7 @@
   --sidebar-primary: #7f22fe;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #1f2235;
-  --sidebar-accent-foreground: #f2f6ff;
+  --sidebar-accent-foreground: #ffffff;
   --sidebar-border: rgb(255 255 255 / 25%); /* white at 25% */
   --sidebar-ring: rgb(127 34 254 / 70%);
 }

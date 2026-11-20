@@ -264,14 +264,14 @@ export function PhotosTab({
           <Button type="button" variant="outline" onClick={() => setAdding(true)} className="h-[38px] cursor-pointer gap-2 border-2 border-[#7b3aec] text-white hover:bg-[#7b3aec]/20">
             <ImagePlus className="size-4 text-[#7b3aec]" /> Add photo
             {limit !== undefined && (
-              <span className="font-mono text-xs text-white/70">
+              <span className="font-mono text-xs text-white">
                 {ownCount ?? total}/{limit}
               </span>
             )}
           </Button>
         )}
         {isMe && room <= 0 && limit !== undefined && (
-          <span className="font-mono text-xs text-white/70">
+          <span className="font-mono text-xs text-white">
             {ownCount ?? total}/{limit} photos
           </span>
         )}

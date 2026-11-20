@@ -96,7 +96,7 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
     remove({ postId: item._id })
       .then(() => toast.success("Post deleted"))
       .catch((e) => toast.error(getErrorMessage(e, "Could not delete")));
-  const action = "flex cursor-pointer items-center gap-1.5 transition-colors hover:text-[#f2f6ff]";
+  const action = "flex cursor-pointer items-center gap-1.5 transition-colors hover:text-white";
   const text = item.body || (item.kind !== "status" ? `${verb.lead} ${verb.link}${item.listing ? `: ${item.listing.title}` : ""}` : "");
 
   return (
