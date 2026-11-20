@@ -2660,9 +2660,9 @@ function renderEmail(opts) {
 <tr><td style="color:#ffffff;font-size:20px;font-weight:bold;padding-bottom:12px;">${esc(opts.heading)}</td></tr>
 ${opts.lines.map((l) => `<tr><td style="color:#ffffff;font-size:14px;line-height:1.6;padding-bottom:10px;">${esc(l)}</td></tr>`).join("")}
 ${url ? `<tr><td style="padding:12px 0;"><a href="${esc(url)}" style="background:#7b3aec;color:#ffffff;text-decoration:none;padding:10px 18px;border-radius:5px;font-size:14px;display:inline-block;">${esc(opts.button.label)}</a></td></tr>` : ""}
-<tr><td style="color:#ffffff;font-size:12px;padding-top:14px;opacity:.7;">You get this because of your Taboo Desires account. Turn these emails off any time in your settings: ${esc(siteUrl())}/settings</td></tr>
+<tr><td style="color:#ffffff;font-size:12px;padding-top:14px;opacity:.7;">${opts.footer ? esc(opts.footer) : `You get this because of your Taboo Desires account. Turn these emails off any time in your settings: ${esc(siteUrl())}/settings`}</td></tr>
 </table></td></tr></table></body></html>`;
-  const text = [opts.heading, "", ...opts.lines, ...url ? ["", `${opts.button.label}: ${url}`] : [], "", `Turn these emails off in your settings: ${siteUrl()}/settings`].join("\n");
+  const text = [opts.heading, "", ...opts.lines, ...url ? ["", `${opts.button.label}: ${url}`] : [], "", opts.footer ?? `Turn these emails off in your settings: ${siteUrl()}/settings`].join("\n");
   return { html, text };
 }
 async function queueEmail(ctx, a) {
@@ -2670,10 +2670,22 @@ async function queueEmail(ctx, a) {
   if (!a.transactional && withDefaults(a.to.settings).emailNotifications === "no") return;
   const { html, text } = renderEmail(a);
   await ctx.db.rows(sql`
-    insert into public.email_outbox (user_id, to_email, kind, subject, html, text_body, dedupe_key)
-    values (${a.to._id}::uuid, ${a.to.email}, ${a.kind}, ${a.subject.slice(0, 200)}, ${html}, ${text}, ${a.dedupeKey})
+    insert into public.email_outbox (user_id, to_email, reply_to, kind, subject, html, text_body, dedupe_key)
+    values (${a.to._id}::uuid, ${a.to.email}, ${a.replyTo ?? null}, ${a.kind}, ${a.subject.slice(0, 200)}, ${html}, ${text}, ${a.dedupeKey})
     on conflict (dedupe_key) do nothing
   `);
+}
+async function queueEmailToAddress(ctx, a) {
+  const { html, text } = renderEmail(a);
+  await ctx.db.rows(sql`
+    insert into public.email_outbox (user_id, to_email, reply_to, kind, subject, html, text_body, dedupe_key)
+    values (null, ${a.toEmail}, ${a.replyTo ?? null}, ${a.kind}, ${a.subject.replace(/\s+/g, " ").slice(0, 200)}, ${html}, ${text}, ${a.dedupeKey})
+    on conflict (dedupe_key) do nothing
+  `);
+}
+function reportInbox() {
+  const deno = globalThis.Deno;
+  return deno?.env.get("REPORT_EMAIL_TO")?.trim() || "report.content@taboodesiers.com";
 }
 var SIX_HOURS = 6 * 60 * 60 * 1e3;
 function throttleKey(ctx, kind, userId, extra = "") {
@@ -5017,6 +5029,14 @@ var URGENT_HOURS = 48;
 var NORMAL_HOURS = 24 * 7;
 var URGENT_TYPES = ["nonconsensual_intimate", "underage"];
 var HOURLY_LIMIT = 5;
+var REPORT_TYPE_LABEL = {
+  nonconsensual_intimate: "Intimate image shared without consent",
+  underage: "Person under 18",
+  copyright: "Copyright",
+  illegal: "Illegal content",
+  harassment: "Harassment",
+  other: "Other"
+};
 var typeValidator = v.union(
   v.literal("nonconsensual_intimate"),
   v.literal("underage"),
@@ -5071,7 +5091,8 @@ var submit2 = mutation({
     if (Number(recent[0]?.n ?? 0) >= HOURLY_LIMIT)
       throw bad2("Too many reports from this email. Please try again later.");
     const hours = URGENT_TYPES.includes(args.reportType) ? URGENT_HOURS : NORMAL_HOURS;
-    await ctx.db.insert("contentReports", {
+    const dueAt = new Date(ctx.now() + hours * HOUR).toISOString();
+    const reportId = await ctx.db.insert("contentReports", {
       reportType: args.reportType,
       targetKind: args.targetKind,
       targetId,
@@ -5083,7 +5104,30 @@ var submit2 = mutation({
       isDepicted: args.isDepicted,
       signature,
       status: "open",
-      dueAt: new Date(ctx.now() + hours * HOUR).toISOString()
+      dueAt
+    });
+    const urgent = URGENT_TYPES.includes(args.reportType);
+    const location = targetUrl ?? (targetId ? `${args.targetKind} ${targetId}` : "");
+    await queueEmailToAddress(ctx, {
+      toEmail: reportInbox(),
+      replyTo: reporterEmail,
+      kind: "content_report",
+      subject: `${urgent ? "URGENT: " : ""}Content report: ${REPORT_TYPE_LABEL[args.reportType]}`,
+      heading: urgent ? "Urgent content report" : "New content report",
+      lines: [
+        `Type: ${REPORT_TYPE_LABEL[args.reportType]}`,
+        `What it is: ${args.targetKind}`,
+        `Where: ${location}`,
+        `Reported by: ${reporterName} <${reporterEmail}>${me ? " (signed in member)" : " (not signed in)"}`,
+        `Person shown in the content: ${args.isDepicted ? "Yes, the reporter is shown in it" : "No"}`,
+        `Signed: ${signature}`,
+        `Respond by: ${new Date(dueAt).toUTCString()}`,
+        "Details:",
+        description
+      ],
+      button: { label: "Open the report queue", path: "/admin" },
+      footer: `Sent to the content-report inbox. Reply to this email to answer ${reporterName}. Queue: ${siteUrl()}/admin`,
+      dedupeKey: `content_report:${reportId}`
     });
     return null;
   }
