@@ -1589,6 +1589,7 @@ var toggle = mutation({
 // supabase/functions/_shared/modules/albums.ts
 var albums_exports = {};
 __export(albums_exports, {
+  byUser: () => byUser,
   create: () => create,
   mine: () => mine2
 });
@@ -1622,6 +1623,22 @@ var create = mutation({
     if (existing.length >= ALBUMS_MAX)
       throw new AppError({ code: "FORBIDDEN", message: `You can have up to ${ALBUMS_MAX} albums` });
     return await ctx.db.insert("photoAlbums", { userId: me._id, name: clean2 });
+  }
+});
+var byUser = query({
+  args: { userId: v.id("users") },
+  handler: async (ctx, { userId }) => {
+    ctx.db.touch("photoAlbums", "profilePhotos");
+    const me = await getCurrentUserDoc(ctx);
+    const rows = await ctx.db.rows(sql`
+      select a.id::text as id, a.name,
+             (select count(*) from public.profile_photos p where p.album_id = a.id)::int as photos
+        from public.photo_albums a
+       where a.user_id = ${userId}::uuid
+       order by a.created_at, a.id
+       limit ${ALBUMS_MAX}::int`);
+    const mine6 = me?._id === userId;
+    return rows.filter((r) => mine6 || Number(r.photos) > 0).map((r) => ({ _id: String(r.id), name: String(r.name), photos: Number(r.photos) }));
   }
 });
 
@@ -6137,8 +6154,8 @@ async function listProfilePhotos(ctx, userId) {
   return withPhotoUrls(ctx, rows);
 }
 var photosByUser = query({
-  args: { userId: v.id("users"), paginationOpts: paginationOptsValidator },
-  handler: async (ctx, { userId, paginationOpts }) => {
+  args: { userId: v.id("users"), albumId: v.optional(v.id("photoAlbums")), paginationOpts: paginationOptsValidator },
+  handler: async (ctx, { userId, albumId, paginationOpts }) => {
     ctx.db.touch("profilePhotos", "posts", "photoLikes", "photoComments", "postLikes");
     const me = await getCurrentUserDoc(ctx);
     const limit = Math.min(Math.max(1, Math.floor(paginationOpts.numItems)), 100);
@@ -6151,13 +6168,13 @@ var photosByUser = query({
                (select count(*) from public.photo_likes l where l.photo_id = pp.id)::int as likes,
                (select count(*) from public.photo_comments c where c.photo_id = pp.id)::int as comments
           from public.profile_photos pp
-         where pp.user_id = ${userId}::uuid
+         where pp.user_id = ${userId}::uuid${albumId ? sql` and pp.album_id = ${albumId}::uuid` : empty}
         union all
         select p.id::text, t.img, p.created_at, t.ord::int, false,
                p.body, p.like_count, p.comment_count
           from public.posts p
          cross join lateral unnest(p.image_ids) with ordinality as t(img, ord)
-         where p.author_id = ${userId}::uuid and p.kind <> 'listing'
+         where p.author_id = ${userId}::uuid and p.kind <> 'listing'${albumId ? sql` and false` : empty}
       ) photos
       order by created_at desc, source_id desc, ord
       limit ${limit + 1} offset ${offset}`);
