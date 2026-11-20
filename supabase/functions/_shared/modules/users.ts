@@ -1,7 +1,7 @@
 import { AppError } from "../core/errors.ts";
 import { mutation, query, type QueryCtx } from "../core/functions.ts";
 import type { Id } from "../core/schema.ts";
-import { raw, sql } from "../core/sql.ts";
+import { empty, raw, sql } from "../core/sql.ts";
 import { paginationOptsValidator, v } from "../core/values.ts";
 import {
   getCurrentUserDoc,
@@ -240,8 +240,8 @@ async function listProfilePhotos(ctx: QueryCtx, userId: Id<"users">) {
  * only ones removed from here (post photos go when the post is deleted).
  */
 export const photosByUser = query({
-  args: { userId: v.id("users"), paginationOpts: paginationOptsValidator },
-  handler: async (ctx, { userId, paginationOpts }) => {
+  args: { userId: v.id("users"), albumId: v.optional(v.id("photoAlbums")), paginationOpts: paginationOptsValidator },
+  handler: async (ctx, { userId, albumId, paginationOpts }) => {
     ctx.db.touch("profilePhotos", "posts", "photoLikes", "photoComments", "postLikes");
     const me = await getCurrentUserDoc(ctx);
     const limit = Math.min(Math.max(1, Math.floor(paginationOpts.numItems)), 100);
@@ -254,13 +254,13 @@ export const photosByUser = query({
                (select count(*) from public.photo_likes l where l.photo_id = pp.id)::int as likes,
                (select count(*) from public.photo_comments c where c.photo_id = pp.id)::int as comments
           from public.profile_photos pp
-         where pp.user_id = ${userId}::uuid
+         where pp.user_id = ${userId}::uuid${albumId ? sql` and pp.album_id = ${albumId}::uuid` : empty}
         union all
         select p.id::text, t.img, p.created_at, t.ord::int, false,
                p.body, p.like_count, p.comment_count
           from public.posts p
          cross join lateral unnest(p.image_ids) with ordinality as t(img, ord)
-         where p.author_id = ${userId}::uuid and p.kind <> 'listing'
+         where p.author_id = ${userId}::uuid and p.kind <> 'listing'${albumId ? sql` and false` : empty}
       ) photos
       order by created_at desc, source_id desc, ord
       limit ${limit + 1} offset ${offset}`);

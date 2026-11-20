@@ -212,7 +212,13 @@ export function PhotosTab({
   /** Profile photos only (the limit counts these, not photos on posts) */
   ownCount?: number;
 }) {
-  const { results, status, loadMore } = usePaginatedQuery(api.users.photosByUser, { userId }, { initialNumItems: 24 });
+  const [album, setAlbum] = useState<Id<"photoAlbums"> | "all">("all");
+  const albums = useQuery(api.albums.byUser, { userId });
+  const { results, status, loadMore } = usePaginatedQuery(
+    api.users.photosByUser,
+    album === "all" ? { userId } : { userId, albumId: album },
+    { initialNumItems: 24 },
+  );
   const removePhoto = useMutation(api.users.removeProfilePhoto);
   const [adding, setAdding] = useState(false);
 
@@ -253,6 +259,31 @@ export function PhotosTab({
         )}
       </div>
 
+      {albums && albums.length > 0 && (
+        <div role="tablist" aria-label="Photo albums" className="flex gap-2 overflow-x-auto pb-1">
+          {[{ _id: "all" as const, name: "All", photos: total }, ...albums].map((a) => (
+            <Button
+              key={a._id}
+              type="button"
+              role="tab"
+              aria-selected={album === a._id}
+              variant="ghost"
+              onClick={() => setAlbum(a._id)}
+              className={cn(
+                SERIF,
+                "h-9 shrink-0 cursor-pointer gap-2 rounded-[5px] border px-4 text-[14px] text-white",
+                album === a._id
+                  ? "border-[#7b3aec] bg-[#7b3aec] hover:bg-[#7b3aec]"
+                  : "border-white/15 bg-[#141519] hover:bg-[#7b3aec]/20",
+              )}
+            >
+              {a.name}
+              <span className={cn("text-xs", album === a._id ? "text-white" : "text-[#7b3aec]")}>{a.photos}</span>
+            </Button>
+          ))}
+        </div>
+      )}
+
       <p className={cn(SERIF, "text-[15px] text-white")}>
         {status === "LoadingFirstPage" ? "Loading photos…" : `Showing ${results.length} ${results.length === 1 ? "image" : "images"}`}
       </p>
@@ -265,7 +296,7 @@ export function PhotosTab({
             ))}
           </div>
         ) : results.length === 0 ? (
-          <p className={cn(SERIF, "py-16 text-center text-white")}>No photos yet</p>
+          <p className={cn(SERIF, "py-16 text-center text-white")}>{album === "all" ? "No photos yet" : "No photos in this album yet"}</p>
         ) : (
           <div className="grid gap-[17px] sm:grid-cols-2 lg:grid-cols-3">
             {results.map((p) => (
