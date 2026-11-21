@@ -434,6 +434,30 @@ export const bySeller = query({
   },
 });
 
+/** Real item counts for the home page's category cards (active listings only). */
+export const landingCounts = query({
+  args: {},
+  handler: async (ctx) => {
+    ctx.db.touch("listings");
+    const [row] = await ctx.db.rows(sql`
+      select
+        count(*) filter (where category in ('panties', 'bras', 'lingerie') and paywall is null)::int as underwear,
+        count(*) filter (where category = 'shoes' and paywall is null)::int as shoes,
+        count(*) filter (where category = 'socks' and paywall is null)::int as hosiery,
+        count(*) filter (where category in ('clothing', 'activewear') and paywall is null)::int as clothing,
+        count(*) filter (where paywall is not null)::int as instant
+      from public.listings where status = 'active'`);
+    const n = (k: string) => Number((row as Record<string, unknown>)?.[k] ?? 0);
+    return {
+      underwear: n("underwear"),
+      shoes: n("shoes"),
+      hosiery: n("hosiery"),
+      clothing: n("clothing"),
+      instant: n("instant"),
+    };
+  },
+});
+
 /** One numbered page of a seller's shop (regular listings), optionally one category, with the total count. */
 export const shopPage = query({
   args: {

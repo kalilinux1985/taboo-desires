@@ -7,7 +7,7 @@ import {
 } from "@/lib/backend/react.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import ActivityFeed from "./home/_components/activity-feed.tsx";
-import ShopLanding from "./home/_components/shop-landing.tsx";
+import Landing from "./home/_components/landing.tsx";
 
 export default function Index() {
   return (
@@ -22,9 +22,9 @@ export default function Index() {
       <Authenticated>
         <ActivityFeed />
       </Authenticated>
-      {/* Visitors land on the shop: filters, listings and sell/buy calls to action */}
+      {/* Visitors, and members who just logged out, land on the home page */}
       <Unauthenticated>
-        <ShopLanding />
+        <Landing />
       </Unauthenticated>
     </>
   );

@@ -64,7 +64,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signout = useCallback(async () => {
     const { error: e } = await supabase.auth.signOut();
-    if (e) setError(e);
+    if (e) {
+      setError(e);
+      return;
+    }
+    // Logging out always lands on the home page
+    window.location.assign("/");
   }, []);
 
   const value = useMemo<AuthState>(
