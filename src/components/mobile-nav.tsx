@@ -67,8 +67,8 @@ function NavLink({
       href={href}
       onClick={onNavigate}
       className={cn(
-        "flex items-center gap-3 rounded-[5px] px-3 py-1.5 text-lg text-white transition-colors hover:bg-white/5",
-        active && "bg-primary/20",
+        "flex items-center gap-3 rounded-[5px] px-3 py-1.5 text-lg text-white transition-colors hover:bg-[#151518]",
+        active && "bg-[#1f1336]",
       )}
     >
       <IconComponent className="size-5 shrink-0 text-violet-600" />
@@ -91,7 +91,7 @@ function ShopSection({
 }) {
   return (
     <Collapsible className="group/section">
-      <CollapsibleTrigger className="flex w-full cursor-pointer items-center gap-2 rounded-[5px] px-3 py-1.5 text-left text-base text-white transition-colors hover:bg-white/5">
+      <CollapsibleTrigger className="flex w-full cursor-pointer items-center gap-2 rounded-[5px] px-3 py-1.5 text-left text-base text-white transition-colors hover:bg-[#151518]">
         <ChevronRight className="size-4 shrink-0 text-violet-600 transition-transform group-data-[state=open]/section:rotate-90" />
         <span>{section.label}</span>
         <ChevronDown className="size-4 shrink-0 text-violet-600 transition-transform group-data-[state=open]/section:rotate-180" />
@@ -105,7 +105,7 @@ function ShopSection({
               <Link
                 href={href}
                 onClick={onNavigate}
-                className="mx-1.5 block rounded-[5px] px-4 py-2.5 text-base transition-colors hover:bg-white/5"
+                className="mx-1.5 block rounded-[5px] px-4 py-2.5 text-base transition-colors hover:bg-[#151518]"
               >
                 {l.label}
               </Link>
@@ -122,7 +122,7 @@ function AccountHeader({ onNavigate }: { onNavigate: () => void }) {
   const { isLoading, isAuthenticated } = useBackendAuth();
   const me = useQuery(api.users.menu, isAuthenticated ? {} : "skip");
   if (isLoading || (isAuthenticated && me === undefined)) {
-    return <div className="mx-auto size-[52px] animate-pulse rounded-[3px] bg-white/10" />;
+    return <div className="mx-auto size-[52px] animate-pulse rounded-[3px] bg-[#1f1f22]" />;
   }
   if (!me) {
     return (
@@ -215,7 +215,7 @@ function PremiumBanner({ onNavigate }: { onNavigate: () => void }) {
     <Link
       href="/pricing"
       onClick={onNavigate}
-      className="group flex items-center justify-center gap-2 py-2.5 text-base font-extrabold uppercase tracking-[0.04em] text-white transition-colors hover:bg-primary/20"
+      className="group flex items-center justify-center gap-2 py-2.5 text-base font-extrabold uppercase tracking-[0.04em] text-white transition-colors hover:bg-[#1f1336]"
     >
       <BadgeCheck className="size-5 text-violet-600" />
       Go Premium
@@ -254,7 +254,7 @@ export default function MobileNav() {
       <SheetContent
         side="left"
         showCloseButton={false}
-        className="flex w-[88vw] max-w-sm flex-col gap-0 overflow-y-auto border-white/[3%] bg-[#09090b]/90 p-0 data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]"
+        className="flex w-[88vw] max-w-sm flex-col gap-0 overflow-y-auto border-[#141417] bg-[#09090b] p-0 pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]"
       >
         <SheetTitle className="sr-only">Site menu</SheetTitle>
         <SheetDescription className="sr-only">
@@ -284,26 +284,26 @@ export default function MobileNav() {
           <AccountHeader onNavigate={close} />
         </div>
 
-        <Separator className="bg-white/25" />
+        <Separator className="bg-[#474749]" />
         <PremiumBanner onNavigate={close} />
-        <Separator className="bg-white/25" />
+        <Separator className="bg-[#474749]" />
 
         {isAuthenticated && (
           <>
             <AccountLinks onNavigate={close} />
-            <Separator className="bg-white/25" />
+            <Separator className="bg-[#474749]" />
           </>
         )}
         <FindLinks onNavigate={close} />
-        <Separator className="bg-white/25" />
+        <Separator className="bg-[#474749]" />
         <nav aria-label="Shop" className="flex flex-col gap-0.5 px-3 py-3">
           {SHOP_SECTIONS.map((s) => (
             <ShopSection key={s.label} section={s} onNavigate={close} />
           ))}
         </nav>
-        <Separator className="bg-white/25" />
+        <Separator className="bg-[#474749]" />
         <SupportLinks onNavigate={close} />
-        <Separator className="bg-white/25" />
+        <Separator className="bg-[#474749]" />
 
         <div className="px-4 py-4">
           {isAuthenticated ? (
