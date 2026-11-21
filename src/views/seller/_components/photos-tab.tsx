@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Heart, ImagePlus, MessageCircle, Send, Trash2, UserRound } from "lucide-react";
+import { Heart, ImagePlus, MessageCircle, Send, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import ZoomImage from "@/components/zoom-image.tsx";
 import { useBackendAuth, useMutation, usePaginatedQuery, useQuery } from "@/lib/backend/react.tsx";
@@ -27,6 +27,9 @@ import {
 import LikerAvatars from "@/views/home/_components/liker-avatars.tsx";
 import { shortAge } from "@/views/home/_lib/feed.ts";
 import AddImageDialog from "./add-image-dialog.tsx";
+import PostComments from "@/views/home/_components/post-comments.tsx";
+import ProfileAvatar from "@/components/profile-avatar.tsx";
+import Link from "next/link";
 import { Frame, SANS, SERIF, SectionTitle, imagesLabel } from "../_lib/profile-design.tsx";
 
 type Photo = FunctionReturnType<typeof api.users.photosByUser>["page"][number];
@@ -39,96 +42,122 @@ type CommentRow = {
   author: { _id: Id<"users">; name: string; avatarUrl: string | null };
 };
 
-/** Comments on one photo: profile photos have their own, photos on a post use the post's. */
+/** Same look as the activity feed's comments: comment box with avatar on top, then grey comment bubbles. */
+const COMMENT_BOX = "comment-surface rounded-[5px] bg-background shadow-[inset_0_3px_8px_rgba(0,0,0,0.28),inset_0_0_3px_rgba(0,0,0,0.28)]";
+
+/** Comments on one photo, styled like the feed. Photos on a post use the feed's own comments (with replies and likes). */
 function CommentsPanel({ photo }: { photo: Photo }) {
+  if (photo.postId) return <PostComments postId={photo.postId} className="mt-1.5" />;
+  return <OwnPhotoComments photo={photo} />;
+}
+
+/** Profile-photo comments (no replies or comment likes on the backend), drawn with the feed's styles. */
+function OwnPhotoComments({ photo }: { photo: Photo }) {
   const { isAuthenticated } = useBackendAuth();
-  const own = useQuery(api.photos.comments, photo.photoId ? { photoId: photo.photoId } : "skip");
-  const post = usePaginatedQuery(
-    api.posts.listComments,
-    photo.postId ? { postId: photo.postId } : "skip",
-    { initialNumItems: 30 },
-  );
-  const addOwn = useMutation(api.photos.addComment);
-  const addPost = useMutation(api.posts.addComment);
+  const rows = useQuery(api.photos.comments, photo.photoId ? { photoId: photo.photoId } : "skip") as CommentRow[] | undefined;
+  const me = useQuery(api.users.menu, isAuthenticated ? {} : "skip");
+  const add = useMutation(api.photos.addComment);
   const removeOwn = useMutation(api.photos.removeComment);
-  const removePost = useMutation(api.posts.removeComment);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
+  const [shown, setShown] = useState(3);
 
-  const rows: CommentRow[] | undefined = photo.photoId ? own : post.status === "LoadingFirstPage" ? undefined : post.results;
-
-  const submit = async () => {
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
     const body = text.trim();
-    if (!body) return;
+    if (!body || !photo.photoId) return;
     setBusy(true);
     try {
-      if (photo.photoId) await addOwn({ photoId: photo.photoId, body });
-      else if (photo.postId) await addPost({ postId: photo.postId, body });
+      await add({ photoId: photo.photoId, body });
       setText("");
-    } catch (e) {
-      toast.error(getErrorMessage(e, "Could not post comment"));
+    } catch (err) {
+      toast.error(getErrorMessage(err, "Could not comment"));
     } finally {
       setBusy(false);
     }
   };
-  const remove = async (id: string) => {
-    try {
-      if (photo.photoId) await removeOwn({ commentId: id as Id<"photoComments"> });
-      else await removePost({ commentId: id as Id<"postComments"> });
-    } catch (e) {
-      toast.error(getErrorMessage(e, "Could not delete comment"));
-    }
-  };
+  const remove = (id: string) =>
+    removeOwn({ commentId: id as Id<"photoComments"> }).catch((e) => toast.error(getErrorMessage(e, "Could not delete")));
 
   return (
-    <div className="flex flex-col gap-3 px-1 pb-1">
-        <div className="flex max-h-[320px] flex-col gap-4 overflow-y-auto">
-          {rows === undefined ? (
-            <Skeleton className="h-24 w-full" />
-          ) : rows.length === 0 ? (
-            <p className="text-sm text-white">No comments yet.</p>
-          ) : (
-            rows.map((c) => (
-              <div key={c._id} className="flex gap-3">
-                <span className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-[5px] bg-[#a8a9ae]">
-                  {c.author.avatarUrl ? (
-                    <img src={c.author.avatarUrl} alt="" className="size-full object-cover" />
-                  ) : (
-                    <UserRound className="size-6 text-[#2a2a2e]" strokeWidth={1.5} />
-                  )}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="flex items-baseline gap-2 text-[13px]">
-                    <span className="truncate text-[#7b3aec]">{c.author.name}</span>
-                    <span className="text-xs text-white">{shortAge(c._creationTime)}</span>
-                  </p>
-                  <p className="mt-0.5 whitespace-pre-wrap break-words text-[13px] text-white">{c.body}</p>
-                </div>
-                {c.canDelete && (
-                  <Button type="button" variant="ghost" size="icon-xs" aria-label="Delete comment" onClick={() => remove(c._id)} className="cursor-pointer">
-                    <Trash2 className="size-3.5" />
-                  </Button>
-                )}
-              </div>
-            ))
-          )}
-        </div>
-        {isAuthenticated ? (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              void submit();
-            }}
-            className="flex gap-2"
-          >
-            <Input value={text} onChange={(e) => setText(e.target.value)} maxLength={500} placeholder="Add a comment" className="h-10" />
-            <Button type="submit" size="icon" disabled={busy || !text.trim()} aria-label="Send comment" className="cursor-pointer bg-[#7b3aec] text-white hover:bg-[#8a4ff0]">
-              <Send className="size-4" />
+    <div className="mt-1.5 flex flex-col gap-5">
+      {isAuthenticated ? (
+        <div className="flex items-center gap-1.5">
+          <ProfileAvatar name={me?.name ?? "?"} url={me?.avatarUrl ?? null} className="size-[31px] rounded-full bg-[#a8a9ae] text-sm text-[#2a2a2e]" />
+          <form onSubmit={submit} className="relative min-w-0 flex-1">
+            <Input
+              value={text}
+              maxLength={500}
+              placeholder="Add a comment..."
+              aria-label="Add a comment..."
+              onChange={(e) => setText(e.target.value)}
+              className={cn(COMMENT_BOX, "h-9 w-full border-0 pl-4 pr-10 text-[13px] text-white outline-none placeholder:text-white/70")}
+            />
+            <Button
+              variant="plain"
+              size="none"
+              type="submit"
+              aria-label="Send"
+              disabled={!text.trim() || busy}
+              className="absolute right-2 top-1/2 flex size-7 -translate-y-1/2 cursor-pointer items-center justify-center text-violet-600 disabled:cursor-default"
+            >
+              {busy ? <Spinner /> : <Send className="size-4" />}
             </Button>
           </form>
-        ) : (
-          <p className="text-sm text-white">Sign in to comment.</p>
-        )}
+        </div>
+      ) : (
+        <p className="text-[13px] text-white">
+          <Link href="/signin" className="cursor-pointer text-violet-600 hover:underline">
+            Sign in
+          </Link>{" "}
+          to comment.
+        </p>
+      )}
+      {rows === undefined ? (
+        <Skeleton className="h-20 w-full" />
+      ) : rows.length > 0 ? (
+        <>
+          <ul className="flex flex-col gap-4">
+            {rows.slice(0, shown).map((c) => {
+              const profile = `/seller/${c.author._id}`;
+              return (
+                <li key={c._id} className="flex gap-1.5">
+                  <Link href={profile} className="h-fit shrink-0 cursor-pointer">
+                    <ProfileAvatar name={c.author.name} url={c.author.avatarUrl} className="size-[31px] rounded-full bg-[#a8a9ae] text-sm text-[#2a2a2e]" />
+                  </Link>
+                  <div className={cn(COMMENT_BOX, "flex min-h-[84px] min-w-0 flex-1 flex-col gap-1 px-[15px] py-2.5")}>
+                    <div className="flex items-start justify-between gap-3">
+                      <Link href={profile} className="cursor-pointer truncate text-[13px] text-white hover:underline">
+                        {c.author.name}
+                      </Link>
+                      <span className="flex shrink-0 items-center gap-2 text-[10px] text-white">
+                        <span title={new Date(c._creationTime).toLocaleString()}>{shortAge(c._creationTime)}</span>
+                        {c.canDelete && (
+                          <Button variant="plain" size="none" type="button" aria-label="Delete comment" onClick={() => remove(c._id)} className="cursor-pointer hover:text-red-500">
+                            <Trash2 className="size-3" />
+                          </Button>
+                        )}
+                      </span>
+                    </div>
+                    <p className="whitespace-pre-wrap break-words text-[13px] leading-5 text-white">{c.body}</p>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+          {rows.length > shown && (
+            <Button
+              variant="plain"
+              size="none"
+              type="button"
+              onClick={() => setShown((n) => n + 10)}
+              className="flex cursor-pointer items-center gap-1.5 self-start pl-[37px] text-[13px] text-white transition-colors hover:text-white"
+            >
+              View more comments
+            </Button>
+          )}
+        </>
+      ) : null}
     </div>
   );
 }
