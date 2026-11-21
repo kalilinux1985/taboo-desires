@@ -647,3 +647,45 @@ export const search = query({
     );
   },
 });
+
+/**
+ * Member directory for the Find Sellers / Find Buyers pages: newest members of
+ * one account type, optionally filtered by name. Hides the signed-in member and
+ * anyone blocked either way.
+ */
+export const findMembers = query({
+  args: { accountType: v.union(v.literal("seller"), v.literal("buyer")), search: opt },
+  handler: async (ctx, { accountType, search: text }) => {
+    const me = await getCurrentUserDoc(ctx);
+    const term = (text ?? "").trim().slice(0, 60);
+    const pattern = term ? `%${term.replace(/[\\%_]/g, (c) => `\\${c}`)}%` : null;
+    const rows = await ctx.db.rows(sql`
+      select u.id, coalesce(nullif(u.shop_name, ''), u.name) as display_name,
+             u.avatar_storage_id, u.verified
+        from public.users u
+       where u.account_type = ${accountType}
+         and coalesce(nullif(u.shop_name, ''), u.name) is not null
+         ${pattern ? sql`and coalesce(nullif(u.shop_name, ''), u.name) ilike ${pattern}` : empty}
+         ${
+           me
+             ? sql`and u.id <> ${me._id}::uuid
+                   and not exists (
+                     select 1 from public.blocks b
+                      where (b.blocker_id = ${me._id}::uuid and b.blocked_id = u.id)
+                         or (b.blocker_id = u.id and b.blocked_id = ${me._id}::uuid))`
+             : empty
+         }
+       order by u.verified desc, u.created_at desc
+       limit 48`);
+    return await Promise.all(
+      rows.map(async (r) => ({
+        _id: r.id as Id<"users">,
+        name: r.display_name as string,
+        verified: !!r.verified,
+        avatarUrl: r.avatar_storage_id
+          ? await ctx.storage.getUrl(r.avatar_storage_id as Id<"_storage">)
+          : null,
+      })),
+    );
+  },
+});

@@ -69,3 +69,29 @@ export const toggle = mutation({
     return true;
   },
 });
+
+/** Members the signed-in user has blocked, newest first. */
+export const list = query({
+  args: {},
+  handler: async (ctx) => {
+    const me = await getCurrentUserDoc(ctx);
+    if (!me) return [];
+    const rows = await ctx.db.rows(sql`
+      select u.id, coalesce(nullif(u.shop_name, ''), u.name, 'Member') as display_name,
+             u.avatar_storage_id
+        from public.blocks b
+        join public.users u on u.id = b.blocked_id
+       where b.blocker_id = ${me._id}::uuid
+       order by b.created_at desc
+       limit 200`);
+    return await Promise.all(
+      rows.map(async (r) => ({
+        _id: r.id as Id<"users">,
+        name: r.display_name as string,
+        avatarUrl: r.avatar_storage_id
+          ? await ctx.storage.getUrl(r.avatar_storage_id as Id<"_storage">)
+          : null,
+      })),
+    );
+  },
+});
