@@ -34,15 +34,20 @@ export const FILLED_ACTION = cn(
 export const OUTLINED_ACTION =
   "inline-flex h-[29px] cursor-pointer items-center justify-center rounded-[5px] border-2 border-[#5e2faf] text-[#7b3aec] transition-colors hover:bg-[#7b3aec] hover:text-white";
 
-/** Page background and the two-column grid: picture | header, picture | tabs, about | content. */
-export function ProfilePage({ children }: { children: ReactNode }) {
+/**
+ * Page background and the two-column grid: picture | header, picture | tabs, then
+ * about | content. With `wide`, the content spans both columns (Shop and Photos)
+ * and there's no About column, but the picture and header card stay on top.
+ */
+export function ProfilePage({ children, wide = false }: { children: ReactNode; wide?: boolean }) {
   return (
     <div className="profile-design min-h-[calc(100dvh-3.5rem)] bg-[#0C0F15]">
       <div
         className={cn(
-          "mx-auto grid max-w-[1170px] gap-5 px-5 py-8 lg:py-[97px]",
-          "[grid-template-areas:'avatar'_'header'_'about'_'tabs'_'content']",
-          "lg:grid-cols-[minmax(0,445fr)_minmax(0,665fr)] lg:grid-rows-[1fr_auto_auto] lg:[grid-template-areas:'avatar_header'_'avatar_tabs'_'about_content']",
+          "mx-auto grid max-w-[1170px] gap-5 px-5 py-6",
+          wide
+            ? "[grid-template-areas:'avatar'_'header'_'tabs'_'content'] lg:grid-cols-[minmax(0,445fr)_minmax(0,665fr)] lg:grid-rows-[1fr_auto_auto] lg:[grid-template-areas:'avatar_header'_'avatar_tabs'_'content_content']"
+            : "[grid-template-areas:'avatar'_'header'_'about'_'tabs'_'content'] lg:grid-cols-[minmax(0,445fr)_minmax(0,665fr)] lg:grid-rows-[1fr_auto_auto] lg:[grid-template-areas:'avatar_header'_'avatar_tabs'_'about_content']",
         )}
       >
         {children}
