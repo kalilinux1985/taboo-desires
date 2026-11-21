@@ -2244,6 +2244,7 @@ __export(listings_exports, {
   create: () => create2,
   generateUploadUrl: () => generateUploadUrl,
   get: () => get,
+  landingCounts: () => landingCounts,
   listingStatusValidator: () => listingStatusValidator,
   mediaKindValidator: () => mediaKindValidator,
   remove: () => remove2,
@@ -3721,6 +3722,28 @@ var bySeller = query({
     return {
       ...result,
       page: await Promise.all(result.page.map((l) => toCard(ctx, l)))
+    };
+  }
+});
+var landingCounts = query({
+  args: {},
+  handler: async (ctx) => {
+    ctx.db.touch("listings");
+    const [row] = await ctx.db.rows(sql`
+      select
+        count(*) filter (where category in ('panties', 'bras', 'lingerie') and paywall is null)::int as underwear,
+        count(*) filter (where category = 'shoes' and paywall is null)::int as shoes,
+        count(*) filter (where category = 'socks' and paywall is null)::int as hosiery,
+        count(*) filter (where category in ('clothing', 'activewear') and paywall is null)::int as clothing,
+        count(*) filter (where paywall is not null)::int as instant
+      from public.listings where status = 'active'`);
+    const n = (k) => Number(row?.[k] ?? 0);
+    return {
+      underwear: n("underwear"),
+      shoes: n("shoes"),
+      hosiery: n("hosiery"),
+      clothing: n("clothing"),
+      instant: n("instant")
     };
   }
 });
