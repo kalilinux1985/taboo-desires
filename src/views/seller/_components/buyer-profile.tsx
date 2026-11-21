@@ -10,6 +10,7 @@ import { settingsPathFor } from "@/lib/settings.ts";
 import { cn } from "@/lib/utils.ts";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { BUYER_PHOTO_MAX } from "@/shared/accounts.ts";
+import { ShopHeader } from "./shop-tab.tsx";
 import { PhotosTab } from "./photos-tab.tsx";
 import BuyerReviews from "./buyer-reviews.tsx";
 import MessageSellerButton from "./message-seller-dialog.tsx";
@@ -117,27 +118,26 @@ export default function BuyerProfile({ profile }: { profile: Profile }) {
     { value: "reviews", label: "Reviews" },
   ];
 
-  const wide = tab === "photos";
-  // Switching tabs jumps back to the top so the info card is always in view
-  const changeTab = (next: Tab) => {
-    setTab(next);
-    window.scrollTo({ top: 0 });
-  };
-
-  return (
-    <ProfilePage wide={wide}>
-      <ProfilePicture url={profile.avatarUrl} name={profile.name} />
-      <Header profile={profile} />
-      <ProfileTabBar
-        tabs={tabs}
-        value={tab}
-        onChange={changeTab}
-        trailing={!profile.isMe ? <ProfileMenu userId={profile._id} targetType="buyer" /> : undefined}
-      />
-      {!wide && <About profile={profile} />}
-
-      {tab === "photos" && (
-        <div className="min-w-0 [grid-area:content]">
+  // The Photos tab is full width: small header, tab bar, then the photo grid
+  if (tab === "photos") {
+    const written = profile.reviewsWritten ?? { count: 0, average: 0 };
+    return (
+      <div className="profile-design min-h-[calc(100dvh-3.5rem)] bg-[#0C0F15]">
+        <div className="mx-auto flex max-w-[1170px] flex-col gap-[22px] px-5 py-6">
+          <ShopHeader
+            name={profile.name}
+            avatarUrl={profile.avatarUrl}
+            rating={written.average}
+            reviewCount={written.count}
+            verified={profile.verified}
+            onReviews={() => setTab("reviews")}
+          />
+          <ProfileTabBar
+            tabs={tabs}
+            value={tab}
+            onChange={setTab}
+            trailing={!profile.isMe ? <ProfileMenu userId={profile._id} targetType="buyer" /> : undefined}
+          />
           <PhotosTab
             userId={profile._id}
             isMe={profile.isMe}
@@ -146,10 +146,19 @@ export default function BuyerProfile({ profile }: { profile: Profile }) {
             limit={BUYER_PHOTO_MAX}
           />
         </div>
-      )}
+      </div>
+    );
+  }
+
+  return (
+    <ProfilePage>
+      <ProfilePicture url={profile.avatarUrl} name={profile.name} />
+      <Header profile={profile} />
+      <ProfileTabBar tabs={tabs} value={tab} onChange={setTab} />
+      <About profile={profile} />
 
       {tab === "overview" && (
-        <PhotosOverview userId={profile._id} count={profile.counts.photos} onOpen={() => changeTab("photos")} />
+        <PhotosOverview userId={profile._id} count={profile.counts.photos} onOpen={() => setTab("photos")} />
       )}
       {tab === "reviews" && (
         <Frame className="[grid-area:content]" innerClassName="flex flex-col gap-6 px-[22px] py-[28px] lg:min-h-[345px]">
