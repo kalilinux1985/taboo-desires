@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/empty.tsx";
 import RequireAuth from "@/components/require-auth.tsx";
 import SellerListings from "@/components/seller-listings.tsx";
-import { ShopTab } from "./_components/shop-tab.tsx";
+import { ShopHeader, ShopTab } from "./_components/shop-tab.tsx";
 import { PhotosTab } from "./_components/photos-tab.tsx";
 import ProfileMenu from "./_components/profile-menu.tsx";
 import SellerReviews from "./_components/seller-reviews.tsx";
@@ -40,11 +40,6 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
   const access = useQuery(api.users.profileAccess, { userId: sellerId });
   const [tab, setTab] = useState<Tab>("overview");
   useRecordProfileVisit(sellerId);
-  // Switching tabs jumps back to the top so the info card is always in view
-  const changeTab = (next: Tab) => {
-    setTab(next);
-    window.scrollTo({ top: 0 });
-  };
 
   if (profile === undefined || (profile === null && access === undefined)) {
     return (
@@ -91,36 +86,54 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
     { value: "reviews", label: "Reviews" },
   ];
 
-  const wide = tab === "shop" || tab === "photos";
-  const menu = !profile.isMe ? <ProfileMenu userId={profile._id} targetType="seller" /> : undefined;
+  // The Shop and Photos tabs are full width: small header, tab bar, then the tab's grid
+  if (tab === "shop" || tab === "photos") {
+    return (
+      <div className="profile-design min-h-[calc(100dvh-3.5rem)] bg-[#0C0F15]">
+        <div className="mx-auto flex max-w-[1170px] flex-col gap-[22px] px-5 py-6">
+          <ShopHeader
+            name={profile.name}
+            avatarUrl={profile.avatarUrl}
+            rating={profile.stats.rating}
+            reviewCount={profile.stats.reviewCount}
+            verified={profile.verified}
+            onReviews={() => setTab("reviews")}
+          />
+          <ProfileTabBar
+            tabs={tabs}
+            value={tab}
+            onChange={setTab}
+            trailing={!profile.isMe ? <ProfileMenu userId={profile._id} targetType="seller" /> : undefined}
+          />
+          {tab === "shop" ? (
+            <ShopTab sellerId={profile._id} total={profile.counts.listings} isMe={profile.isMe} />
+          ) : (
+            <PhotosTab userId={profile._id} isMe={profile.isMe} total={profile.counts.photos} />
+          )}
+        </div>
+      </div>
+    );
+  }
 
-  // Every tab keeps the picture and info card at the top, right under the navbar.
-  // Shop and Photos use the full width below it; the others keep the About column.
   return (
-    <ProfilePage wide={wide}>
+    <ProfilePage>
       <ProfilePicture url={profile.avatarUrl} name={profile.name} />
-      <ProfileHeaderCard profile={profile} onReviews={() => changeTab("reviews")} />
-      <ProfileTabBar tabs={tabs} value={tab} onChange={changeTab} trailing={menu} />
-      {!wide && <SellerAbout profile={profile} />}
+      <ProfileHeaderCard profile={profile} onReviews={() => setTab("reviews")} />
+      <ProfileTabBar tabs={tabs} value={tab} onChange={setTab} />
+      <SellerAbout profile={profile} />
 
       <div className="flex min-w-0 flex-col gap-5 [grid-area:content]">
         {tab === "overview" && (
           <>
-            <ShopSection sellerId={profile._id} count={profile.counts.listings} onViewAll={() => changeTab("shop")} />
+            <ShopSection sellerId={profile._id} count={profile.counts.listings} onViewAll={() => setTab("shop")} />
             <InstantSection
               sellerId={profile._id}
               count={profile.counts.instantContent}
-              onViewAll={() => changeTab("instant")}
+              onViewAll={() => setTab("instant")}
             />
-            <PhotosSection userId={profile._id} count={profile.counts.photos} onViewAll={() => changeTab("photos")} />
+            <PhotosSection userId={profile._id} count={profile.counts.photos} onViewAll={() => setTab("photos")} />
             <ActivitySection authorId={profile._id} />
           </>
-        )}
-        {tab === "shop" && (
-          <ShopTab sellerId={profile._id} total={profile.counts.listings} isMe={profile.isMe} />
-        )}
-        {tab === "photos" && (
-          <PhotosTab userId={profile._id} isMe={profile.isMe} total={profile.counts.photos} />
         )}
         {tab === "instant" && (
           <ProfilePanel title="Instant Content" count={`${profile.counts.instantContent} Items`}>
