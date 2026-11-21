@@ -1485,6 +1485,7 @@ var blocks_exports = {};
 __export(blocks_exports, {
   assertNotBlocked: () => assertNotBlocked,
   isBlocked: () => isBlocked,
+  list: () => list,
   toggle: () => toggle
 });
 
@@ -1586,6 +1587,28 @@ var toggle = mutation({
       if (f.status === "accepted") await bumpStats(ctx, followed, { followerCount: -1 });
     }
     return true;
+  }
+});
+var list = query({
+  args: {},
+  handler: async (ctx) => {
+    const me = await getCurrentUserDoc(ctx);
+    if (!me) return [];
+    const rows = await ctx.db.rows(sql`
+      select u.id, coalesce(nullif(u.shop_name, ''), u.name, 'Member') as display_name,
+             u.avatar_storage_id
+        from public.blocks b
+        join public.users u on u.id = b.blocked_id
+       where b.blocker_id = ${me._id}::uuid
+       order by b.created_at desc
+       limit 200`);
+    return await Promise.all(
+      rows.map(async (r) => ({
+        _id: r.id,
+        name: r.display_name,
+        avatarUrl: r.avatar_storage_id ? await ctx.storage.getUrl(r.avatar_storage_id) : null
+      }))
+    );
   }
 });
 
@@ -2206,7 +2229,7 @@ __export(customRequests_exports, {
   assertCanAct: () => assertCanAct,
   assertPrice: () => assertPrice,
   create: () => create3,
-  list: () => list2,
+  list: () => list3,
   partyOf: () => partyOf,
   respond: () => respond
 });
@@ -2247,7 +2270,7 @@ __export(orders_exports, {
   forListing: () => forListing2,
   getOrderAs: () => getOrderAs,
   getSavedAddress: () => getSavedAddress,
-  list: () => list,
+  list: () => list2,
   liveOrderForListing: () => liveOrderForListing,
   myAddresses: () => myAddresses,
   saveAddress: () => saveAddress,
@@ -2839,7 +2862,7 @@ async function toView(ctx, o, role) {
     deliveredAt: o.deliveredAt ?? null
   };
 }
-var list = query({
+var list2 = query({
   args: { role: roleValidator, paginationOpts: paginationOptsValidator },
   handler: async (ctx, { role, paginationOpts }) => {
     const me = await getCurrentUserDoc(ctx);
@@ -4033,7 +4056,7 @@ var respond = mutation({
     return null;
   }
 });
-var list2 = query({
+var list3 = query({
   args: { role: partyValidator, paginationOpts: paginationOptsValidator },
   handler: async (ctx, { role, paginationOpts }) => {
     const me = await getCurrentUserDoc(ctx);
@@ -4565,7 +4588,7 @@ var listMessages = query({
 // supabase/functions/_shared/modules/notifications.ts
 var notifications_exports = {};
 __export(notifications_exports, {
-  list: () => list3,
+  list: () => list4,
   markSeen: () => markSeen,
   unreadCount: () => unreadCount2
 });
@@ -4686,7 +4709,7 @@ async function seenAt(ctx, userId) {
   const value = row?.notifications_seen_at;
   return value ? new Date(value).getTime() : 0;
 }
-var list3 = query({
+var list4 = query({
   args: {},
   handler: async (ctx) => {
     const me = await getCurrentUserDoc(ctx);
@@ -6064,6 +6087,7 @@ var users_exports = {};
 __export(users_exports, {
   addProfilePhoto: () => addProfilePhoto,
   buyerDetailsValidator: () => buyerDetailsValidator,
+  findMembers: () => findMembers,
   finishSignup: () => finishSignup,
   getCurrentUser: () => getCurrentUser,
   getProfile: () => getProfile,
@@ -6517,7 +6541,7 @@ var updateSettings = mutation({
     }
     const problem = invalidSetting(settings);
     if (problem) throw new AppError({ code: "BAD_REQUEST", message: problem });
-    const unique = (list4) => list4 ? [...new Set(list4)] : void 0;
+    const unique = (list5) => list5 ? [...new Set(list5)] : void 0;
     const next = { ...user.settings };
     for (const [key, value] of Object.entries(settings)) {
       if (value !== void 0) next[key] = value;
@@ -6645,6 +6669,36 @@ var search = query({
          and coalesce(nullif(shop_name, ''), name) ilike ${pattern}
        order by verified desc, created_at desc
        limit 8`);
+    return await Promise.all(
+      rows.map(async (r) => ({
+        _id: r.id,
+        name: r.display_name,
+        verified: !!r.verified,
+        avatarUrl: r.avatar_storage_id ? await ctx.storage.getUrl(r.avatar_storage_id) : null
+      }))
+    );
+  }
+});
+var findMembers = query({
+  args: { accountType: v.union(v.literal("seller"), v.literal("buyer")), search: opt },
+  handler: async (ctx, { accountType, search: text }) => {
+    const me = await getCurrentUserDoc(ctx);
+    const term = (text ?? "").trim().slice(0, 60);
+    const pattern = term ? `%${term.replace(/[\\%_]/g, (c2) => `\\${c2}`)}%` : null;
+    const rows = await ctx.db.rows(sql`
+      select u.id, coalesce(nullif(u.shop_name, ''), u.name) as display_name,
+             u.avatar_storage_id, u.verified
+        from public.users u
+       where u.account_type = ${accountType}
+         and coalesce(nullif(u.shop_name, ''), u.name) is not null
+         ${pattern ? sql`and coalesce(nullif(u.shop_name, ''), u.name) ilike ${pattern}` : empty}
+         ${me ? sql`and u.id <> ${me._id}::uuid
+                   and not exists (
+                     select 1 from public.blocks b
+                      where (b.blocker_id = ${me._id}::uuid and b.blocked_id = u.id)
+                         or (b.blocker_id = u.id and b.blocked_id = ${me._id}::uuid))` : empty}
+       order by u.verified desc, u.created_at desc
+       limit 48`);
     return await Promise.all(
       rows.map(async (r) => ({
         _id: r.id,
