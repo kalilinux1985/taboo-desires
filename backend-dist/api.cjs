@@ -394,6 +394,35 @@ var TABLES = {
     columns: {
       conversationId: c("conversation_id", "uuid"),
       senderId: c("sender_id", "uuid"),
+      body: c("body"),
+      contractId: c("contract_id", "uuid")
+    }
+  },
+  contracts: {
+    sqlName: "contracts",
+    columns: {
+      conversationId: c("conversation_id", "uuid"),
+      sellerId: c("seller_id", "uuid"),
+      buyerId: c("buyer_id", "uuid"),
+      listingId: c("listing_id", "uuid"),
+      itemTitle: c("item_title"),
+      itemUrl: c("item_url"),
+      totalCents: c("total_cents", "int"),
+      paymentCount: c("payment_count", "int"),
+      paymentMethod: c("payment_method"),
+      schedule: c("schedule", "json"),
+      terms: c("terms"),
+      status: c("status"),
+      respondedAt: c("responded_at", "ts"),
+      orderId: c("order_id", "uuid"),
+      updatedAt: c("updated_at", "ts")
+    }
+  },
+  contractComments: {
+    sqlName: "contract_comments",
+    columns: {
+      contractId: c("contract_id", "uuid"),
+      authorId: c("author_id", "uuid"),
       body: c("body")
     }
   },
@@ -418,7 +447,9 @@ var TABLES = {
       labelCreatedAt: c("label_created_at", "ts"),
       shippedAt: c("shipped_at", "ts"),
       deliveredAt: c("delivered_at", "ts"),
-      updatedAt: c("updated_at", "ts")
+      updatedAt: c("updated_at", "ts"),
+      contractId: c("contract_id", "uuid"),
+      trackingUpdatedAt: c("tracking_updated_at", "ts")
     }
   },
   shippingAddresses: {
@@ -1889,89 +1920,211 @@ var removeComment = mutation({
   args: { commentId: v.id("photoComments") },
   handler: async (ctx, { commentId }) => {
     const me = await requireUser(ctx);
-    const comment = await ctx.db.get("photoComments", commentId);
-    if (!comment) return null;
-    if (comment.authorId !== me._id && me.role !== "admin")
+    const comment2 = await ctx.db.get("photoComments", commentId);
+    if (!comment2) return null;
+    if (comment2.authorId !== me._id && me.role !== "admin")
       throw new AppError({ code: "FORBIDDEN", message: "You can't delete this comment" });
     await ctx.db.delete("photoComments", commentId);
     return null;
   }
 });
 
-// supabase/functions/_shared/modules/auctions.ts
-var auctions_exports = {};
-__export(auctions_exports, {
-  closeDue: () => closeDue,
-  endingSoon: () => endingSoon,
-  forListing: () => forListing,
-  placeBid: () => placeBid,
-  relist: () => relist
+// supabase/functions/_shared/modules/contracts.ts
+var contracts_exports = {};
+__export(contracts_exports, {
+  cancel: () => cancel2,
+  comment: () => comment,
+  create: () => create2,
+  get: () => get,
+  myListings: () => myListings,
+  respond: () => respond,
+  view: () => view
 });
 
-// supabase/functions/_shared/lib/auctionState.ts
-async function getAuctionByListing(ctx, listingId) {
-  return await ctx.db.first(
-    "auctions",
-    sql`where listing_id = ${listingId}::uuid`
-  );
+// supabase/functions/_shared/domain/sellerSettings.ts
+var PAYMENT_METHODS = [
+  "PayPal",
+  "Cash App",
+  "Venmo",
+  "Zelle",
+  "Bank transfer",
+  "Wise",
+  "Revolut",
+  "Crypto",
+  "Gift cards"
+];
+var OFFERINGS = [
+  "Used panties",
+  "Used bras",
+  "Used lingerie",
+  "Used socks & hosiery",
+  "Used shoes",
+  "Used gym clothes",
+  "Used clothing",
+  "Used sex toys",
+  "Photo sets",
+  "Video clips",
+  "Feet pics",
+  "Custom requests",
+  "Sexting",
+  "Dick ratings",
+  "Experiences"
+];
+var YES_NO = [
+  { value: "yes", label: "Yes" },
+  { value: "no", label: "No" }
+];
+var SETTING_FIELDS = [
+  {
+    key: "profilePrivate",
+    label: "Set Profile to Private",
+    choices: [
+      { value: "no", label: "No - Keep my profile visible" },
+      { value: "yes", label: "Yes - Make my profile private" }
+    ],
+    defaultValue: "no",
+    hint: "A private profile can only be seen by you. Everyone else sees that it's private. Your listings can still be found and bought."
+  },
+  {
+    key: "siteVisibility",
+    label: "Site Visibility",
+    choices: [
+      { value: "all", label: "All our sites - Maximise sales potential" },
+      { value: "this", label: "This site only" }
+    ],
+    defaultValue: "all",
+    hint: "Select whether your profile appears on all our sister sites or only on this one.",
+    comingSoon: true
+  },
+  {
+    key: "emailNotifications",
+    label: "Platform Email Notifications",
+    choices: YES_NO,
+    defaultValue: "yes",
+    hint: "Get some platform notifications by email, for example when you receive a message. To reduce spam, we only send you a new email notification once every 6 hours.",
+    comingSoon: true
+  },
+  {
+    key: "marketingEmails",
+    label: "Marketing Emails",
+    choices: YES_NO,
+    defaultValue: "no",
+    hint: "Get promotional emails such as newsletters, offers and information about new product features."
+  },
+  {
+    key: "webPush",
+    label: "Web Push Notifications",
+    choices: YES_NO,
+    defaultValue: "no",
+    hint: "Get instant notifications in your browser.",
+    comingSoon: true
+  },
+  {
+    key: "messagesFrom",
+    label: "Receive Messages From All Buyers",
+    choices: [
+      { value: "all", label: "Yes - Allow messages from all buyers" },
+      { value: "existing", label: "No - Only buyers already talking to me" }
+    ],
+    defaultValue: "all",
+    hint: "Choose No to stop new conversations. Buyers you're already talking to can still message you."
+  },
+  {
+    key: "socialFeature",
+    label: "Be Featured on our Social Media",
+    choices: [
+      { value: "no", label: "No - I do not want extra exposure" },
+      { value: "yes", label: "Yes - Feature me for extra exposure" }
+    ],
+    defaultValue: "no",
+    hint: "Get more exposure by being featured on our social media platforms."
+  }
+];
+function withDefaults(settings) {
+  const out = { paymentMethods: settings?.paymentMethods ?? [], offerings: settings?.offerings ?? [] };
+  for (const f of SETTING_FIELDS) {
+    out[f.key] = settings?.[f.key] ?? f.defaultValue;
+  }
+  return out;
 }
-async function createAuction(ctx, args) {
-  const endsAtMs = ctx.now() + args.durationHours * 60 * 60 * 1e3;
-  return await ctx.db.insert("auctions", {
-    listingId: args.listingId,
-    sellerId: args.sellerId,
-    startingBidCents: args.startingBidCents,
-    currentBidCents: args.startingBidCents,
-    bidCount: 0,
-    endsAt: new Date(endsAtMs).toISOString(),
-    status: "live"
-  });
+function invalidSetting(settings) {
+  for (const f of SETTING_FIELDS) {
+    const value = settings[f.key];
+    if (value !== void 0 && !f.choices.some((c2) => c2.value === value))
+      return `Invalid choice for ${f.label}`;
+  }
+  const lists = [
+    ["payment method", PAYMENT_METHODS, settings.paymentMethods],
+    ["offering", OFFERINGS, settings.offerings]
+  ];
+  for (const [name, allowed, chosen] of lists) {
+    if (chosen?.some((x) => !allowed.includes(x))) return `Invalid ${name}`;
+  }
+  return null;
+}
+var acceptsNewMessages = (settings) => (settings?.messagesFrom ?? "all") !== "existing";
+
+// supabase/functions/_shared/lib/email.ts
+var SITE_FALLBACK = "https://taboo-desires.vercel.app";
+function siteUrl() {
+  const deno = globalThis.Deno;
+  return (deno?.env.get("SITE_URL")?.trim() || SITE_FALLBACK).replace(/\/+$/, "");
+}
+var esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+function renderEmail(opts) {
+  const url = opts.button ? `${siteUrl()}${opts.button.path}` : null;
+  const html = `<!doctype html><html><body style="margin:0;background:#0C0F15;padding:24px;font-family:Arial,Helvetica,sans-serif;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
+<table role="presentation" width="480" cellpadding="0" cellspacing="0" style="max-width:480px;background:#202227;border-radius:5px;padding:28px;">
+<tr><td style="color:#ffffff;font-size:20px;font-weight:bold;padding-bottom:12px;">${esc(opts.heading)}</td></tr>
+${opts.lines.map((l) => `<tr><td style="color:#ffffff;font-size:14px;line-height:1.6;padding-bottom:10px;">${esc(l)}</td></tr>`).join("")}
+${url ? `<tr><td style="padding:12px 0;"><a href="${esc(url)}" style="background:#7b3aec;color:#ffffff;text-decoration:none;padding:10px 18px;border-radius:5px;font-size:14px;display:inline-block;">${esc(opts.button.label)}</a></td></tr>` : ""}
+<tr><td style="color:#ffffff;font-size:12px;padding-top:14px;opacity:.7;">${opts.footer ? esc(opts.footer) : `You get this because of your Taboo Desires account. Turn these emails off any time in your settings: ${esc(siteUrl())}/settings`}</td></tr>
+</table></td></tr></table></body></html>`;
+  const text = [opts.heading, "", ...opts.lines, ...url ? ["", `${opts.button.label}: ${url}`] : [], "", opts.footer ?? `Turn these emails off in your settings: ${siteUrl()}/settings`].join("\n");
+  return { html, text };
+}
+async function queueEmail(ctx, a) {
+  if (!a.to.email) return;
+  if (!a.transactional && withDefaults(a.to.settings).emailNotifications === "no") return;
+  const { html, text } = renderEmail(a);
+  await ctx.db.rows(sql`
+    insert into public.email_outbox (user_id, to_email, reply_to, kind, subject, html, text_body, dedupe_key)
+    values (${a.to._id}::uuid, ${a.to.email}, ${a.replyTo ?? null}, ${a.kind}, ${a.subject.slice(0, 200)}, ${html}, ${text}, ${a.dedupeKey})
+    on conflict (dedupe_key) do nothing
+  `);
+}
+async function queueEmailToAddress(ctx, a) {
+  const { html, text } = renderEmail(a);
+  await ctx.db.rows(sql`
+    insert into public.email_outbox (user_id, to_email, reply_to, kind, subject, html, text_body, dedupe_key)
+    values (null, ${a.toEmail}, ${a.replyTo ?? null}, ${a.kind}, ${a.subject.replace(/\s+/g, " ").slice(0, 200)}, ${html}, ${text}, ${a.dedupeKey})
+    on conflict (dedupe_key) do nothing
+  `);
+}
+function reportInbox() {
+  const deno = globalThis.Deno;
+  return deno?.env.get("REPORT_EMAIL_TO")?.trim() || "report.content@taboodesiers.com";
+}
+var SIX_HOURS = 6 * 60 * 60 * 1e3;
+function throttleKey(ctx, kind, userId, extra = "") {
+  return `${kind}:${userId}:${extra}:${Math.floor(ctx.now() / SIX_HOURS)}`;
 }
 
-// supabase/functions/_shared/lib/listingCard.ts
-async function toCard(ctx, listing) {
-  const saleType = listing.saleType ?? "fixed";
-  const [imageUrl, seller, auction, sellerPlan] = await Promise.all([
-    listing.imageIds[0] ? ctx.storage.getUrl(listing.imageIds[0]) : null,
-    ctx.db.get("users", listing.sellerId),
-    saleType === "auction" ? getAuctionByListing(ctx, listing._id) : null,
-    getPlan(ctx, listing.sellerId)
-  ]);
-  const sellerAvatarUrl = seller?.avatarStorageId ? await ctx.storage.getUrl(seller.avatarStorageId) : null;
-  return {
-    _id: listing._id,
-    _creationTime: listing._creationTime,
-    title: listing.title,
-    description: listing.description.slice(0, 200),
-    brand: listing.brand,
-    size: listing.size,
-    condition: listing.condition,
-    category: listing.category,
-    priceCents: listing.priceCents,
-    status: listing.status,
-    saleType,
-    isLocked: !!listing.paywall,
-    lockedKinds: [...new Set((listing.paywall?.media ?? []).map((m) => m.kind))],
-    lockedPhotoCount: (listing.paywall?.media ?? []).filter((m) => m.kind === "image").length,
-    lockedVideoSec: (() => {
-      const vid = (listing.paywall?.media ?? []).find((m) => m.kind === "video");
-      return vid ? Math.max(0, Math.round(Number(vid.durationSec ?? 0))) : null;
-    })(),
-    sellerUsername: seller?.username ?? null,
-    auction: auction ? {
-      endsAt: auction.endsAt,
-      bidCount: auction.bidCount,
-      status: auction.status
-    } : null,
-    imageUrl,
-    sellerId: listing.sellerId,
-    sellerName: seller ? publicSellerName(seller) : "Unknown seller",
-    sellerIsPro: sellerPlan === "pro",
-    sellerVerified: !!seller?.verified,
-    sellerAvatarUrl,
-    sellerCountry: seller?.sellerDetails?.country ?? null
-  };
-}
+// supabase/functions/_shared/modules/messages.ts
+var messages_exports = {};
+__export(messages_exports, {
+  appendMessage: () => appendMessage,
+  getConversation: () => getConversation,
+  inbox: () => inbox,
+  listMessages: () => listMessages,
+  markRead: () => markRead,
+  requireParticipant: () => requireParticipant,
+  send: () => send,
+  start: () => start,
+  startWithSeller: () => startWithSeller,
+  unreadCount: () => unreadCount
+});
 
 // supabase/functions/_shared/domain/accounts.ts
 var BUYER_PHOTO_MAX = 5;
@@ -2036,229 +2189,258 @@ async function requireCapability(ctx, action2) {
   return user;
 }
 
-// supabase/functions/_shared/domain/bidding.ts
-var ANTI_SNIPE_MS = 2 * 60 * 1e3;
-var MAX_BID_CENTS = 1e7;
-var AUCTION_DURATIONS = [
-  { hours: 1, label: "1 hour" },
-  { hours: 24, label: "1 day" },
-  { hours: 72, label: "3 days" },
-  { hours: 168, label: "7 days" }
-];
-function isAllowedDuration(hours) {
-  return AUCTION_DURATIONS.some((d) => d.hours === hours);
+// supabase/functions/_shared/modules/messages.ts
+var MAX_BODY = 2e3;
+var INBOX_LIMIT = 50;
+function cleanBody2(body) {
+  const trimmed = body.trim();
+  if (!trimmed)
+    throw new AppError({ code: "BAD_REQUEST", message: "Message is empty" });
+  if (trimmed.length > MAX_BODY)
+    throw new AppError({ code: "BAD_REQUEST", message: "Message is too long" });
+  return trimmed;
 }
-function bidIncrementCents(currentCents) {
-  if (currentCents < 1e4) return 100;
-  if (currentCents < 5e4) return 500;
-  if (currentCents < 1e5) return 1e3;
-  return 2500;
+async function requireParticipant(ctx, conversationId) {
+  const user = await requireUser(ctx);
+  const convo = await ctx.db.get("conversations", conversationId);
+  if (!convo)
+    throw new AppError({
+      code: "NOT_FOUND",
+      message: "Conversation not found"
+    });
+  if (convo.buyerId !== user._id && convo.sellerId !== user._id)
+    throw new AppError({ code: "FORBIDDEN", message: "Not your conversation" });
+  return { user, convo, isBuyer: convo.buyerId === user._id };
 }
-function minNextBidCents(auction) {
-  return auction.bidCount === 0 ? auction.currentBidCents : auction.currentBidCents + bidIncrementCents(auction.currentBidCents);
+async function appendMessage(ctx, convo, senderId, body, contractId) {
+  await assertNotBlocked(ctx, convo.buyerId, convo.sellerId);
+  await ctx.db.insert("messages", {
+    conversationId: convo._id,
+    senderId,
+    body,
+    ...contractId ? { contractId } : {}
+  });
+  const senderIsBuyer = senderId === convo.buyerId;
+  await ctx.db.patch("conversations", convo._id, {
+    lastMessageAt: new Date(ctx.now()).toISOString(),
+    lastMessagePreview: body.slice(0, 120),
+    lastSenderId: senderId,
+    buyerUnread: !senderIsBuyer,
+    sellerUnread: senderIsBuyer
+  });
+  const [sender, recipient] = await Promise.all([
+    ctx.db.get("users", senderId),
+    ctx.db.get("users", senderIsBuyer ? convo.sellerId : convo.buyerId)
+  ]);
+  if (sender && recipient)
+    await queueEmail(ctx, {
+      to: recipient,
+      kind: "message",
+      subject: `New message from ${publicSellerName(sender)}`,
+      heading: "You have a new message",
+      lines: [`${publicSellerName(sender)} sent you a message on Taboo Desires.`],
+      button: { label: "Open messages", path: "/messages" },
+      dedupeKey: throttleKey(ctx, "message", recipient._id, convo._id)
+    });
 }
-function extendedEndsAtMs(endsAtMs, nowMs) {
-  return endsAtMs - nowMs < ANTI_SNIPE_MS ? nowMs + ANTI_SNIPE_MS : endsAtMs;
+async function summarize2(ctx, convo, me) {
+  const isBuyer = convo.buyerId === me;
+  const [listing, other] = await Promise.all([
+    convo.listingId ? ctx.db.get("listings", convo.listingId) : null,
+    ctx.db.get("users", isBuyer ? convo.sellerId : convo.buyerId)
+  ]);
+  const [imageUrl, avatarUrl] = await Promise.all([
+    listing?.imageIds[0] ? ctx.storage.getUrl(listing.imageIds[0]) : null,
+    other?.avatarStorageId ? ctx.storage.getUrl(other.avatarStorageId) : null
+  ]);
+  return {
+    _id: convo._id,
+    role: isBuyer ? "buyer" : "seller",
+    lastMessageAt: convo.lastMessageAt,
+    lastMessagePreview: convo.lastMessagePreview,
+    lastFromMe: convo.lastSenderId === me,
+    unread: isBuyer ? convo.buyerUnread : convo.sellerUnread,
+    other: {
+      _id: other?._id ?? null,
+      name: other ? publicSellerName(other) : "Deleted user",
+      avatarUrl
+    },
+    listing: listing ? {
+      _id: listing._id,
+      title: listing.title,
+      priceCents: listing.priceCents,
+      status: listing.status,
+      imageUrl
+    } : null
+  };
 }
-function maskName(name) {
-  const clean2 = name.trim();
-  if (clean2.length <= 2) return `${clean2.slice(0, 1) || "?"}***`;
-  return `${clean2.slice(0, 1)}***${clean2.slice(-1)}`;
+async function assertSellerAcceptsBuyer(ctx, sellerId, buyerId) {
+  const seller = await ctx.db.get("users", sellerId);
+  if (acceptsNewMessages(seller?.settings)) return;
+  const talking = await ctx.db.first(
+    "conversations",
+    sql`where seller_id = ${sellerId}::uuid and buyer_id = ${buyerId}::uuid`
+  );
+  if (!talking)
+    throw new AppError({
+      code: "FORBIDDEN",
+      message: "This seller isn't accepting new messages right now"
+    });
 }
-
-// supabase/functions/_shared/modules/auctions.ts
-var BID_HISTORY_LIMIT = 25;
-var forListing = query({
-  args: { listingId: v.id("listings") },
-  handler: async (ctx, { listingId }) => {
-    const auction = await getAuctionByListing(ctx, listingId);
-    if (!auction) return null;
-    const [me, bids] = await Promise.all([
-      getCurrentUserDoc(ctx),
-      ctx.db.select(
-        "bids",
-        sql`where auction_id = ${auction._id}::uuid order by created_at desc, id desc limit ${BID_HISTORY_LIMIT}`
-      )
-    ]);
-    const bidders = await Promise.all(
-      bids.map((b) => ctx.db.get("users", b.bidderId))
-    );
-    return {
-      _id: auction._id,
-      status: auction.status,
-      endsAt: auction.endsAt,
-      startingBidCents: auction.startingBidCents,
-      currentBidCents: auction.currentBidCents,
-      bidCount: auction.bidCount,
-      minNextBidCents: minNextBidCents(auction),
-      incrementCents: bidIncrementCents(auction.currentBidCents),
-      iAmHighBidder: !!me && auction.highBidderId === me._id,
-      iWon: !!me && auction.status === "ended" && auction.highBidderId === me._id,
-      bids: bids.map((b, i) => {
-        const bidder = bidders[i];
-        return {
-          _id: b._id,
-          _creationTime: b._creationTime,
-          amountCents: b.amountCents,
-          isMe: !!me && b.bidderId === me._id,
-          bidderLabel: bidder ? maskName(publicSellerName(bidder)) : "Unknown"
-        };
-      })
-    };
-  }
-});
-var placeBid = mutation({
-  args: { auctionId: v.id("auctions"), amountCents: v.number() },
-  handler: async (ctx, { auctionId, amountCents }) => {
+var start = mutation({
+  args: { listingId: v.id("listings"), body: v.string() },
+  handler: async (ctx, { listingId, body }) => {
+    await requireCapability(ctx, "message");
     const user = await requireCapability(ctx, "buy");
-    const auction = await ctx.db.get("auctions", auctionId);
-    if (!auction)
-      throw new AppError({ code: "NOT_FOUND", message: "Auction not found" });
-    const now = ctx.now();
-    const endsAtMs = Date.parse(auction.endsAt);
-    if (auction.status !== "live" || endsAtMs <= now)
-      throw new AppError({
-        code: "BAD_REQUEST",
-        message: "This auction has ended"
-      });
-    if (auction.sellerId === user._id)
-      throw new AppError({
-        code: "FORBIDDEN",
-        message: "You can't bid on your own auction"
-      });
-    if (auction.highBidderId === user._id)
-      throw new AppError({
-        code: "CONFLICT",
-        message: "You're already the highest bidder"
-      });
-    if (!Number.isInteger(amountCents) || amountCents > MAX_BID_CENTS)
-      throw new AppError({
-        code: "BAD_REQUEST",
-        message: "Enter a valid bid amount"
-      });
-    const min = minNextBidCents(auction);
-    if (amountCents < min)
-      throw new AppError({
-        code: "BAD_REQUEST",
-        message: `Bid at least $${(min / 100).toFixed(2).replace(/\.00$/, "")}`
-      });
-    await ctx.db.insert("bids", { auctionId, bidderId: user._id, amountCents });
-    const newEndsAtMs = extendedEndsAtMs(endsAtMs, now);
-    await ctx.db.patch("auctions", auctionId, {
-      currentBidCents: amountCents,
-      bidCount: auction.bidCount + 1,
-      highBidderId: user._id,
-      endsAt: new Date(newEndsAtMs).toISOString()
-    });
-    await ctx.db.patch("listings", auction.listingId, {
-      priceCents: amountCents
-    });
-    return { extended: newEndsAtMs !== endsAtMs };
-  }
-});
-var closeDue = internalMutation({
-  args: {},
-  handler: async (ctx) => {
-    const closed = await ctx.db.scalar(
-      sql`select app.close_due_auctions(${new Date(ctx.now()).toISOString()}::timestamptz)`
-    );
-    return Number(closed);
-  }
-});
-var relist = mutation({
-  args: { listingId: v.id("listings"), durationHours: v.number() },
-  handler: async (ctx, { listingId, durationHours }) => {
-    const user = await requireUser(ctx);
+    const text = cleanBody2(body);
     const listing = await ctx.db.get("listings", listingId);
-    if (!listing || listing.sellerId !== user._id)
-      throw new AppError({ code: "FORBIDDEN", message: "Not your listing" });
-    if (listing.status !== "ended")
+    if (!listing)
+      throw new AppError({ code: "NOT_FOUND", message: "Listing not found" });
+    if (listing.sellerId === user._id)
       throw new AppError({
         code: "BAD_REQUEST",
-        message: "Only unsold auctions can be relisted"
+        message: "This is your own listing"
       });
-    if (!isAllowedDuration(durationHours))
+    const existing = await ctx.db.first(
+      "conversations",
+      sql`where listing_id = ${listingId}::uuid and buyer_id = ${user._id}::uuid`
+    );
+    if (!existing) await assertSellerAcceptsBuyer(ctx, listing.sellerId, user._id);
+    const convo = existing ?? await ctx.db.get(
+      "conversations",
+      await ctx.db.insert("conversations", {
+        listingId,
+        buyerId: user._id,
+        sellerId: listing.sellerId,
+        lastMessageAt: new Date(ctx.now()).toISOString(),
+        lastMessagePreview: "",
+        lastSenderId: user._id,
+        buyerUnread: false,
+        sellerUnread: true
+      })
+    );
+    if (!convo)
       throw new AppError({
-        code: "BAD_REQUEST",
-        message: "Pick a valid duration"
+        code: "NOT_FOUND",
+        message: "Conversation missing"
       });
-    if (await getPlan(ctx, user._id) !== "pro")
-      throw new AppError({
-        code: "FORBIDDEN",
-        message: "Relisting auctions is a Pro feature"
-      });
-    const old = await getAuctionByListing(ctx, listingId);
-    if (old) await ctx.db.delete("auctions", old._id);
-    await createAuction(ctx, {
-      listingId,
-      sellerId: user._id,
-      startingBidCents: old?.startingBidCents ?? listing.priceCents,
-      durationHours
-    });
-    await ctx.db.patch("listings", listingId, { status: "active" });
+    await appendMessage(ctx, convo, user._id, text);
+    return convo._id;
+  }
+});
+var startWithSeller = mutation({
+  args: { sellerId: v.id("users"), body: v.string() },
+  handler: async (ctx, { sellerId, body }) => {
+    await requireCapability(ctx, "message");
+    const user = await requireCapability(ctx, "buy");
+    const text = cleanBody2(body);
+    if (sellerId === user._id)
+      throw new AppError({ code: "BAD_REQUEST", message: "This is your own profile" });
+    const seller = await ctx.db.get("users", sellerId);
+    if (!seller || seller.accountType !== "seller")
+      throw new AppError({ code: "NOT_FOUND", message: "Seller not found" });
+    const existing = await ctx.db.first(
+      "conversations",
+      sql`where listing_id is null and buyer_id = ${user._id}::uuid and seller_id = ${sellerId}::uuid`
+    );
+    if (!existing) await assertSellerAcceptsBuyer(ctx, sellerId, user._id);
+    const convo = existing ?? await ctx.db.get(
+      "conversations",
+      await ctx.db.insert("conversations", {
+        buyerId: user._id,
+        sellerId,
+        lastMessageAt: new Date(ctx.now()).toISOString(),
+        lastMessagePreview: "",
+        lastSenderId: user._id,
+        buyerUnread: false,
+        sellerUnread: true
+      })
+    );
+    if (!convo)
+      throw new AppError({ code: "NOT_FOUND", message: "Conversation missing" });
+    await appendMessage(ctx, convo, user._id, text);
+    return convo._id;
+  }
+});
+var send = mutation({
+  args: { conversationId: v.id("conversations"), body: v.string() },
+  handler: async (ctx, { conversationId, body }) => {
+    await requireCapability(ctx, "message");
+    const { user, convo } = await requireParticipant(ctx, conversationId);
+    await appendMessage(ctx, convo, user._id, cleanBody2(body));
     return null;
   }
 });
-var endingSoon = query({
-  args: { paginationOpts: paginationOptsValidator },
-  handler: async (ctx, { paginationOpts }) => {
-    const nowIso3 = new Date(ctx.now()).toISOString();
-    const result = await ctx.db.paginate(
-      "auctions",
+var markRead = mutation({
+  args: { conversationId: v.id("conversations") },
+  handler: async (ctx, { conversationId }) => {
+    const { convo, isBuyer } = await requireParticipant(ctx, conversationId);
+    if (isBuyer && convo.buyerUnread)
+      await ctx.db.patch("conversations", conversationId, {
+        buyerUnread: false
+      });
+    if (!isBuyer && convo.sellerUnread)
+      await ctx.db.patch("conversations", conversationId, {
+        sellerUnread: false
+      });
+    return null;
+  }
+});
+var inbox = query({
+  args: {},
+  handler: async (ctx) => {
+    const me = await getCurrentUserDoc(ctx);
+    if (!me) return [];
+    const convos = await ctx.db.select(
+      "conversations",
+      sql`where buyer_id = ${me._id}::uuid or seller_id = ${me._id}::uuid
+          order by last_message_at desc, id desc limit ${INBOX_LIMIT}`
+    );
+    return await Promise.all(convos.map((c2) => summarize2(ctx, c2, me._id)));
+  }
+});
+var unreadCount = query({
+  args: {},
+  handler: async (ctx) => {
+    const me = await getCurrentUserDoc(ctx);
+    if (!me) return 0;
+    ctx.db.touch("conversations");
+    const n = await ctx.db.scalar(sql`
+      select (
+        (select count(*) from (select 1 from public.conversations
+          where buyer_id = ${me._id}::uuid and buyer_unread limit 10) b)
+        + (select count(*) from (select 1 from public.conversations
+          where seller_id = ${me._id}::uuid and seller_unread limit 10) s)
+      )::int`);
+    return Number(n);
+  }
+});
+var getConversation = query({
+  args: { conversationId: v.id("conversations") },
+  handler: async (ctx, { conversationId }) => {
+    const { user, convo } = await requireParticipant(ctx, conversationId);
+    const summary = await summarize2(ctx, convo, user._id);
+    const presence = summary.other._id ? await ctx.db.first("presence", sql`where user_id = ${summary.other._id}::uuid`) : null;
+    return { ...summary, meId: user._id, otherLastSeenAt: presence?.lastSeenAt ?? null };
+  }
+});
+var listMessages = query({
+  args: {
+    conversationId: v.id("conversations"),
+    paginationOpts: paginationOptsValidator
+  },
+  handler: async (ctx, { conversationId, paginationOpts }) => {
+    await requireParticipant(ctx, conversationId);
+    return await ctx.db.paginate(
+      "messages",
       {
-        // The closing job runs every minute; hide auctions that ended since its last run
-        where: sql`status = 'live' and ends_at > ${nowIso3}::timestamptz`,
-        order: [{ column: "ends_at", cast: "timestamptz" }],
-        direction: "asc"
+        where: sql`conversation_id = ${conversationId}::uuid`,
+        order: [{ column: "created_at", cast: "timestamptz" }],
+        direction: "desc"
       },
       paginationOpts
     );
-    const listings = await Promise.all(
-      result.page.map((a) => ctx.db.get("listings", a.listingId))
-    );
-    return {
-      ...result,
-      page: await Promise.all(
-        listings.flatMap((l) => l ? [toCard(ctx, l)] : [])
-      )
-    };
   }
-});
-
-// supabase/functions/_shared/modules/customRequests.ts
-var customRequests_exports = {};
-__export(customRequests_exports, {
-  MAX_DETAILS: () => MAX_DETAILS,
-  MAX_NOTE: () => MAX_NOTE,
-  MAX_OPEN_PER_SELLER: () => MAX_OPEN_PER_SELLER,
-  MAX_PRICE_CENTS: () => MAX_PRICE_CENTS2,
-  MIN_PRICE_CENTS: () => MIN_PRICE_CENTS,
-  assertCanAct: () => assertCanAct,
-  assertPrice: () => assertPrice,
-  create: () => create3,
-  list: () => list3,
-  partyOf: () => partyOf,
-  respond: () => respond
-});
-
-// supabase/functions/_shared/modules/listings.ts
-var listings_exports = {};
-__export(listings_exports, {
-  browse: () => browse,
-  bySeller: () => bySeller,
-  categoryValidator: () => categoryValidator,
-  conditionValidator: () => conditionValidator,
-  create: () => create2,
-  generateUploadUrl: () => generateUploadUrl,
-  get: () => get,
-  landingCounts: () => landingCounts,
-  listingStatusValidator: () => listingStatusValidator,
-  mediaKindValidator: () => mediaKindValidator,
-  remove: () => remove2,
-  saleTypeValidator: () => saleTypeValidator,
-  setStatus: () => setStatus,
-  shopPage: () => shopPage,
-  update: () => update
 });
 
 // supabase/functions/_shared/modules/orders.ts
@@ -2275,7 +2457,7 @@ __export(orders_exports, {
   cancel: () => cancel,
   confirmReceived: () => confirmReceived,
   createOrder: () => createOrder,
-  forListing: () => forListing2,
+  forListing: () => forListing,
   getOrderAs: () => getOrderAs,
   getSavedAddress: () => getSavedAddress,
   list: () => list2,
@@ -2556,176 +2738,6 @@ function shippingError(e, fallback) {
   return new AppError({ code: "INTERNAL", message: fallback });
 }
 
-// supabase/functions/_shared/domain/sellerSettings.ts
-var PAYMENT_METHODS = [
-  "PayPal",
-  "Cash App",
-  "Venmo",
-  "Zelle",
-  "Bank transfer",
-  "Wise",
-  "Revolut",
-  "Crypto",
-  "Gift cards"
-];
-var OFFERINGS = [
-  "Used panties",
-  "Used bras",
-  "Used lingerie",
-  "Used socks & hosiery",
-  "Used shoes",
-  "Used gym clothes",
-  "Used clothing",
-  "Used sex toys",
-  "Photo sets",
-  "Video clips",
-  "Feet pics",
-  "Custom requests",
-  "Sexting",
-  "Dick ratings",
-  "Experiences"
-];
-var YES_NO = [
-  { value: "yes", label: "Yes" },
-  { value: "no", label: "No" }
-];
-var SETTING_FIELDS = [
-  {
-    key: "profilePrivate",
-    label: "Set Profile to Private",
-    choices: [
-      { value: "no", label: "No - Keep my profile visible" },
-      { value: "yes", label: "Yes - Make my profile private" }
-    ],
-    defaultValue: "no",
-    hint: "A private profile can only be seen by you. Everyone else sees that it's private. Your listings can still be found and bought."
-  },
-  {
-    key: "siteVisibility",
-    label: "Site Visibility",
-    choices: [
-      { value: "all", label: "All our sites - Maximise sales potential" },
-      { value: "this", label: "This site only" }
-    ],
-    defaultValue: "all",
-    hint: "Select whether your profile appears on all our sister sites or only on this one.",
-    comingSoon: true
-  },
-  {
-    key: "emailNotifications",
-    label: "Platform Email Notifications",
-    choices: YES_NO,
-    defaultValue: "yes",
-    hint: "Get some platform notifications by email, for example when you receive a message. To reduce spam, we only send you a new email notification once every 6 hours.",
-    comingSoon: true
-  },
-  {
-    key: "marketingEmails",
-    label: "Marketing Emails",
-    choices: YES_NO,
-    defaultValue: "no",
-    hint: "Get promotional emails such as newsletters, offers and information about new product features."
-  },
-  {
-    key: "webPush",
-    label: "Web Push Notifications",
-    choices: YES_NO,
-    defaultValue: "no",
-    hint: "Get instant notifications in your browser.",
-    comingSoon: true
-  },
-  {
-    key: "messagesFrom",
-    label: "Receive Messages From All Buyers",
-    choices: [
-      { value: "all", label: "Yes - Allow messages from all buyers" },
-      { value: "existing", label: "No - Only buyers already talking to me" }
-    ],
-    defaultValue: "all",
-    hint: "Choose No to stop new conversations. Buyers you're already talking to can still message you."
-  },
-  {
-    key: "socialFeature",
-    label: "Be Featured on our Social Media",
-    choices: [
-      { value: "no", label: "No - I do not want extra exposure" },
-      { value: "yes", label: "Yes - Feature me for extra exposure" }
-    ],
-    defaultValue: "no",
-    hint: "Get more exposure by being featured on our social media platforms."
-  }
-];
-function withDefaults(settings) {
-  const out = { paymentMethods: settings?.paymentMethods ?? [], offerings: settings?.offerings ?? [] };
-  for (const f of SETTING_FIELDS) {
-    out[f.key] = settings?.[f.key] ?? f.defaultValue;
-  }
-  return out;
-}
-function invalidSetting(settings) {
-  for (const f of SETTING_FIELDS) {
-    const value = settings[f.key];
-    if (value !== void 0 && !f.choices.some((c2) => c2.value === value))
-      return `Invalid choice for ${f.label}`;
-  }
-  const lists = [
-    ["payment method", PAYMENT_METHODS, settings.paymentMethods],
-    ["offering", OFFERINGS, settings.offerings]
-  ];
-  for (const [name, allowed, chosen] of lists) {
-    if (chosen?.some((x) => !allowed.includes(x))) return `Invalid ${name}`;
-  }
-  return null;
-}
-var acceptsNewMessages = (settings) => (settings?.messagesFrom ?? "all") !== "existing";
-
-// supabase/functions/_shared/lib/email.ts
-var SITE_FALLBACK = "https://taboo-desires.vercel.app";
-function siteUrl() {
-  const deno = globalThis.Deno;
-  return (deno?.env.get("SITE_URL")?.trim() || SITE_FALLBACK).replace(/\/+$/, "");
-}
-var esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-function renderEmail(opts) {
-  const url = opts.button ? `${siteUrl()}${opts.button.path}` : null;
-  const html = `<!doctype html><html><body style="margin:0;background:#0C0F15;padding:24px;font-family:Arial,Helvetica,sans-serif;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
-<table role="presentation" width="480" cellpadding="0" cellspacing="0" style="max-width:480px;background:#202227;border-radius:5px;padding:28px;">
-<tr><td style="color:#ffffff;font-size:20px;font-weight:bold;padding-bottom:12px;">${esc(opts.heading)}</td></tr>
-${opts.lines.map((l) => `<tr><td style="color:#ffffff;font-size:14px;line-height:1.6;padding-bottom:10px;">${esc(l)}</td></tr>`).join("")}
-${url ? `<tr><td style="padding:12px 0;"><a href="${esc(url)}" style="background:#7b3aec;color:#ffffff;text-decoration:none;padding:10px 18px;border-radius:5px;font-size:14px;display:inline-block;">${esc(opts.button.label)}</a></td></tr>` : ""}
-<tr><td style="color:#ffffff;font-size:12px;padding-top:14px;opacity:.7;">${opts.footer ? esc(opts.footer) : `You get this because of your Taboo Desires account. Turn these emails off any time in your settings: ${esc(siteUrl())}/settings`}</td></tr>
-</table></td></tr></table></body></html>`;
-  const text = [opts.heading, "", ...opts.lines, ...url ? ["", `${opts.button.label}: ${url}`] : [], "", opts.footer ?? `Turn these emails off in your settings: ${siteUrl()}/settings`].join("\n");
-  return { html, text };
-}
-async function queueEmail(ctx, a) {
-  if (!a.to.email) return;
-  if (!a.transactional && withDefaults(a.to.settings).emailNotifications === "no") return;
-  const { html, text } = renderEmail(a);
-  await ctx.db.rows(sql`
-    insert into public.email_outbox (user_id, to_email, reply_to, kind, subject, html, text_body, dedupe_key)
-    values (${a.to._id}::uuid, ${a.to.email}, ${a.replyTo ?? null}, ${a.kind}, ${a.subject.slice(0, 200)}, ${html}, ${text}, ${a.dedupeKey})
-    on conflict (dedupe_key) do nothing
-  `);
-}
-async function queueEmailToAddress(ctx, a) {
-  const { html, text } = renderEmail(a);
-  await ctx.db.rows(sql`
-    insert into public.email_outbox (user_id, to_email, reply_to, kind, subject, html, text_body, dedupe_key)
-    values (null, ${a.toEmail}, ${a.replyTo ?? null}, ${a.kind}, ${a.subject.replace(/\s+/g, " ").slice(0, 200)}, ${html}, ${text}, ${a.dedupeKey})
-    on conflict (dedupe_key) do nothing
-  `);
-}
-function reportInbox() {
-  const deno = globalThis.Deno;
-  return deno?.env.get("REPORT_EMAIL_TO")?.trim() || "report.content@taboodesiers.com";
-}
-var SIX_HOURS = 6 * 60 * 60 * 1e3;
-function throttleKey(ctx, kind, userId, extra = "") {
-  return `${kind}:${userId}:${extra}:${Math.floor(ctx.now() / SIX_HOURS)}`;
-}
-
 // supabase/functions/_shared/modules/orders.ts
 var addressValidator = v.object({
   name: v.string(),
@@ -2834,9 +2846,10 @@ async function liveOrderForListing(ctx, listingId) {
   );
 }
 async function toView(ctx, o, role) {
-  const [other, listing] = await Promise.all([
+  const [other, listing, contract] = await Promise.all([
     ctx.db.get("users", role === "buyer" ? o.sellerId : o.buyerId),
-    o.listingId ? ctx.db.get("listings", o.listingId) : null
+    o.listingId ? ctx.db.get("listings", o.listingId) : null,
+    o.contractId ? ctx.db.get("contracts", o.contractId) : null
   ]);
   const imageId = listing?.imageIds[0];
   return {
@@ -2867,7 +2880,10 @@ async function toView(ctx, o, role) {
     labelUrl: role === "seller" ? o.labelUrl ?? null : null,
     labelCreatedAt: o.labelCreatedAt ?? null,
     shippedAt: o.shippedAt ?? null,
-    deliveredAt: o.deliveredAt ?? null
+    deliveredAt: o.deliveredAt ?? null,
+    trackingUpdatedAt: o.trackingUpdatedAt ?? null,
+    /** The agreed contract, when the order came from one */
+    contract: contract ? { ...view(contract, listing), conversationId: contract.conversationId } : null
   };
 }
 var list2 = query({
@@ -2904,7 +2920,7 @@ var actionCount = query({
     );
   }
 });
-var forListing2 = query({
+var forListing = query({
   args: { listingId: v.id("listings") },
   handler: async (ctx, { listingId }) => {
     const me = await getCurrentUserDoc(ctx);
@@ -3010,23 +3026,41 @@ var addTracking = mutation({
     trackingCode: v.string()
   },
   handler: async (ctx, { orderId, carrier, trackingCode }) => {
-    const { order } = await getOrderAs(ctx, orderId, "seller");
-    if (order.status !== "ready_to_ship" && order.status !== "awaiting_address")
-      throw new AppError({ code: "CONFLICT", message: "This order already has tracking" });
+    const { order, me } = await getOrderAs(ctx, orderId, "seller");
+    const updating = order.status === "shipped" && !order.labelUrl;
+    if (order.status !== "ready_to_ship" && order.status !== "awaiting_address" && !updating)
+      throw new AppError({ code: "CONFLICT", message: "This order's tracking can't be changed" });
     const code = trackingCode.replace(/\s+/g, "").toUpperCase();
     if (!/^[A-Z0-9]{8,40}$/.test(code))
       throw new AppError({ code: "BAD_REQUEST", message: "Enter a valid tracking number" });
     if (!CARRIERS.includes(carrier))
       throw new AppError({ code: "BAD_REQUEST", message: "Pick a carrier" });
     const now = nowIso(ctx);
+    if (updating && order.trackingCode === code && order.carrier === carrier) return null;
     await ctx.db.patch("orders", orderId, {
       status: "shipped",
       carrier,
       trackingCode: code,
       trackingUrl: carrierTrackingUrl(carrier, code) ?? void 0,
-      shippedAt: now,
+      shippedAt: order.shippedAt ?? now,
+      trackingUpdatedAt: now,
       updatedAt: now
     });
+    const buyer = await ctx.db.get("users", order.buyerId);
+    if (buyer)
+      await queueEmail(ctx, {
+        to: buyer,
+        kind: "tracking",
+        transactional: true,
+        subject: updating ? `Updated tracking for ${order.title}` : `${order.title} has shipped`,
+        heading: updating ? "Tracking number updated" : "Your order has shipped",
+        lines: [
+          `${publicSellerName(me)} ${updating ? "updated the tracking number for" : "shipped"} "${order.title}".`,
+          `${carrier} tracking number: ${code}`
+        ],
+        button: { label: "Track your order", path: "/orders" },
+        dedupeKey: `tracking:${order._id}:${code}`
+      });
     return null;
   }
 });
@@ -3125,6 +3159,518 @@ var saveAddress = action({
   }
 });
 
+// supabase/functions/_shared/modules/contracts.ts
+var MAX_PAYMENTS = 24;
+var bad2 = (message) => new AppError({ code: "BAD_REQUEST", message });
+var nowIso2 = (ctx) => new Date(ctx.now()).toISOString();
+var money = (cents) => `$${(cents / 100).toFixed(2)}`;
+function cleanText(text, max, label) {
+  const t = (text ?? "").trim();
+  if (!t) return void 0;
+  if (t.length > max) throw bad2(`${label} is too long`);
+  return t;
+}
+async function requireParty(ctx, contractId) {
+  const contract = await ctx.db.get("contracts", contractId);
+  if (!contract) throw new AppError({ code: "NOT_FOUND", message: "Contract not found" });
+  const { user, convo } = await requireParticipant(ctx, contract.conversationId);
+  return { contract, me: user, convo, isBuyer: user._id === contract.buyerId };
+}
+var create2 = mutation({
+  args: {
+    conversationId: v.id("conversations"),
+    listingId: v.optional(v.id("listings")),
+    itemTitle: v.string(),
+    itemUrl: v.optional(v.string()),
+    totalCents: v.number(),
+    paymentMethod: v.optional(v.string()),
+    schedule: v.array(v.object({ dueDate: v.string(), amountCents: v.number() }), MAX_PAYMENTS),
+    terms: v.optional(v.string())
+  },
+  handler: async (ctx, args) => {
+    const { user, convo } = await requireParticipant(ctx, args.conversationId);
+    if (convo.sellerId !== user._id) throw new AppError({ code: "FORBIDDEN", message: "Only the seller can send a contract" });
+    let itemUrl = cleanText(args.itemUrl, 500, "The link");
+    if (args.listingId) {
+      const listing = await ctx.db.get("listings", args.listingId);
+      if (!listing || listing.sellerId !== user._id) throw bad2("Pick one of your own listings");
+      itemUrl = void 0;
+    } else {
+      if (!itemUrl) throw bad2("Pick a listing or add a link to the item or service");
+      if (!/^https?:\/\/\S+$/i.test(itemUrl)) throw bad2("The link must start with http:// or https://");
+    }
+    const itemTitle = cleanText(args.itemTitle, 120, "The item name");
+    if (!itemTitle) throw bad2("Name the item or service");
+    const total = Math.round(args.totalCents);
+    if (!Number.isFinite(total) || total < 100) throw bad2("The total must be at least $1.00");
+    if (total > 1e7) throw bad2("The total is too large");
+    if (args.schedule.length < 1) throw bad2("Add at least one payment");
+    const today = new Date(ctx.now()).toISOString().slice(0, 10);
+    let prev = "";
+    let sum = 0;
+    const schedule = args.schedule.map((p, i) => {
+      const amount = Math.round(p.amountCents);
+      if (!Number.isFinite(amount) || amount <= 0) throw bad2(`Payment ${i + 1} needs an amount`);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(p.dueDate) || Number.isNaN(Date.parse(p.dueDate))) throw bad2(`Payment ${i + 1} needs a due date`);
+      if (p.dueDate < today) throw bad2(`Payment ${i + 1} is due in the past`);
+      if (prev && p.dueDate < prev) throw bad2("Put the payments in date order");
+      prev = p.dueDate;
+      sum += amount;
+      return { dueDate: p.dueDate, amountCents: amount };
+    });
+    if (sum !== total) throw bad2(`The payments add up to ${money(sum)}, not the total of ${money(total)}`);
+    const contractId = await ctx.db.insert("contracts", {
+      conversationId: convo._id,
+      sellerId: convo.sellerId,
+      buyerId: convo.buyerId,
+      listingId: args.listingId,
+      itemTitle,
+      itemUrl,
+      totalCents: total,
+      paymentCount: schedule.length,
+      paymentMethod: cleanText(args.paymentMethod, 80, "The payment method"),
+      schedule,
+      terms: cleanText(args.terms, 2e3, "The terms"),
+      status: "pending",
+      updatedAt: nowIso2(ctx)
+    });
+    await appendMessage(
+      ctx,
+      convo,
+      user._id,
+      `Sent a contract: ${itemTitle} \xB7 ${money(total)} in ${schedule.length} ${schedule.length === 1 ? "payment" : "payments"}`,
+      contractId
+    );
+    return contractId;
+  }
+});
+var get = query({
+  args: { contractId: v.id("contracts") },
+  handler: async (ctx, { contractId }) => {
+    ctx.db.touch("contracts", "contractComments");
+    const { contract: c2, me, isBuyer } = await requireParty(ctx, contractId);
+    const [listing, comments2] = await Promise.all([
+      c2.listingId ? ctx.db.get("listings", c2.listingId) : null,
+      ctx.db.select("contractComments", sql`where contract_id = ${contractId}::uuid order by created_at, id limit 200`)
+    ]);
+    const authors = /* @__PURE__ */ new Map();
+    await Promise.all(
+      [...new Set(comments2.map((m) => m.authorId))].map(async (id) => authors.set(id, await ctx.db.get("users", id)))
+    );
+    return {
+      ...view(c2, listing),
+      role: isBuyer ? "buyer" : "seller",
+      comments: comments2.map((m) => {
+        const a = authors.get(m.authorId);
+        return {
+          _id: m._id,
+          _creationTime: m._creationTime,
+          body: m.body,
+          mine: m.authorId === me._id,
+          authorName: a ? publicSellerName(a) : "Deleted user"
+        };
+      })
+    };
+  }
+});
+function view(c2, listing) {
+  return {
+    _id: c2._id,
+    _creationTime: c2._creationTime,
+    itemTitle: c2.itemTitle,
+    listingId: listing ? listing._id : null,
+    listingTitle: listing?.title ?? null,
+    itemUrl: listing ? `${siteUrl()}/listing/${listing._id}` : c2.itemUrl ?? null,
+    totalCents: c2.totalCents,
+    paymentCount: c2.paymentCount,
+    paymentMethod: c2.paymentMethod ?? null,
+    schedule: c2.schedule,
+    terms: c2.terms ?? null,
+    status: c2.status,
+    respondedAt: c2.respondedAt ?? null,
+    orderId: c2.orderId ?? null
+  };
+}
+var respond = mutation({
+  args: { contractId: v.id("contracts"), accept: v.boolean() },
+  handler: async (ctx, { contractId, accept }) => {
+    const { contract: c2, me, convo, isBuyer } = await requireParty(ctx, contractId);
+    if (!isBuyer) throw new AppError({ code: "FORBIDDEN", message: "Only the buyer can accept or reject" });
+    if (c2.status !== "pending") throw new AppError({ code: "CONFLICT", message: `This contract was already ${c2.status}` });
+    const now = nowIso2(ctx);
+    let orderId;
+    if (accept) {
+      orderId = await createOrder(ctx, {
+        sellerId: c2.sellerId,
+        buyerId: c2.buyerId,
+        title: c2.itemTitle,
+        ...c2.listingId ? { listingId: c2.listingId } : {}
+      });
+      await ctx.db.patch("orders", orderId, { contractId: c2._id });
+      await bumpStats(ctx, c2.sellerId, { salesCount: 1 });
+    }
+    await ctx.db.patch("contracts", c2._id, {
+      status: accept ? "accepted" : "rejected",
+      respondedAt: now,
+      updatedAt: now,
+      ...orderId ? { orderId } : {}
+    });
+    await appendMessage(ctx, convo, me._id, `${accept ? "Accepted" : "Rejected"} the contract: ${c2.itemTitle}`, c2._id);
+    const seller = await ctx.db.get("users", c2.sellerId);
+    if (seller)
+      await queueEmail(ctx, {
+        to: seller,
+        kind: "contract_answered",
+        transactional: true,
+        subject: `${publicSellerName(me)} ${accept ? "accepted" : "rejected"} your contract`,
+        heading: accept ? "Contract accepted" : "Contract rejected",
+        lines: [
+          `${publicSellerName(me)} ${accept ? "accepted" : "rejected"} your contract for "${c2.itemTitle}" (${money(c2.totalCents)}).`,
+          ...accept ? ["It's now in your Orders, ready for you to ship."] : []
+        ],
+        button: accept ? { label: "View order", path: "/orders" } : { label: "Open messages", path: `/messages/${c2.conversationId}` },
+        dedupeKey: `contract_answered:${c2._id}`
+      });
+    return orderId ?? null;
+  }
+});
+var cancel2 = mutation({
+  args: { contractId: v.id("contracts") },
+  handler: async (ctx, { contractId }) => {
+    const { contract: c2, me, convo, isBuyer } = await requireParty(ctx, contractId);
+    if (isBuyer) throw new AppError({ code: "FORBIDDEN", message: "Only the seller can withdraw a contract" });
+    if (c2.status !== "pending") throw new AppError({ code: "CONFLICT", message: `This contract was already ${c2.status}` });
+    const now = nowIso2(ctx);
+    await ctx.db.patch("contracts", c2._id, { status: "cancelled", respondedAt: now, updatedAt: now });
+    await appendMessage(ctx, convo, me._id, `Withdrew the contract: ${c2.itemTitle}`, c2._id);
+    return null;
+  }
+});
+var comment = mutation({
+  args: { contractId: v.id("contracts"), body: v.string() },
+  handler: async (ctx, { contractId, body }) => {
+    const { contract: c2, me, convo } = await requireParty(ctx, contractId);
+    const text = cleanText(body, 1e3, "The comment");
+    if (!text) throw bad2("Write a comment");
+    await ctx.db.insert("contractComments", { contractId: c2._id, authorId: me._id, body: text });
+    await ctx.db.patch("contracts", c2._id, { updatedAt: nowIso2(ctx) });
+    await appendMessage(ctx, convo, me._id, `Commented on the contract: ${text}`.slice(0, 2e3));
+    return null;
+  }
+});
+var myListings = query({
+  args: {},
+  handler: async (ctx) => {
+    ctx.db.touch("listings");
+    const me = await requireUser(ctx);
+    const rows = await ctx.db.select(
+      "listings",
+      sql`where seller_id = ${me._id}::uuid and status = 'active' order by created_at desc limit 100`
+    );
+    return rows.map((l) => ({ _id: l._id, title: l.title, priceCents: l.priceCents }));
+  }
+});
+
+// supabase/functions/_shared/modules/auctions.ts
+var auctions_exports = {};
+__export(auctions_exports, {
+  closeDue: () => closeDue,
+  endingSoon: () => endingSoon,
+  forListing: () => forListing2,
+  placeBid: () => placeBid,
+  relist: () => relist
+});
+
+// supabase/functions/_shared/lib/auctionState.ts
+async function getAuctionByListing(ctx, listingId) {
+  return await ctx.db.first(
+    "auctions",
+    sql`where listing_id = ${listingId}::uuid`
+  );
+}
+async function createAuction(ctx, args) {
+  const endsAtMs = ctx.now() + args.durationHours * 60 * 60 * 1e3;
+  return await ctx.db.insert("auctions", {
+    listingId: args.listingId,
+    sellerId: args.sellerId,
+    startingBidCents: args.startingBidCents,
+    currentBidCents: args.startingBidCents,
+    bidCount: 0,
+    endsAt: new Date(endsAtMs).toISOString(),
+    status: "live"
+  });
+}
+
+// supabase/functions/_shared/lib/listingCard.ts
+async function toCard(ctx, listing) {
+  const saleType = listing.saleType ?? "fixed";
+  const [imageUrl, seller, auction, sellerPlan] = await Promise.all([
+    listing.imageIds[0] ? ctx.storage.getUrl(listing.imageIds[0]) : null,
+    ctx.db.get("users", listing.sellerId),
+    saleType === "auction" ? getAuctionByListing(ctx, listing._id) : null,
+    getPlan(ctx, listing.sellerId)
+  ]);
+  const sellerAvatarUrl = seller?.avatarStorageId ? await ctx.storage.getUrl(seller.avatarStorageId) : null;
+  return {
+    _id: listing._id,
+    _creationTime: listing._creationTime,
+    title: listing.title,
+    description: listing.description.slice(0, 200),
+    brand: listing.brand,
+    size: listing.size,
+    condition: listing.condition,
+    category: listing.category,
+    priceCents: listing.priceCents,
+    status: listing.status,
+    saleType,
+    isLocked: !!listing.paywall,
+    lockedKinds: [...new Set((listing.paywall?.media ?? []).map((m) => m.kind))],
+    lockedPhotoCount: (listing.paywall?.media ?? []).filter((m) => m.kind === "image").length,
+    lockedVideoSec: (() => {
+      const vid = (listing.paywall?.media ?? []).find((m) => m.kind === "video");
+      return vid ? Math.max(0, Math.round(Number(vid.durationSec ?? 0))) : null;
+    })(),
+    sellerUsername: seller?.username ?? null,
+    auction: auction ? {
+      endsAt: auction.endsAt,
+      bidCount: auction.bidCount,
+      status: auction.status
+    } : null,
+    imageUrl,
+    sellerId: listing.sellerId,
+    sellerName: seller ? publicSellerName(seller) : "Unknown seller",
+    sellerIsPro: sellerPlan === "pro",
+    sellerVerified: !!seller?.verified,
+    sellerAvatarUrl,
+    sellerCountry: seller?.sellerDetails?.country ?? null
+  };
+}
+
+// supabase/functions/_shared/domain/bidding.ts
+var ANTI_SNIPE_MS = 2 * 60 * 1e3;
+var MAX_BID_CENTS = 1e7;
+var AUCTION_DURATIONS = [
+  { hours: 1, label: "1 hour" },
+  { hours: 24, label: "1 day" },
+  { hours: 72, label: "3 days" },
+  { hours: 168, label: "7 days" }
+];
+function isAllowedDuration(hours) {
+  return AUCTION_DURATIONS.some((d) => d.hours === hours);
+}
+function bidIncrementCents(currentCents) {
+  if (currentCents < 1e4) return 100;
+  if (currentCents < 5e4) return 500;
+  if (currentCents < 1e5) return 1e3;
+  return 2500;
+}
+function minNextBidCents(auction) {
+  return auction.bidCount === 0 ? auction.currentBidCents : auction.currentBidCents + bidIncrementCents(auction.currentBidCents);
+}
+function extendedEndsAtMs(endsAtMs, nowMs) {
+  return endsAtMs - nowMs < ANTI_SNIPE_MS ? nowMs + ANTI_SNIPE_MS : endsAtMs;
+}
+function maskName(name) {
+  const clean2 = name.trim();
+  if (clean2.length <= 2) return `${clean2.slice(0, 1) || "?"}***`;
+  return `${clean2.slice(0, 1)}***${clean2.slice(-1)}`;
+}
+
+// supabase/functions/_shared/modules/auctions.ts
+var BID_HISTORY_LIMIT = 25;
+var forListing2 = query({
+  args: { listingId: v.id("listings") },
+  handler: async (ctx, { listingId }) => {
+    const auction = await getAuctionByListing(ctx, listingId);
+    if (!auction) return null;
+    const [me, bids] = await Promise.all([
+      getCurrentUserDoc(ctx),
+      ctx.db.select(
+        "bids",
+        sql`where auction_id = ${auction._id}::uuid order by created_at desc, id desc limit ${BID_HISTORY_LIMIT}`
+      )
+    ]);
+    const bidders = await Promise.all(
+      bids.map((b) => ctx.db.get("users", b.bidderId))
+    );
+    return {
+      _id: auction._id,
+      status: auction.status,
+      endsAt: auction.endsAt,
+      startingBidCents: auction.startingBidCents,
+      currentBidCents: auction.currentBidCents,
+      bidCount: auction.bidCount,
+      minNextBidCents: minNextBidCents(auction),
+      incrementCents: bidIncrementCents(auction.currentBidCents),
+      iAmHighBidder: !!me && auction.highBidderId === me._id,
+      iWon: !!me && auction.status === "ended" && auction.highBidderId === me._id,
+      bids: bids.map((b, i) => {
+        const bidder = bidders[i];
+        return {
+          _id: b._id,
+          _creationTime: b._creationTime,
+          amountCents: b.amountCents,
+          isMe: !!me && b.bidderId === me._id,
+          bidderLabel: bidder ? maskName(publicSellerName(bidder)) : "Unknown"
+        };
+      })
+    };
+  }
+});
+var placeBid = mutation({
+  args: { auctionId: v.id("auctions"), amountCents: v.number() },
+  handler: async (ctx, { auctionId, amountCents }) => {
+    const user = await requireCapability(ctx, "buy");
+    const auction = await ctx.db.get("auctions", auctionId);
+    if (!auction)
+      throw new AppError({ code: "NOT_FOUND", message: "Auction not found" });
+    const now = ctx.now();
+    const endsAtMs = Date.parse(auction.endsAt);
+    if (auction.status !== "live" || endsAtMs <= now)
+      throw new AppError({
+        code: "BAD_REQUEST",
+        message: "This auction has ended"
+      });
+    if (auction.sellerId === user._id)
+      throw new AppError({
+        code: "FORBIDDEN",
+        message: "You can't bid on your own auction"
+      });
+    if (auction.highBidderId === user._id)
+      throw new AppError({
+        code: "CONFLICT",
+        message: "You're already the highest bidder"
+      });
+    if (!Number.isInteger(amountCents) || amountCents > MAX_BID_CENTS)
+      throw new AppError({
+        code: "BAD_REQUEST",
+        message: "Enter a valid bid amount"
+      });
+    const min = minNextBidCents(auction);
+    if (amountCents < min)
+      throw new AppError({
+        code: "BAD_REQUEST",
+        message: `Bid at least $${(min / 100).toFixed(2).replace(/\.00$/, "")}`
+      });
+    await ctx.db.insert("bids", { auctionId, bidderId: user._id, amountCents });
+    const newEndsAtMs = extendedEndsAtMs(endsAtMs, now);
+    await ctx.db.patch("auctions", auctionId, {
+      currentBidCents: amountCents,
+      bidCount: auction.bidCount + 1,
+      highBidderId: user._id,
+      endsAt: new Date(newEndsAtMs).toISOString()
+    });
+    await ctx.db.patch("listings", auction.listingId, {
+      priceCents: amountCents
+    });
+    return { extended: newEndsAtMs !== endsAtMs };
+  }
+});
+var closeDue = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const closed = await ctx.db.scalar(
+      sql`select app.close_due_auctions(${new Date(ctx.now()).toISOString()}::timestamptz)`
+    );
+    return Number(closed);
+  }
+});
+var relist = mutation({
+  args: { listingId: v.id("listings"), durationHours: v.number() },
+  handler: async (ctx, { listingId, durationHours }) => {
+    const user = await requireUser(ctx);
+    const listing = await ctx.db.get("listings", listingId);
+    if (!listing || listing.sellerId !== user._id)
+      throw new AppError({ code: "FORBIDDEN", message: "Not your listing" });
+    if (listing.status !== "ended")
+      throw new AppError({
+        code: "BAD_REQUEST",
+        message: "Only unsold auctions can be relisted"
+      });
+    if (!isAllowedDuration(durationHours))
+      throw new AppError({
+        code: "BAD_REQUEST",
+        message: "Pick a valid duration"
+      });
+    if (await getPlan(ctx, user._id) !== "pro")
+      throw new AppError({
+        code: "FORBIDDEN",
+        message: "Relisting auctions is a Pro feature"
+      });
+    const old = await getAuctionByListing(ctx, listingId);
+    if (old) await ctx.db.delete("auctions", old._id);
+    await createAuction(ctx, {
+      listingId,
+      sellerId: user._id,
+      startingBidCents: old?.startingBidCents ?? listing.priceCents,
+      durationHours
+    });
+    await ctx.db.patch("listings", listingId, { status: "active" });
+    return null;
+  }
+});
+var endingSoon = query({
+  args: { paginationOpts: paginationOptsValidator },
+  handler: async (ctx, { paginationOpts }) => {
+    const nowIso4 = new Date(ctx.now()).toISOString();
+    const result = await ctx.db.paginate(
+      "auctions",
+      {
+        // The closing job runs every minute; hide auctions that ended since its last run
+        where: sql`status = 'live' and ends_at > ${nowIso4}::timestamptz`,
+        order: [{ column: "ends_at", cast: "timestamptz" }],
+        direction: "asc"
+      },
+      paginationOpts
+    );
+    const listings = await Promise.all(
+      result.page.map((a) => ctx.db.get("listings", a.listingId))
+    );
+    return {
+      ...result,
+      page: await Promise.all(
+        listings.flatMap((l) => l ? [toCard(ctx, l)] : [])
+      )
+    };
+  }
+});
+
+// supabase/functions/_shared/modules/customRequests.ts
+var customRequests_exports = {};
+__export(customRequests_exports, {
+  MAX_DETAILS: () => MAX_DETAILS,
+  MAX_NOTE: () => MAX_NOTE,
+  MAX_OPEN_PER_SELLER: () => MAX_OPEN_PER_SELLER,
+  MAX_PRICE_CENTS: () => MAX_PRICE_CENTS2,
+  MIN_PRICE_CENTS: () => MIN_PRICE_CENTS,
+  assertCanAct: () => assertCanAct,
+  assertPrice: () => assertPrice,
+  create: () => create4,
+  list: () => list3,
+  partyOf: () => partyOf,
+  respond: () => respond2
+});
+
+// supabase/functions/_shared/modules/listings.ts
+var listings_exports = {};
+__export(listings_exports, {
+  browse: () => browse,
+  bySeller: () => bySeller,
+  categoryValidator: () => categoryValidator,
+  conditionValidator: () => conditionValidator,
+  create: () => create3,
+  generateUploadUrl: () => generateUploadUrl,
+  get: () => get2,
+  landingCounts: () => landingCounts,
+  listingStatusValidator: () => listingStatusValidator,
+  mediaKindValidator: () => mediaKindValidator,
+  remove: () => remove2,
+  saleTypeValidator: () => saleTypeValidator,
+  setStatus: () => setStatus,
+  shopPage: () => shopPage,
+  update: () => update
+});
+
 // supabase/functions/_shared/domain/enums.ts
 var CATEGORIES = [
   "panties",
@@ -3179,15 +3725,15 @@ async function canViewLocked(ctx, listing, user) {
   return expiry !== null && expiry > ctx.now();
 }
 async function validateLockedMedia(ctx, sellerId, media, coverCount, alreadyAttached = []) {
-  const bad3 = (message) => new AppError({ code: "BAD_REQUEST", message });
-  if (media.length < 1) throw bad3("Add at least one photo or a video");
+  const bad4 = (message) => new AppError({ code: "BAD_REQUEST", message });
+  if (media.length < 1) throw bad4("Add at least one photo or a video");
   const videos = media.filter((m) => m.kind === "video").length;
-  if (videos > 1) throw bad3("Add only one video");
+  if (videos > 1) throw bad4("Add only one video");
   if (videos === 1 && media.length > 1)
-    throw bad3("A video listing holds just the video and its thumbnail");
+    throw bad4("A video listing holds just the video and its thumbnail");
   if (media.length > LOCKED_MEDIA_MAX)
-    throw bad3(`Instant Content can hold up to ${LOCKED_MEDIA_MAX} photos`);
-  if (coverCount !== 1) throw bad3("Add a cover photo");
+    throw bad4(`Instant Content can hold up to ${LOCKED_MEDIA_MAX} photos`);
+  if (coverCount !== 1) throw bad4("Add a cover photo");
   assertOwnFiles(
     media.map((m) => m.storageId),
     sellerId,
@@ -3199,9 +3745,9 @@ async function validateLockedMedia(ctx, sellerId, media, coverCount, alreadyAtta
   );
   types.forEach((type, i) => {
     if (type === void 0)
-      throw bad3("A file is missing. Please upload it again");
+      throw bad4("A file is missing. Please upload it again");
     if (type && !type.startsWith(`${media[i].kind}/`))
-      throw bad3("Unsupported file type");
+      throw bad4("Unsupported file type");
   });
 }
 
@@ -3470,17 +4016,17 @@ var listingFields = {
   )
 };
 function validateListing(input) {
-  const bad3 = (message) => new AppError({ code: "BAD_REQUEST", message });
+  const bad4 = (message) => new AppError({ code: "BAD_REQUEST", message });
   if (input.title.trim().length < 3 || input.title.length > 80)
-    throw bad3("Title must be 3-80 characters");
-  if (input.description.length > 2e3) throw bad3("Description is too long");
-  if (!input.brand.trim()) throw bad3("Brand is required");
-  if (!input.size.trim()) throw bad3("Size is required");
+    throw bad4("Title must be 3-80 characters");
+  if (input.description.length > 2e3) throw bad4("Description is too long");
+  if (!input.brand.trim()) throw bad4("Brand is required");
+  if (!input.size.trim()) throw bad4("Size is required");
   if (!Number.isInteger(input.priceCents) || input.priceCents < 100 || input.priceCents > MAX_PRICE_CENTS)
-    throw bad3("Price must be between $1 and $100,000");
-  if (input.imageIds.length < 1) throw bad3("Add at least one photo");
+    throw bad4("Price must be between $1 and $100,000");
+  if (input.imageIds.length < 1) throw bad4("Add at least one photo");
   if (input.subcategory && subcategoryInfo(input.subcategory)?.category !== input.category)
-    throw bad3("That type doesn't belong to the chosen category");
+    throw bad4("That type doesn't belong to the chosen category");
 }
 function checkPhotoLimit(count, maxPhotos, alreadyHad = 0) {
   if (count > Math.max(maxPhotos, alreadyHad))
@@ -3652,7 +4198,7 @@ async function activeListingCount(ctx, sellerId) {
      where seller_id = ${sellerId}::uuid and status = 'active' and paywall is null`);
   return Number(row?.n ?? 0);
 }
-var get = query({
+var get2 = query({
   args: { listingId: v.id("listings") },
   handler: async (ctx, { listingId }) => {
     const listing = await ctx.db.get("listings", listingId);
@@ -3781,7 +4327,7 @@ var shopPage = query({
     };
   }
 });
-var create2 = mutation({
+var create3 = mutation({
   args: {
     ...listingFields,
     saleType: saleTypeValidator,
@@ -3975,7 +4521,7 @@ function assertPrice(cents) {
   }
 }
 var partyValidator = v.union(v.literal("buyer"), v.literal("seller"));
-var create3 = mutation({
+var create4 = mutation({
   args: {
     sellerId: v.id("users"),
     category: categoryValidator,
@@ -4033,7 +4579,7 @@ var create3 = mutation({
     });
   }
 });
-var respond = mutation({
+var respond2 = mutation({
   args: {
     requestId: v.id("customRequests"),
     action: v.union(
@@ -4229,7 +4775,7 @@ var follows_exports = {};
 __export(follows_exports, {
   feed: () => feed,
   isFollowing: () => isFollowing,
-  respond: () => respond2,
+  respond: () => respond3,
   toggle: () => toggle3
 });
 var FEED_SELLERS_MAX = 100;
@@ -4291,7 +4837,7 @@ var toggle3 = mutation({
     return "pending";
   }
 });
-var respond2 = mutation({
+var respond3 = mutation({
   args: { followerId: v.id("users"), accept: v.boolean() },
   handler: async (ctx, { followerId, accept }) => {
     const me = await requireUser(ctx);
@@ -4353,270 +4899,6 @@ var feed = query({
   }
 });
 
-// supabase/functions/_shared/modules/messages.ts
-var messages_exports = {};
-__export(messages_exports, {
-  getConversation: () => getConversation,
-  inbox: () => inbox,
-  listMessages: () => listMessages,
-  markRead: () => markRead,
-  send: () => send,
-  start: () => start,
-  startWithSeller: () => startWithSeller,
-  unreadCount: () => unreadCount
-});
-var MAX_BODY = 2e3;
-var INBOX_LIMIT = 50;
-function cleanBody2(body) {
-  const trimmed = body.trim();
-  if (!trimmed)
-    throw new AppError({ code: "BAD_REQUEST", message: "Message is empty" });
-  if (trimmed.length > MAX_BODY)
-    throw new AppError({ code: "BAD_REQUEST", message: "Message is too long" });
-  return trimmed;
-}
-async function requireParticipant(ctx, conversationId) {
-  const user = await requireUser(ctx);
-  const convo = await ctx.db.get("conversations", conversationId);
-  if (!convo)
-    throw new AppError({
-      code: "NOT_FOUND",
-      message: "Conversation not found"
-    });
-  if (convo.buyerId !== user._id && convo.sellerId !== user._id)
-    throw new AppError({ code: "FORBIDDEN", message: "Not your conversation" });
-  return { user, convo, isBuyer: convo.buyerId === user._id };
-}
-async function appendMessage(ctx, convo, senderId, body) {
-  await assertNotBlocked(ctx, convo.buyerId, convo.sellerId);
-  await ctx.db.insert("messages", {
-    conversationId: convo._id,
-    senderId,
-    body
-  });
-  const senderIsBuyer = senderId === convo.buyerId;
-  await ctx.db.patch("conversations", convo._id, {
-    lastMessageAt: new Date(ctx.now()).toISOString(),
-    lastMessagePreview: body.slice(0, 120),
-    lastSenderId: senderId,
-    buyerUnread: !senderIsBuyer,
-    sellerUnread: senderIsBuyer
-  });
-  const [sender, recipient] = await Promise.all([
-    ctx.db.get("users", senderId),
-    ctx.db.get("users", senderIsBuyer ? convo.sellerId : convo.buyerId)
-  ]);
-  if (sender && recipient)
-    await queueEmail(ctx, {
-      to: recipient,
-      kind: "message",
-      subject: `New message from ${publicSellerName(sender)}`,
-      heading: "You have a new message",
-      lines: [`${publicSellerName(sender)} sent you a message on Taboo Desires.`],
-      button: { label: "Open messages", path: "/messages" },
-      dedupeKey: throttleKey(ctx, "message", recipient._id, convo._id)
-    });
-}
-async function summarize2(ctx, convo, me) {
-  const isBuyer = convo.buyerId === me;
-  const [listing, other] = await Promise.all([
-    convo.listingId ? ctx.db.get("listings", convo.listingId) : null,
-    ctx.db.get("users", isBuyer ? convo.sellerId : convo.buyerId)
-  ]);
-  const [imageUrl, avatarUrl] = await Promise.all([
-    listing?.imageIds[0] ? ctx.storage.getUrl(listing.imageIds[0]) : null,
-    other?.avatarStorageId ? ctx.storage.getUrl(other.avatarStorageId) : null
-  ]);
-  return {
-    _id: convo._id,
-    role: isBuyer ? "buyer" : "seller",
-    lastMessageAt: convo.lastMessageAt,
-    lastMessagePreview: convo.lastMessagePreview,
-    lastFromMe: convo.lastSenderId === me,
-    unread: isBuyer ? convo.buyerUnread : convo.sellerUnread,
-    other: {
-      _id: other?._id ?? null,
-      name: other ? publicSellerName(other) : "Deleted user",
-      avatarUrl
-    },
-    listing: listing ? {
-      _id: listing._id,
-      title: listing.title,
-      priceCents: listing.priceCents,
-      status: listing.status,
-      imageUrl
-    } : null
-  };
-}
-async function assertSellerAcceptsBuyer(ctx, sellerId, buyerId) {
-  const seller = await ctx.db.get("users", sellerId);
-  if (acceptsNewMessages(seller?.settings)) return;
-  const talking = await ctx.db.first(
-    "conversations",
-    sql`where seller_id = ${sellerId}::uuid and buyer_id = ${buyerId}::uuid`
-  );
-  if (!talking)
-    throw new AppError({
-      code: "FORBIDDEN",
-      message: "This seller isn't accepting new messages right now"
-    });
-}
-var start = mutation({
-  args: { listingId: v.id("listings"), body: v.string() },
-  handler: async (ctx, { listingId, body }) => {
-    await requireCapability(ctx, "message");
-    const user = await requireCapability(ctx, "buy");
-    const text = cleanBody2(body);
-    const listing = await ctx.db.get("listings", listingId);
-    if (!listing)
-      throw new AppError({ code: "NOT_FOUND", message: "Listing not found" });
-    if (listing.sellerId === user._id)
-      throw new AppError({
-        code: "BAD_REQUEST",
-        message: "This is your own listing"
-      });
-    const existing = await ctx.db.first(
-      "conversations",
-      sql`where listing_id = ${listingId}::uuid and buyer_id = ${user._id}::uuid`
-    );
-    if (!existing) await assertSellerAcceptsBuyer(ctx, listing.sellerId, user._id);
-    const convo = existing ?? await ctx.db.get(
-      "conversations",
-      await ctx.db.insert("conversations", {
-        listingId,
-        buyerId: user._id,
-        sellerId: listing.sellerId,
-        lastMessageAt: new Date(ctx.now()).toISOString(),
-        lastMessagePreview: "",
-        lastSenderId: user._id,
-        buyerUnread: false,
-        sellerUnread: true
-      })
-    );
-    if (!convo)
-      throw new AppError({
-        code: "NOT_FOUND",
-        message: "Conversation missing"
-      });
-    await appendMessage(ctx, convo, user._id, text);
-    return convo._id;
-  }
-});
-var startWithSeller = mutation({
-  args: { sellerId: v.id("users"), body: v.string() },
-  handler: async (ctx, { sellerId, body }) => {
-    await requireCapability(ctx, "message");
-    const user = await requireCapability(ctx, "buy");
-    const text = cleanBody2(body);
-    if (sellerId === user._id)
-      throw new AppError({ code: "BAD_REQUEST", message: "This is your own profile" });
-    const seller = await ctx.db.get("users", sellerId);
-    if (!seller || seller.accountType !== "seller")
-      throw new AppError({ code: "NOT_FOUND", message: "Seller not found" });
-    const existing = await ctx.db.first(
-      "conversations",
-      sql`where listing_id is null and buyer_id = ${user._id}::uuid and seller_id = ${sellerId}::uuid`
-    );
-    if (!existing) await assertSellerAcceptsBuyer(ctx, sellerId, user._id);
-    const convo = existing ?? await ctx.db.get(
-      "conversations",
-      await ctx.db.insert("conversations", {
-        buyerId: user._id,
-        sellerId,
-        lastMessageAt: new Date(ctx.now()).toISOString(),
-        lastMessagePreview: "",
-        lastSenderId: user._id,
-        buyerUnread: false,
-        sellerUnread: true
-      })
-    );
-    if (!convo)
-      throw new AppError({ code: "NOT_FOUND", message: "Conversation missing" });
-    await appendMessage(ctx, convo, user._id, text);
-    return convo._id;
-  }
-});
-var send = mutation({
-  args: { conversationId: v.id("conversations"), body: v.string() },
-  handler: async (ctx, { conversationId, body }) => {
-    await requireCapability(ctx, "message");
-    const { user, convo } = await requireParticipant(ctx, conversationId);
-    await appendMessage(ctx, convo, user._id, cleanBody2(body));
-    return null;
-  }
-});
-var markRead = mutation({
-  args: { conversationId: v.id("conversations") },
-  handler: async (ctx, { conversationId }) => {
-    const { convo, isBuyer } = await requireParticipant(ctx, conversationId);
-    if (isBuyer && convo.buyerUnread)
-      await ctx.db.patch("conversations", conversationId, {
-        buyerUnread: false
-      });
-    if (!isBuyer && convo.sellerUnread)
-      await ctx.db.patch("conversations", conversationId, {
-        sellerUnread: false
-      });
-    return null;
-  }
-});
-var inbox = query({
-  args: {},
-  handler: async (ctx) => {
-    const me = await getCurrentUserDoc(ctx);
-    if (!me) return [];
-    const convos = await ctx.db.select(
-      "conversations",
-      sql`where buyer_id = ${me._id}::uuid or seller_id = ${me._id}::uuid
-          order by last_message_at desc, id desc limit ${INBOX_LIMIT}`
-    );
-    return await Promise.all(convos.map((c2) => summarize2(ctx, c2, me._id)));
-  }
-});
-var unreadCount = query({
-  args: {},
-  handler: async (ctx) => {
-    const me = await getCurrentUserDoc(ctx);
-    if (!me) return 0;
-    ctx.db.touch("conversations");
-    const n = await ctx.db.scalar(sql`
-      select (
-        (select count(*) from (select 1 from public.conversations
-          where buyer_id = ${me._id}::uuid and buyer_unread limit 10) b)
-        + (select count(*) from (select 1 from public.conversations
-          where seller_id = ${me._id}::uuid and seller_unread limit 10) s)
-      )::int`);
-    return Number(n);
-  }
-});
-var getConversation = query({
-  args: { conversationId: v.id("conversations") },
-  handler: async (ctx, { conversationId }) => {
-    const { user, convo } = await requireParticipant(ctx, conversationId);
-    const summary = await summarize2(ctx, convo, user._id);
-    const presence = summary.other._id ? await ctx.db.first("presence", sql`where user_id = ${summary.other._id}::uuid`) : null;
-    return { ...summary, meId: user._id, otherLastSeenAt: presence?.lastSeenAt ?? null };
-  }
-});
-var listMessages = query({
-  args: {
-    conversationId: v.id("conversations"),
-    paginationOpts: paginationOptsValidator
-  },
-  handler: async (ctx, { conversationId, paginationOpts }) => {
-    await requireParticipant(ctx, conversationId);
-    return await ctx.db.paginate(
-      "messages",
-      {
-        where: sql`conversation_id = ${conversationId}::uuid`,
-        order: [{ column: "created_at", cast: "timestamptz" }],
-        direction: "desc"
-      },
-      paginationOpts
-    );
-  }
-});
-
 // supabase/functions/_shared/modules/notifications.ts
 var notifications_exports = {};
 __export(notifications_exports, {
@@ -4637,6 +4919,9 @@ async function recentFor(ctx, userId) {
     "postLikes",
     "postComments",
     "postCommentLikes",
+    "contracts",
+    "contractComments",
+    "orders",
     "users"
   );
   const me = sql`${userId}::uuid`;
@@ -4712,6 +4997,31 @@ async function recentFor(ctx, userId) {
         join public.posts p on p.id = pc.post_id
         join public.users a on a.id = cl.user_id
        where pc.author_id = ${me} and cl.user_id <> ${me} and cl.created_at > ${since}
+      union all
+      -- a seller sent me a contract; target is the conversation
+      select 'contract_sent', k.created_at, a.id,
+             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'The seller'), k.item_title, k.conversation_id, k.total_cents
+        from public.contracts k join public.users a on a.id = k.seller_id
+       where k.buyer_id = ${me} and k.created_at > ${since}
+      union all
+      -- the buyer accepted or rejected my contract; title is the answer
+      select 'contract_answered', k.responded_at, a.id,
+             coalesce(nullif(a.name, ''), 'The buyer'), k.status, k.conversation_id, k.total_cents
+        from public.contracts k join public.users a on a.id = k.buyer_id
+       where k.seller_id = ${me} and k.status in ('accepted', 'rejected') and k.responded_at > ${since}
+      union all
+      select 'contract_comment', cc.created_at, a.id,
+             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'Someone'), k.item_title, k.conversation_id, null
+        from public.contract_comments cc
+        join public.contracts k on k.id = cc.contract_id
+        join public.users a on a.id = cc.author_id
+       where (k.buyer_id = ${me} or k.seller_id = ${me}) and cc.author_id <> ${me} and cc.created_at > ${since}
+      union all
+      -- the seller added or changed the tracking number on my order
+      select 'tracking', o.tracking_updated_at, a.id,
+             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'The seller'), o.title, o.id, null
+        from public.orders o join public.users a on a.id = o.seller_id
+       where o.buyer_id = ${me} and o.tracking_updated_at > ${since}
     ) n
     order by at desc
     limit ${LIMIT}::int`);
@@ -4780,7 +5090,7 @@ var markSeen = mutation({
 var posts_exports = {};
 __export(posts_exports, {
   addComment: () => addComment2,
-  create: () => create4,
+  create: () => create5,
   feed: () => feed2,
   likers: () => likers,
   listComments: () => listComments,
@@ -4845,7 +5155,7 @@ var onlineAuthors = query({
     return rows.map((r) => r.userId);
   }
 });
-var create4 = mutation({
+var create5 = mutation({
   args: { body: v.string(), imageIds: v.array(v.storageId(), 20) },
   handler: async (ctx, { body, imageIds }) => {
     const me = await requireCapability(ctx, "post");
@@ -5028,21 +5338,21 @@ var removeComment2 = mutation({
   args: { commentId: v.id("postComments") },
   handler: async (ctx, { commentId }) => {
     const me = await requireUser(ctx);
-    const comment = await ctx.db.get("postComments", commentId);
-    if (!comment) return null;
-    if (comment.authorId !== me._id && me.role !== "admin") {
+    const comment2 = await ctx.db.get("postComments", commentId);
+    if (!comment2) return null;
+    if (comment2.authorId !== me._id && me.role !== "admin") {
       throw new AppError({ code: "FORBIDDEN", message: "Not your comment" });
     }
-    const removed = 1 + (comment.parentId ? 0 : comment.replyCount ?? 0);
+    const removed = 1 + (comment2.parentId ? 0 : comment2.replyCount ?? 0);
     await ctx.db.delete("postComments", commentId);
-    if (comment.parentId) {
-      const parent = await ctx.db.get("postComments", comment.parentId);
+    if (comment2.parentId) {
+      const parent = await ctx.db.get("postComments", comment2.parentId);
       if (parent)
         await ctx.db.patch("postComments", parent._id, {
           replyCount: Math.max(0, (parent.replyCount ?? 0) - 1)
         });
     }
-    const post = await ctx.db.get("posts", comment.postId);
+    const post = await ctx.db.get("posts", comment2.postId);
     if (post)
       await ctx.db.patch("posts", post._id, {
         commentCount: Math.max(0, post.commentCount - removed)
@@ -5054,8 +5364,8 @@ var toggleCommentLike = mutation({
   args: { commentId: v.id("postComments") },
   handler: async (ctx, { commentId }) => {
     const me = await requireUser(ctx);
-    const comment = await ctx.db.get("postComments", commentId);
-    if (!comment)
+    const comment2 = await ctx.db.get("postComments", commentId);
+    if (!comment2)
       throw new AppError({ code: "NOT_FOUND", message: "Comment not found" });
     const existing = await ctx.db.first(
       "postCommentLikes",
@@ -5064,13 +5374,13 @@ var toggleCommentLike = mutation({
     if (existing) {
       await ctx.db.delete("postCommentLikes", existing._id);
       await ctx.db.patch("postComments", commentId, {
-        likeCount: Math.max(0, (comment.likeCount ?? 0) - 1)
+        likeCount: Math.max(0, (comment2.likeCount ?? 0) - 1)
       });
       return false;
     }
     await ctx.db.insert("postCommentLikes", { commentId, userId: me._id });
     await ctx.db.patch("postComments", commentId, {
-      likeCount: (comment.likeCount ?? 0) + 1
+      likeCount: (comment2.likeCount ?? 0) + 1
     });
     return true;
   }
@@ -5114,7 +5424,7 @@ var targetValidator = v.union(
 );
 var UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 var EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-var bad2 = (message) => new AppError({ code: "BAD_REQUEST", message });
+var bad3 = (message) => new AppError({ code: "BAD_REQUEST", message });
 var AUTO_HIDE_AT = 2;
 async function openReporters(ctx, kind, id) {
   const rows = await ctx.db.rows(sql`
@@ -5179,21 +5489,21 @@ var submit2 = mutation({
     const signature = args.signature.trim();
     const targetId = args.targetId?.trim() || void 0;
     const targetUrl = args.targetUrl?.trim() || void 0;
-    if (description.length < 10) throw bad2("Please describe the problem (at least 10 characters)");
-    if (description.length > 2e3) throw bad2("The description is too long");
-    if (!reporterName || reporterName.length > 100) throw bad2("Enter your name");
-    if (!EMAIL.test(reporterEmail) || reporterEmail.length > 200) throw bad2("Enter a valid email address");
-    if (!signature || signature.length > 100) throw bad2("Type your full name as your signature");
-    if (targetId && !UUID.test(targetId)) throw bad2("That link isn't valid");
+    if (description.length < 10) throw bad3("Please describe the problem (at least 10 characters)");
+    if (description.length > 2e3) throw bad3("The description is too long");
+    if (!reporterName || reporterName.length > 100) throw bad3("Enter your name");
+    if (!EMAIL.test(reporterEmail) || reporterEmail.length > 200) throw bad3("Enter a valid email address");
+    if (!signature || signature.length > 100) throw bad3("Type your full name as your signature");
+    if (targetId && !UUID.test(targetId)) throw bad3("That link isn't valid");
     if (targetUrl && (targetUrl.length > 500 || !/^https?:\/\//i.test(targetUrl)))
-      throw bad2("Enter the full link (starting with https://)");
-    if (!targetId && !targetUrl) throw bad2("Tell us where the content is: add its link");
+      throw bad3("Enter the full link (starting with https://)");
+    if (!targetId && !targetUrl) throw bad3("Tell us where the content is: add its link");
     const recent = await ctx.db.rows(sql`
       select count(*)::int as n from public.content_reports
        where reporter_email = ${reporterEmail}
          and created_at > ${new Date(ctx.now() - HOUR).toISOString()}::timestamptz`);
     if (Number(recent[0]?.n ?? 0) >= HOURLY_LIMIT)
-      throw bad2("Too many reports from this email. Please try again later.");
+      throw bad3("Too many reports from this email. Please try again later.");
     const hours = URGENT_TYPES.includes(args.reportType) ? URGENT_HOURS : NORMAL_HOURS;
     const dueAt = new Date(ctx.now() + hours * HOUR).toISOString();
     const reportId = await ctx.db.insert("contentReports", {
@@ -5347,9 +5657,9 @@ var resolve = mutation({
   handler: async (ctx, { reportId, remove: remove5, note }) => {
     const admin2 = await requireAdmin(ctx);
     const report = await ctx.db.get("contentReports", reportId);
-    if (!report || report.status !== "open") throw bad2("This report is already closed");
+    if (!report || report.status !== "open") throw bad3("This report is already closed");
     const text = note?.trim();
-    if (text && text.length > 500) throw bad2("The note is too long");
+    if (text && text.length > 500) throw bad3("The note is too long");
     if (remove5 && report.targetId) {
       if (report.targetKind === "listing") {
         const listing = await ctx.db.get("listings", report.targetId);
@@ -5547,7 +5857,7 @@ __export(shipping_exports, {
   refreshTracking: () => refreshTracking,
   voidLabel: () => voidLabel
 });
-var nowIso2 = (ctx) => new Date(ctx.now()).toISOString();
+var nowIso3 = (ctx) => new Date(ctx.now()).toISOString();
 var mode = query({
   args: {},
   handler: async () => easyPostMode()
@@ -5650,7 +5960,7 @@ var _saveLabel = internalMutation({
     if (order.labelUrl) return null;
     if (order.easypostShipmentId !== label.shipmentId)
       throw new AppError({ code: "CONFLICT", message: "These prices are out of date. Get new prices." });
-    const now = nowIso2(ctx);
+    const now = nowIso3(ctx);
     await ctx.db.patch("orders", orderId, {
       status: "label_created",
       carrier: label.carrier,
@@ -5711,7 +6021,7 @@ var _clearLabel = internalMutation({
       trackingStatus: void 0,
       labelUrl: void 0,
       labelCreatedAt: void 0,
-      updatedAt: nowIso2(ctx)
+      updatedAt: nowIso3(ctx)
     });
     return null;
   }
@@ -5761,7 +6071,7 @@ var _applyTracking = internalMutation({
   handler: async (ctx, { orderId, trackingStatus, trackingUrl }) => {
     const order = await ctx.db.get("orders", orderId);
     if (!order || order.status === "cancelled" || order.status === "delivered") return null;
-    await ctx.db.patch("orders", orderId, nextTracking(order, trackingStatus, trackingUrl, nowIso2(ctx)));
+    await ctx.db.patch("orders", orderId, nextTracking(order, trackingStatus, trackingUrl, nowIso3(ctx)));
     return null;
   }
 });
@@ -6004,14 +6314,14 @@ var revoke = mutation({
 var featured = query({
   args: {},
   handler: async (ctx) => {
-    const nowIso3 = new Date(ctx.now()).toISOString();
+    const nowIso4 = new Date(ctx.now()).toISOString();
     ctx.db.touch("subscriptions");
     const listings = await ctx.db.docs(
       "listings",
       sql`
         select l.* from (
           select user_id, expires_at from public.subscriptions
-           where status = 'active' and expires_at > ${nowIso3}::timestamptz
+           where status = 'active' and expires_at > ${nowIso4}::timestamptz
            order by expires_at desc, id desc limit ${FEATURED_SELLERS}
         ) s
         cross join lateral (
@@ -6030,7 +6340,7 @@ var unlocks_exports = {};
 __export(unlocks_exports, {
   pendingForListing: () => pendingForListing,
   request: () => request,
-  respond: () => respond3
+  respond: () => respond4
 });
 var PENDING_LIMIT = 50;
 var request = mutation({
@@ -6095,7 +6405,7 @@ var pendingForListing = query({
     });
   }
 });
-var respond3 = mutation({
+var respond4 = mutation({
   args: { unlockId: v.id("unlocks"), grant: v.boolean() },
   handler: async (ctx, { unlockId, grant }) => {
     const user = await requireUser(ctx);
@@ -6948,6 +7258,7 @@ var registry = {
   ageVerification: functionsOf(ageVerification_exports),
   albums: functionsOf(albums_exports),
   photos: functionsOf(photos_exports),
+  contracts: functionsOf(contracts_exports),
   auctions: functionsOf(auctions_exports),
   blocks: functionsOf(blocks_exports),
   customRequests: functionsOf(customRequests_exports),
