@@ -138,7 +138,7 @@ async function stripVideo(file: Blob): Promise<Blob> {
         changed = true;
       }
       if (!changed) return file;
-      return new Blob([file.slice(0, at), moov, file.slice(at + size)], { type: file.type });
+      return new Blob([file.slice(0, at), moov as BlobPart, file.slice(at + size)], { type: file.type });
     }
     at += size;
   }
@@ -199,9 +199,9 @@ export async function stripMetadata(file: Blob): Promise<Blob> {
     return drawn;
   }
   const bytes = new Uint8Array(await file.arrayBuffer());
-  if (kind === "png") return new Blob([stripPng(bytes)], { type: "image/png" });
-  if (kind === "webp") return new Blob([stripWebp(bytes)], { type: "image/webp" });
+  if (kind === "png") return new Blob([stripPng(bytes) as BlobPart], { type: "image/png" });
+  if (kind === "webp") return new Blob([stripWebp(bytes) as BlobPart], { type: "image/webp" });
   const { out, orientation } = stripJpeg(bytes);
-  if (orientation !== 1) return (await redraw(file)) ?? new Blob([out], { type: "image/jpeg" });
-  return new Blob([out], { type: "image/jpeg" });
+  if (orientation !== 1) return (await redraw(file)) ?? new Blob([out as BlobPart], { type: "image/jpeg" });
+  return new Blob([out as BlobPart], { type: "image/jpeg" });
 }
