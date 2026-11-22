@@ -1952,6 +1952,12 @@ async function toCard(ctx, listing) {
     saleType,
     isLocked: !!listing.paywall,
     lockedKinds: [...new Set((listing.paywall?.media ?? []).map((m) => m.kind))],
+    lockedPhotoCount: (listing.paywall?.media ?? []).filter((m) => m.kind === "image").length,
+    lockedVideoSec: (() => {
+      const vid = (listing.paywall?.media ?? []).find((m) => m.kind === "video");
+      return vid ? Math.max(0, Math.round(Number(vid.durationSec ?? 0))) : null;
+    })(),
+    sellerUsername: seller?.username ?? null,
     auction: auction ? {
       endsAt: auction.endsAt,
       bidCount: auction.bidCount,
@@ -3458,7 +3464,7 @@ var listingFields = {
   // Paywalled listing: original files; imageIds then hold their blurred previews
   locked: v.optional(
     v.array(
-      v.object({ storageId: v.storageId(), kind: mediaKindValidator }),
+      v.object({ storageId: v.storageId(), kind: mediaKindValidator, durationSec: v.optional(v.number()) }),
       20
     )
   )
@@ -3697,7 +3703,7 @@ async function lockedView(ctx, listing, media, me) {
     unlockExpiresAt: canView && unlock ? unlockExpiry(unlock) : null,
     media: canView ? media.flatMap((m, i) => {
       const url = urls[i];
-      return url ? [{ storageId: m.storageId, kind: m.kind, url }] : [];
+      return url ? [{ storageId: m.storageId, kind: m.kind, url, durationSec: m.durationSec }] : [];
     }) : null
   };
 }
@@ -3752,12 +3758,14 @@ var shopPage = query({
   args: {
     sellerId: v.id("users"),
     page: v.number(),
-    category: v.optional(categoryValidator)
+    category: v.optional(categoryValidator),
+    /** "instant": Instant Content (locked) listings instead of regular ones */
+    kind: v.optional(v.literal("instant"))
   },
-  handler: async (ctx, { sellerId, page, category }) => {
+  handler: async (ctx, { sellerId, page, category, kind }) => {
     const PAGE_SIZE = 20;
     ctx.db.touch("listings");
-    const where = sql`seller_id = ${sellerId}::uuid and status = 'active' and paywall is null${category ? sql` and category = ${category}` : empty}`;
+    const where = sql`seller_id = ${sellerId}::uuid and status = 'active' and ${kind === "instant" ? sql`paywall is not null` : sql`paywall is null`}${category ? sql` and category = ${category}` : empty}`;
     const total = Number(
       await ctx.db.scalar(sql`select count(*) from public.listings where ${where}`) ?? 0
     );
@@ -6120,6 +6128,7 @@ __export(users_exports, {
   myAccess: () => myAccess,
   mySettings: () => mySettings,
   photosByUser: () => photosByUser,
+  photosPage: () => photosPage,
   profileAccess: () => profileAccess,
   removeProfilePhoto: () => removeProfilePhoto,
   search: () => search,
@@ -6345,16 +6354,8 @@ async function listProfilePhotos(ctx, userId) {
   );
   return withPhotoUrls(ctx, rows);
 }
-var photosByUser = query({
-  args: { userId: v.id("users"), albumId: v.optional(v.id("photoAlbums")), paginationOpts: paginationOptsValidator },
-  handler: async (ctx, { userId, albumId, paginationOpts }) => {
-    ctx.db.touch("profilePhotos", "posts", "photoLikes", "photoComments", "postLikes");
-    const me = await getCurrentUserDoc(ctx);
-    const limit = Math.min(Math.max(1, Math.floor(paginationOpts.numItems)), 100);
-    const cursor = paginationOpts.cursor;
-    const offset = cursor?.startsWith("o:") ? Math.max(0, Number(cursor.slice(2)) || 0) : 0;
-    const rows = await ctx.db.rows(sql`
-      select * from (
+function photosSource(userId, albumId, isAdmin) {
+  return sql`
         select pp.id::text as source_id, pp.storage_id, pp.created_at, 0::int as ord, true as own,
                pp.description as caption,
                (select count(*) from public.photo_likes l where l.photo_id = pp.id)::int as likes,
@@ -6366,19 +6367,47 @@ var photosByUser = query({
                p.body, p.like_count, p.comment_count
           from public.posts p
          cross join lateral unnest(p.image_ids) with ordinality as t(img, ord)
-         where p.author_id = ${userId}::uuid and p.kind <> 'listing'${albumId ? sql` and false` : empty}${me?.role === "admin" ? empty : sql` and not p.hidden`}
-      ) photos
+         where p.author_id = ${userId}::uuid and p.kind <> 'listing'${albumId ? sql` and false` : empty}${isAdmin ? empty : sql` and not p.hidden`}`;
+}
+var photosByUser = query({
+  args: { userId: v.id("users"), albumId: v.optional(v.id("photoAlbums")), paginationOpts: paginationOptsValidator },
+  handler: async (ctx, { userId, albumId, paginationOpts }) => {
+    const limit = Math.min(Math.max(1, Math.floor(paginationOpts.numItems)), 100);
+    const cursor = paginationOpts.cursor;
+    const offset = cursor?.startsWith("o:") ? Math.max(0, Number(cursor.slice(2)) || 0) : 0;
+    const { page, more } = await loadPhotos(ctx, userId, albumId, offset, limit);
+    return { page, isDone: !more, continueCursor: `o:${offset + page.length}` };
+  }
+});
+var photosPage = query({
+  args: { userId: v.id("users"), albumId: v.optional(v.id("photoAlbums")), page: v.number() },
+  handler: async (ctx, { userId, albumId, page }) => {
+    const PAGE_SIZE = 12;
+    const me = await getCurrentUserDoc(ctx);
+    const total = Number(
+      await ctx.db.scalar(sql`select count(*) from (${photosSource(userId, albumId, me?.role === "admin")}) photos`) ?? 0
+    );
+    const offset = Math.max(0, Math.floor(page)) * PAGE_SIZE;
+    const { page: items } = await loadPhotos(ctx, userId, albumId, offset, PAGE_SIZE);
+    return { total, pageSize: PAGE_SIZE, items };
+  }
+});
+async function loadPhotos(ctx, userId, albumId, offset, limit) {
+  ctx.db.touch("profilePhotos", "posts", "photoLikes", "photoComments", "postLikes");
+  const me = await getCurrentUserDoc(ctx);
+  const rows = await ctx.db.rows(sql`
+      select * from (${photosSource(userId, albumId, me?.role === "admin")}) photos
       order by created_at desc, source_id desc, ord
       limit ${limit + 1} offset ${offset}`);
-    const pageRows = rows.slice(0, limit);
-    const urls = await Promise.all(pageRows.map((r) => ctx.storage.getUrl(String(r.storage_id))));
-    const ownIds = [...new Set(pageRows.filter((r) => r.own === true).map((r) => String(r.source_id)))];
-    const postIds = [...new Set(pageRows.filter((r) => r.own !== true).map((r) => String(r.source_id)))];
-    const likerIds = /* @__PURE__ */ new Map();
-    const likedByMe = /* @__PURE__ */ new Set();
-    const collect = async (table, col, ids) => {
-      if (ids.length === 0) return;
-      const found = await ctx.db.rows(sql`
+  const pageRows = rows.slice(0, limit);
+  const urls = await Promise.all(pageRows.map((r) => ctx.storage.getUrl(String(r.storage_id))));
+  const ownIds = [...new Set(pageRows.filter((r) => r.own === true).map((r) => String(r.source_id)))];
+  const postIds = [...new Set(pageRows.filter((r) => r.own !== true).map((r) => String(r.source_id)))];
+  const likerIds = /* @__PURE__ */ new Map();
+  const likedByMe = /* @__PURE__ */ new Set();
+  const collect = async (table, col, ids) => {
+    if (ids.length === 0) return;
+    const found = await ctx.db.rows(sql`
         select ${raw(col)}::text as target, user_id::text as user_id from (
           select ${raw(col)}, user_id,
                  row_number() over (partition by ${raw(col)} order by created_at desc, id desc) as n
@@ -6386,52 +6415,47 @@ var photosByUser = query({
            where ${raw(col)} = any(${ids}::uuid[])
         ) ranked where n <= ${PHOTO_LIKERS_SHOWN}::int
         order by target, n`);
-      for (const r of found)
-        likerIds.set(String(r.target), [...likerIds.get(String(r.target)) ?? [], String(r.user_id)]);
-      if (me) {
-        const mine6 = await ctx.db.rows(sql`
+    for (const r of found)
+      likerIds.set(String(r.target), [...likerIds.get(String(r.target)) ?? [], String(r.user_id)]);
+    if (me) {
+      const mine6 = await ctx.db.rows(sql`
           select ${raw(col)}::text as target from public.${raw(table)}
            where user_id = ${me._id}::uuid and ${raw(col)} = any(${ids}::uuid[])`);
-        for (const r of mine6) likedByMe.add(String(r.target));
+      for (const r of mine6) likedByMe.add(String(r.target));
+    }
+  };
+  await Promise.all([
+    collect("photo_likes", "photo_id", ownIds),
+    collect("post_likes", "post_id", postIds)
+  ]);
+  const allLikers = [...new Set([...likerIds.values()].flat())];
+  const likerDocs = new Map(
+    (await toLikers(ctx, allLikers)).map((l) => [String(l._id), l])
+  );
+  const page = pageRows.flatMap((r, i) => {
+    const url = urls[i];
+    if (!url) return [];
+    const own = r.own === true;
+    const sourceId = String(r.source_id);
+    return [
+      {
+        _id: `${own ? "profile" : "post"}:${sourceId}:${Number(r.ord)}`,
+        url,
+        photoId: own ? sourceId : null,
+        postId: own ? null : sourceId,
+        caption: r.caption ? String(r.caption) : "",
+        likeCount: Number(r.likes ?? 0),
+        commentCount: Number(r.comments ?? 0),
+        likedByMe: likedByMe.has(sourceId),
+        likers: (likerIds.get(sourceId) ?? []).flatMap((id) => {
+          const l = likerDocs.get(id);
+          return l ? [l] : [];
+        })
       }
-    };
-    await Promise.all([
-      collect("photo_likes", "photo_id", ownIds),
-      collect("post_likes", "post_id", postIds)
-    ]);
-    const allLikers = [...new Set([...likerIds.values()].flat())];
-    const likerDocs = new Map(
-      (await toLikers(ctx, allLikers)).map((l) => [String(l._id), l])
-    );
-    const page = pageRows.flatMap((r, i) => {
-      const url = urls[i];
-      if (!url) return [];
-      const own = r.own === true;
-      const sourceId = String(r.source_id);
-      return [
-        {
-          _id: `${own ? "profile" : "post"}:${sourceId}:${Number(r.ord)}`,
-          url,
-          photoId: own ? sourceId : null,
-          postId: own ? null : sourceId,
-          caption: r.caption ? String(r.caption) : "",
-          likeCount: Number(r.likes ?? 0),
-          commentCount: Number(r.comments ?? 0),
-          likedByMe: likedByMe.has(sourceId),
-          likers: (likerIds.get(sourceId) ?? []).flatMap((id) => {
-            const l = likerDocs.get(id);
-            return l ? [l] : [];
-          })
-        }
-      ];
-    });
-    return {
-      page,
-      isDone: rows.length <= limit,
-      continueCursor: `o:${offset + pageRows.length}`
-    };
-  }
-});
+    ];
+  });
+  return { page, more: rows.length > limit };
+}
 var PHOTO_LIKERS_SHOWN = 6;
 var isPrivateProfile = (user) => user.settings?.profilePrivate === "yes";
 var canViewProfile = (user, me) => !isPrivateProfile(user) || me?._id === user._id || me?.role === "admin";
