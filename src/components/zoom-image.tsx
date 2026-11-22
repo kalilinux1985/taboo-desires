@@ -29,10 +29,11 @@ export default function ZoomImage({
         {children}
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="w-auto max-w-[95vw] border-0 bg-transparent p-0 shadow-none sm:max-w-[95vw]">
+        <DialogContent className="flex h-[92dvh] w-[96vw] max-w-[96vw] items-center justify-center border-0 bg-transparent p-0 shadow-none sm:max-w-[96vw]">
           <DialogTitle className="sr-only">{alt || "Picture"}</DialogTitle>
           <DialogDescription className="sr-only">Larger view of the picture</DialogDescription>
-          <img src={src} alt={alt} className="mx-auto max-h-[85dvh] max-w-full rounded-[5px] object-contain" />
+          {/* Fills the screen (keeping its shape), so it is always bigger than the thumbnail */}
+          <img src={src} alt={alt} className="size-full rounded-[5px] object-contain" />
         </DialogContent>
       </Dialog>
     </>
