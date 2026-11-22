@@ -30,6 +30,12 @@ export async function toCard(ctx: QueryCtx, listing: Doc<"listings">) {
     saleType,
     isLocked: !!listing.paywall,
     lockedKinds: [...new Set((listing.paywall?.media ?? []).map((m) => m.kind))],
+    lockedPhotoCount: (listing.paywall?.media ?? []).filter((m) => m.kind === "image").length,
+    lockedVideoSec: (() => {
+      const vid = (listing.paywall?.media ?? []).find((m) => m.kind === "video");
+      return vid ? Math.max(0, Math.round(Number(vid.durationSec ?? 0))) : null;
+    })(),
+    sellerUsername: seller?.username ?? null,
     auction: auction
       ? {
           endsAt: auction.endsAt,

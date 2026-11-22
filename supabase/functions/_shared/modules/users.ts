@@ -239,16 +239,9 @@ async function listProfilePhotos(ctx: QueryCtx, userId: Id<"users">) {
  * Instant Content photos are left out. `photoId` is set on profile photos, the
  * only ones removed from here (post photos go when the post is deleted).
  */
-export const photosByUser = query({
-  args: { userId: v.id("users"), albumId: v.optional(v.id("photoAlbums")), paginationOpts: paginationOptsValidator },
-  handler: async (ctx, { userId, albumId, paginationOpts }) => {
-    ctx.db.touch("profilePhotos", "posts", "photoLikes", "photoComments", "postLikes");
-    const me = await getCurrentUserDoc(ctx);
-    const limit = Math.min(Math.max(1, Math.floor(paginationOpts.numItems)), 100);
-    const cursor = paginationOpts.cursor;
-    const offset = cursor?.startsWith("o:") ? Math.max(0, Number(cursor.slice(2)) || 0) : 0;
-    const rows = await ctx.db.rows(sql`
-      select * from (
+/** Profile photos plus pictures from the member's posts (not in an album), newest first. */
+function photosSource(userId: Id<"users">, albumId: Id<"photoAlbums"> | undefined, isAdmin: boolean) {
+  return sql`
         select pp.id::text as source_id, pp.storage_id, pp.created_at, 0::int as ord, true as own,
                pp.description as caption,
                (select count(*) from public.photo_likes l where l.photo_id = pp.id)::int as likes,
@@ -260,8 +253,46 @@ export const photosByUser = query({
                p.body, p.like_count, p.comment_count
           from public.posts p
          cross join lateral unnest(p.image_ids) with ordinality as t(img, ord)
-         where p.author_id = ${userId}::uuid and p.kind <> 'listing'${albumId ? sql` and false` : empty}${me?.role === "admin" ? empty : sql` and not p.hidden`}
-      ) photos
+         where p.author_id = ${userId}::uuid and p.kind <> 'listing'${albumId ? sql` and false` : empty}${isAdmin ? empty : sql` and not p.hidden`}`;
+}
+
+export const photosByUser = query({
+  args: { userId: v.id("users"), albumId: v.optional(v.id("photoAlbums")), paginationOpts: paginationOptsValidator },
+  handler: async (ctx, { userId, albumId, paginationOpts }) => {
+    const limit = Math.min(Math.max(1, Math.floor(paginationOpts.numItems)), 100);
+    const cursor = paginationOpts.cursor;
+    const offset = cursor?.startsWith("o:") ? Math.max(0, Number(cursor.slice(2)) || 0) : 0;
+    const { page, more } = await loadPhotos(ctx, userId, albumId, offset, limit);
+    return { page, isDone: !more, continueCursor: `o:${offset + page.length}` };
+  },
+});
+
+/** One numbered page of a member's photos, with the total, for the Photos tab. */
+export const photosPage = query({
+  args: { userId: v.id("users"), albumId: v.optional(v.id("photoAlbums")), page: v.number() },
+  handler: async (ctx, { userId, albumId, page }) => {
+    const PAGE_SIZE = 12;
+    const me = await getCurrentUserDoc(ctx);
+    const total = Number(
+      (await ctx.db.scalar(sql`select count(*) from (${photosSource(userId, albumId, me?.role === "admin")}) photos`)) ?? 0,
+    );
+    const offset = Math.max(0, Math.floor(page)) * PAGE_SIZE;
+    const { page: items } = await loadPhotos(ctx, userId, albumId, offset, PAGE_SIZE);
+    return { total, pageSize: PAGE_SIZE, items };
+  },
+});
+
+async function loadPhotos(
+  ctx: Parameters<typeof getCurrentUserDoc>[0],
+  userId: Id<"users">,
+  albumId: Id<"photoAlbums"> | undefined,
+  offset: number,
+  limit: number,
+) {
+    ctx.db.touch("profilePhotos", "posts", "photoLikes", "photoComments", "postLikes");
+    const me = await getCurrentUserDoc(ctx);
+    const rows = await ctx.db.rows(sql`
+      select * from (${photosSource(userId, albumId, me?.role === "admin")}) photos
       order by created_at desc, source_id desc, ord
       limit ${limit + 1} offset ${offset}`);
     const pageRows = rows.slice(0, limit);
@@ -322,13 +353,8 @@ export const photosByUser = query({
         },
       ];
     });
-    return {
-      page,
-      isDone: rows.length <= limit,
-      continueCursor: `o:${offset + pageRows.length}`,
-    };
-  },
-});
+    return { page, more: rows.length > limit };
+}
 
 const PHOTO_LIKERS_SHOWN = 6;
 

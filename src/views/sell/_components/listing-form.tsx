@@ -64,7 +64,7 @@ export type ListingSubmit = Omit<ListingFormValues, "price" | "durationHours" | 
   priceCents: number;
   durationHours: number;
   imageIds: Photo["id"][];
-  locked?: { storageId: LockedItem["storageId"]; kind: LockedItem["kind"] }[];
+  locked?: { storageId: LockedItem["storageId"]; kind: LockedItem["kind"]; durationSec?: number }[];
 };
 
 export default function ListingForm({
@@ -145,7 +145,9 @@ export default function ListingForm({
       durationHours: Number(durationHours),
       // Locked listings show one public cover (the first photo, or the video's thumbnail)
       imageIds: isLocked && lockedCover ? [lockedCover.id] : photos.map((p) => p.id),
-      locked: isLocked ? lockedItems.map(({ storageId, kind }) => ({ storageId, kind })) : undefined,
+      locked: isLocked
+        ? lockedItems.map(({ storageId, kind, durationSec }) => ({ storageId, kind, ...(durationSec ? { durationSec } : {}) }))
+        : undefined,
     });
   });
 

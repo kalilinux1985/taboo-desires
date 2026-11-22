@@ -15,9 +15,9 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty.tsx";
 import RequireAuth from "@/components/require-auth.tsx";
-import SellerListings from "@/components/seller-listings.tsx";
 import { ShopHeader, ShopTab } from "./_components/shop-tab.tsx";
 import { PhotosTab } from "./_components/photos-tab.tsx";
+import { InstantTab } from "./_components/instant-tab.tsx";
 import ProfileMenu from "./_components/profile-menu.tsx";
 import SellerReviews from "./_components/seller-reviews.tsx";
 import BuyerProfile from "./_components/buyer-profile.tsx";
@@ -95,7 +95,7 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
   ];
 
   // The Shop and Photos tabs are full width: small header, tab bar, then the tab's grid
-  if (tab === "shop" || tab === "photos") {
+  if (tab === "shop" || tab === "photos" || tab === "instant") {
     return (
       <div className="profile-design min-h-[calc(100dvh-3.5rem)] bg-[#0C0F15]">
         <div className="mx-auto flex max-w-[1170px] flex-col gap-[22px] px-5 py-6">
@@ -115,6 +115,8 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
           />
           {tab === "shop" ? (
             <ShopTab sellerId={profile._id} total={profile.counts.listings} isMe={profile.isMe} />
+          ) : tab === "instant" ? (
+            <InstantTab sellerId={profile._id} total={profile.counts.instantContent} isMe={profile.isMe} />
           ) : (
             <PhotosTab userId={profile._id} isMe={profile.isMe} total={profile.counts.photos} />
           )}
@@ -142,11 +144,6 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
             <PhotosSection userId={profile._id} count={profile.counts.photos} onViewAll={() => setTab("photos")} />
             <ActivitySection authorId={profile._id} />
           </>
-        )}
-        {tab === "instant" && (
-          <ProfilePanel title="Instant Content" count={`${profile.counts.instantContent} Items`}>
-            <SellerListings sellerId={profile._id} isMe={profile.isMe} kind="instant" />
-          </ProfilePanel>
         )}
         {tab === "reviews" && (
           <ProfilePanel title="Reviews">

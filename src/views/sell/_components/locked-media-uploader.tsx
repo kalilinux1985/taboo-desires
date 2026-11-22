@@ -18,7 +18,27 @@ export type LockedItem = {
   url: string;
   /** Kept for new uploads so the cover can be made from it */
   file?: File;
+  /** Video length in seconds */
+  durationSec?: number;
 };
+
+/** Reads a video file's length in seconds (0 when the browser can't tell). */
+function videoDuration(file: File): Promise<number> {
+  return new Promise((resolve) => {
+    const el = document.createElement("video");
+    const url = URL.createObjectURL(file);
+    el.preload = "metadata";
+    el.onloadedmetadata = () => {
+      URL.revokeObjectURL(url);
+      resolve(Number.isFinite(el.duration) ? Math.round(el.duration) : 0);
+    };
+    el.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(0);
+    };
+    el.src = url;
+  });
+}
 
 /** The public, unblurred picture shown on the listing: the first photo, or the video's thumbnail. */
 export type LockedCover = {
@@ -142,8 +162,8 @@ export default function LockedMediaUploader({
     if (!file.type.startsWith("video/")) return void toast.error(`${file.name} isn't a video`);
     if (file.size > MAX_VIDEO_BYTES) return void toast.error(`${file.name} is over 200MB`);
     await run(1, async () => {
-      const storageId = await put(file, "private");
-      onChange({ items: [{ storageId, kind: "video", url: URL.createObjectURL(file), file }], cover });
+      const [storageId, durationSec] = await Promise.all([put(file, "private"), videoDuration(file)]);
+      onChange({ items: [{ storageId, kind: "video", url: URL.createObjectURL(file), file, durationSec }], cover });
     });
   };
 

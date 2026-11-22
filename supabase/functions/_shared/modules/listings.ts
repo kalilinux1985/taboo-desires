@@ -76,7 +76,7 @@ const listingFields = {
   // Paywalled listing: original files; imageIds then hold their blurred previews
   locked: v.optional(
     v.array(
-      v.object({ storageId: v.storageId(), kind: mediaKindValidator }),
+      v.object({ storageId: v.storageId(), kind: mediaKindValidator, durationSec: v.optional(v.number()) }),
       20,
     ),
   ),
@@ -397,7 +397,7 @@ async function lockedView(
     media: canView
       ? media.flatMap((m, i) => {
           const url = urls[i];
-          return url ? [{ storageId: m.storageId, kind: m.kind, url }] : [];
+          return url ? [{ storageId: m.storageId, kind: m.kind, url, durationSec: m.durationSec }] : [];
         })
       : null,
   };
@@ -464,11 +464,13 @@ export const shopPage = query({
     sellerId: v.id("users"),
     page: v.number(),
     category: v.optional(categoryValidator),
+    /** "instant": Instant Content (locked) listings instead of regular ones */
+    kind: v.optional(v.literal("instant")),
   },
-  handler: async (ctx, { sellerId, page, category }) => {
+  handler: async (ctx, { sellerId, page, category, kind }) => {
     const PAGE_SIZE = 20;
     ctx.db.touch("listings");
-    const where = sql`seller_id = ${sellerId}::uuid and status = 'active' and paywall is null${
+    const where = sql`seller_id = ${sellerId}::uuid and status = 'active' and ${kind === "instant" ? sql`paywall is not null` : sql`paywall is null`}${
       category ? sql` and category = ${category}` : empty
     }`;
     const total = Number(

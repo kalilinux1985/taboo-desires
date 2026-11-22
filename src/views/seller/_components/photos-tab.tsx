@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { Heart, ImagePlus, MessageCircle, Send, Trash2 } from "lucide-react";
+import { useRef, useState } from "react";
+import { ChevronLeft, ChevronRight, Heart, ImagePlus, MessageSquare, Send, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import ZoomImage from "@/components/zoom-image.tsx";
-import { useBackendAuth, useMutation, usePaginatedQuery, useQuery } from "@/lib/backend/react.tsx";
+import { useBackendAuth, useMutation, useQuery } from "@/lib/backend/react.tsx";
 import { api } from "@/lib/backend/api.ts";
 import type { FunctionReturnType, Id } from "@/lib/backend/types.ts";
 import { cn } from "@/lib/utils.ts";
@@ -30,9 +30,9 @@ import AddImageDialog from "./add-image-dialog.tsx";
 import PostComments from "@/views/home/_components/post-comments.tsx";
 import ProfileAvatar from "@/components/profile-avatar.tsx";
 import Link from "next/link";
-import { Frame, SANS, SERIF, SectionTitle, imagesLabel } from "../_lib/profile-design.tsx";
+import { NURMA, SANS, SERIF } from "../_lib/profile-design.tsx";
 
-type Photo = FunctionReturnType<typeof api.users.photosByUser>["page"][number];
+type Photo = FunctionReturnType<typeof api.users.photosPage>["items"][number];
 
 type CommentRow = {
   _id: string;
@@ -183,48 +183,58 @@ function PhotoCard({ photo, isMe, onRemove }: { photo: Photo; isMe: boolean; onR
   };
 
   return (
-    <div className="group relative flex min-w-0 flex-col gap-3">
-      <div className="relative aspect-square overflow-hidden rounded-[5px] shadow-[0_4px_10px_rgba(0,0,0,0.3)]">
-        <ZoomImage src={photo.url} className="size-full">
-          <img src={photo.url} alt={photo.caption} loading="lazy" className="size-full object-cover" />
-        </ZoomImage>
-        {isMe && photo.photoId && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-xs"
-            aria-label="Remove photo"
-            onClick={() => onRemove(photo.photoId!)}
-            className="absolute right-1.5 top-1.5 size-7 cursor-pointer rounded-full bg-black/70 text-white hover:bg-black/80"
-          >
-            <Trash2 className="size-3.5" />
-          </Button>
-        )}
-      </div>
-      {photo.caption && <p className={cn(SERIF, "line-clamp-4 break-words px-1 text-[14px] leading-[20px] text-white")}>{photo.caption}</p>}
-      <div className="mt-auto flex flex-col gap-2 border-t border-white/15 px-1 pt-2">
-        <div className="flex min-w-0 items-center gap-3 text-[13px] text-white">
-          <Button variant="plain" size="none" type="button" onClick={() => setCommenting((v) => !v)} aria-label={commenting ? "Hide comments" : "Show comments"} aria-expanded={commenting} className="flex cursor-pointer items-center gap-1 hover:text-[#7b3aec]">
-            {photo.commentCount} <MessageCircle className="size-[15px]" strokeWidth={1.5} />
-          </Button>
-          <span className="h-4 w-px bg-white/20" />
-          <Button
-            variant="plain"
-            size="none"
-            type="button"
-            onClick={like}
-            aria-label={photo.likedByMe ? "Unlike" : "Like"}
-            aria-pressed={photo.likedByMe}
-            className={cn("flex cursor-pointer items-center gap-1 hover:text-[#7b3aec]", photo.likedByMe && "text-[#7b3aec]")}
-          >
-            <Heart className={cn("size-[15px]", photo.likedByMe && "fill-current")} strokeWidth={1.5} /> {photo.likeCount}
-          </Button>
-          <span className="flex min-w-0 flex-wrap items-center gap-1 text-xs [&>a]:size-5">
-            <LikerAvatars likers={photo.likers} total={photo.likeCount} postId={photo.postId ?? undefined} size="sm" />
-          </span>
+    // Outer frame around an inner card, as in the design
+    <div className="rounded-[3px] border border-[#3a3b40] bg-[#1d1e23] p-[14px] shadow-[0_4px_12px_rgba(0,0,0,0.35)]">
+      <div className="group relative flex min-w-0 flex-col overflow-hidden rounded-[3px] border border-[#2f3036] bg-[#141519]">
+        <div className="relative aspect-square overflow-hidden bg-white">
+          <ZoomImage src={photo.url} className="size-full">
+            <img src={photo.url} alt={photo.caption} loading="lazy" className="size-full object-cover" />
+          </ZoomImage>
+          {isMe && photo.photoId && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              aria-label="Remove photo"
+              onClick={() => onRemove(photo.photoId!)}
+              className="absolute right-1.5 top-1.5 size-7 cursor-pointer rounded-full bg-black/70 text-white hover:bg-black/80"
+            >
+              <Trash2 className="size-3.5" />
+            </Button>
+          )}
+        </div>
+        <div className="flex flex-1 flex-col px-[13px] pb-[13px] pt-[14px]">
+          <p className={cn(NURMA, "line-clamp-3 min-h-[44px] break-words text-[17px] leading-[22px] text-white")}>{photo.caption}</p>
+          <div className="mt-3 flex min-w-0 items-center gap-2 border-t border-white/15 pt-2.5 text-[13px] text-white">
+            <Button
+              variant="plain"
+              size="none"
+              type="button"
+              onClick={() => setCommenting((v) => !v)}
+              aria-label={commenting ? "Hide comments" : "Show comments"}
+              aria-expanded={commenting}
+              className="flex cursor-pointer items-center gap-0.5"
+            >
+              {photo.commentCount} <MessageSquare className="size-[15px] text-[#7b3aec]" strokeWidth={1.75} />
+            </Button>
+            <Button
+              variant="plain"
+              size="none"
+              type="button"
+              onClick={like}
+              aria-label={photo.likedByMe ? "Unlike" : "Like"}
+              aria-pressed={photo.likedByMe}
+              className="flex cursor-pointer items-center gap-0.5"
+            >
+              {photo.likeCount} <Heart className={cn("size-[15px] text-[#7b3aec]", photo.likedByMe && "fill-current")} strokeWidth={1.75} />
+            </Button>
+            <span className="flex min-w-0 flex-wrap items-center gap-1 text-xs [&>a]:size-5">
+              <LikerAvatars likers={photo.likers} total={photo.likeCount} postId={photo.postId ?? undefined} size="sm" />
+            </span>
+          </div>
+          {commenting && <CommentsPanel photo={photo} />}
         </div>
       </div>
-      {commenting && <CommentsPanel photo={photo} />}
     </div>
   );
 }
@@ -246,12 +256,20 @@ export function PhotosTab({
   ownCount?: number;
 }) {
   const [album, setAlbum] = useState<Id<"photoAlbums"> | "all">("all");
+  const [page, setPage] = useState(0);
+  const top = useRef<HTMLDivElement>(null);
   const albums = useQuery(api.albums.byUser, { userId });
-  const { results, status, loadMore } = usePaginatedQuery(
-    api.users.photosByUser,
-    album === "all" ? { userId } : { userId, albumId: album },
-    { initialNumItems: 24 },
-  );
+  const data = useQuery(api.users.photosPage, album === "all" ? { userId, page } : { userId, albumId: album, page });
+  const pick = (a: Id<"photoAlbums"> | "all") => {
+    setAlbum(a);
+    setPage(0);
+  };
+  const go = (next: number) => {
+    setPage(next);
+    top.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+  const shown = data?.total ?? 0;
+  const pageSize = data?.pageSize ?? 12;
   const removePhoto = useMutation(api.users.removeProfilePhoto);
   const removeAlbum = useMutation(api.albums.remove);
   const [adding, setAdding] = useState(false);
@@ -268,7 +286,7 @@ export function PhotosTab({
     if (album === "all") return;
     try {
       const n = await removeAlbum({ albumId: album });
-      setAlbum("all");
+      pick("all");
       toast.success(`Album deleted${n ? ` with ${n} ${n === 1 ? "photo" : "photos"}` : ""}`);
     } catch (e) {
       toast.error(getErrorMessage(e, "Could not delete album"));
@@ -277,11 +295,17 @@ export function PhotosTab({
   const room = limit === undefined ? Infinity : limit - (ownCount ?? total);
 
   return (
-    <>
-    {/* Same Frame as Overview sections: OUTER #202227 around INNER #141519, with the same inner padding. */}
-    <Frame className="border-0" innerClassName="flex flex-col gap-[30px] border-0 px-[22px] py-[28px]">
+    <div ref={top} className="flex flex-col gap-[22px]">
       <div className="flex items-start justify-between gap-4">
-        <SectionTitle title="Photos" count={imagesLabel(total)} />
+        <div className="flex flex-col gap-1.5">
+          <h2 className={cn(SERIF, "flex flex-wrap items-baseline gap-x-3 leading-tight")}>
+            <span className="text-[26px] text-white">Photos</span>
+            <span className="text-[26px] text-[#7b3aec]">
+              {total} {total === 1 ? "Image" : "Images"}
+            </span>
+          </h2>
+          <span className="h-0.5 w-[76px] bg-[#7b3aec]" />
+        </div>
         {isMe && room > 0 && (
           <Button type="button" variant="outline" onClick={() => setAdding(true)} className="h-[38px] cursor-pointer gap-2 border-2 border-[#7b3aec] text-white hover:bg-[#7b3aec]/20">
             <ImagePlus className="size-4 text-[#7b3aec]" /> Add photo
@@ -299,87 +323,105 @@ export function PhotosTab({
         )}
       </div>
 
-      {albums && albums.length > 0 && (
-        <div role="tablist" aria-label="Photo albums" className="flex gap-2 overflow-x-auto pb-1">
-          {[{ _id: "all" as const, name: "All", photos: total }, ...albums].map((a) => (
-            <Button
-              key={a._id}
-              type="button"
-              role="tab"
-              aria-selected={album === a._id}
-              variant="ghost"
-              onClick={() => setAlbum(a._id)}
-              className={cn(
-                SERIF,
-                "h-9 shrink-0 cursor-pointer gap-2 rounded-[5px] border px-4 text-[14px] text-white",
-                album === a._id
-                  ? "border-[#7b3aec] bg-[#7b3aec] hover:bg-[#7b3aec]"
-                  : "border-white/15 bg-[#141519] hover:bg-[#7b3aec]/20",
-              )}
-            >
-              {a.name}
-              <span className={cn("text-xs", album === a._id ? "text-white" : "text-[#7b3aec]")}>{a.photos}</span>
-            </Button>
-          ))}
-          {isMe && current && (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className={cn(SERIF, "h-9 shrink-0 cursor-pointer gap-2 rounded-[5px] border border-red-500/40 px-3 text-[14px] text-red-500 hover:bg-red-500/10 hover:text-red-500")}
-                >
-                  <Trash2 className="size-4" /> Delete album
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete the album “{current.name}”?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This also permanently deletes {current.photos === 0 ? "any photos" : current.photos === 1 ? "the 1 photo" : `all ${current.photos} photos`} in this
-                    album, along with their likes and comments. This can’t be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={deleteAlbum} className="cursor-pointer bg-red-600 text-white hover:bg-red-700">
-                    Delete album and photos
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          )}
-        </div>
-      )}
-
       <p className={cn(SERIF, "text-[15px] text-white")}>
-        {status === "LoadingFirstPage" ? "Loading photos…" : `Showing ${results.length} ${results.length === 1 ? "image" : "images"}`}
+        {data === undefined ? "Loading photos…" : `Showing ${shown} ${shown === 1 ? "Image" : "Images"}`}
       </p>
 
-      {status === "LoadingFirstPage" ? (
-        <div className="grid gap-[17px] sm:grid-cols-2 lg:grid-cols-3">
+      {/* Albums */}
+      <div role="tablist" aria-label="Photo albums" className="flex flex-wrap items-center gap-[18px] rounded-[3px] bg-[#141519] px-[10px] py-[16px] pb-[24px] shadow-[0_4px_12px_rgba(0,0,0,0.35)]">
+        {[{ _id: "all" as const, name: "All Photos", photos: total }, ...(albums ?? [])].map((a) => (
+          <Button
+            key={a._id}
+            type="button"
+            role="tab"
+            aria-selected={album === a._id}
+            variant="plain"
+            size="none"
+            onClick={() => pick(a._id)}
+            className={cn(
+              SERIF,
+              "h-[32px] shrink-0 cursor-pointer rounded-[3px] border-2 bg-transparent px-[10px] text-[15px]",
+              album === a._id ? "border-[#7b3aec] text-[#7b3aec]" : "border-white text-white hover:border-[#7b3aec]",
+            )}
+          >
+            {a.name} ({a.photos})
+          </Button>
+        ))}
+        {isMe && current && (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                type="button"
+                variant="plain"
+                size="none"
+                className={cn(SERIF, "h-[32px] shrink-0 cursor-pointer gap-2 rounded-[3px] border-2 border-red-500 px-[10px] text-[15px] text-red-500 hover:bg-red-500/10")}
+              >
+                <Trash2 className="size-4" /> Delete album
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete the album “{current.name}”?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This also permanently deletes {current.photos === 0 ? "any photos" : current.photos === 1 ? "the 1 photo" : `all ${current.photos} photos`} in this
+                  album, along with their likes and comments. This can’t be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={deleteAlbum} className="cursor-pointer bg-red-600 text-white hover:bg-red-700">
+                  Delete album and photos
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
+      </div>
+
+      {data === undefined ? (
+        <div className="grid gap-[20px] sm:grid-cols-2 lg:grid-cols-3">
           {[0, 1, 2].map((i) => (
-            <Skeleton key={i} className="aspect-square w-full" />
+            <Skeleton key={i} className="aspect-[0.83] w-full" />
           ))}
         </div>
-      ) : results.length === 0 ? (
+      ) : data.items.length === 0 ? (
         <p className={cn(SERIF, "py-16 text-center text-white")}>{album === "all" ? "No photos yet" : "No photos in this album yet"}</p>
       ) : (
-        <div className="grid gap-[17px] sm:grid-cols-2 lg:grid-cols-3">
-          {results.map((p) => (
+        <div className="grid items-start gap-x-[20px] gap-y-[44px] sm:grid-cols-2 lg:grid-cols-3">
+          {data.items.map((p) => (
             <PhotoCard key={p._id} photo={p} isMe={isMe} onRemove={remove} />
           ))}
         </div>
       )}
 
-      {status === "CanLoadMore" && (
-        <Button variant="outline" onClick={() => loadMore(24)} className={cn(SANS, "h-[48px] cursor-pointer border-2 border-[#5e2faf] uppercase tracking-[0.02em] text-white hover:bg-[#7b3aec]/20")}>
-          Load more photos
-        </Button>
-      )}
-      {status === "LoadingMore" && <Spinner className="self-center" />}
-    </Frame>
-    {isMe && <AddImageDialog open={adding} onOpenChange={setAdding} />}
-    </>
+      <Pager page={page} hasNext={(page + 1) * pageSize < shown} onGo={go} />
+      {isMe && <AddImageDialog open={adding} onOpenChange={setAdding} />}
+    </div>
+  );
+}
+
+/** PREVIOUS / NEXT bar under a paged grid. */
+export function Pager({ page, hasNext, onGo }: { page: number; hasNext: boolean; onGo: (page: number) => void }) {
+  return (
+    <div className="mt-[44px] grid grid-cols-2 overflow-hidden border-2 border-[#5e2faf]">
+      <Button
+        type="button"
+        variant="ghost"
+        disabled={page === 0}
+        onClick={() => onGo(Math.max(0, page - 1))}
+        className={cn(SANS, "h-[86px] cursor-pointer gap-4 rounded-none border-r-2 border-[#5e2faf] text-[30px] uppercase tracking-[0.02em] text-white hover:bg-[#7b3aec]/20 [&_svg]:size-7")}
+      >
+        <ChevronLeft className="text-[#7b3aec]" /> Previous
+      </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        disabled={!hasNext}
+        onClick={() => onGo(page + 1)}
+        className={cn(SANS, "h-[86px] cursor-pointer gap-4 rounded-none text-[30px] uppercase tracking-[0.02em] text-white hover:bg-[#7b3aec]/20 [&_svg]:size-7")}
+      >
+        Next <ChevronRight className="text-[#7b3aec]" />
+      </Button>
+    </div>
   );
 }

@@ -34,7 +34,7 @@ export type Id<T extends string> = string & { __tableName: T };
 
 type SystemFields<T extends string> = { _id: Id<T>; _creationTime: number };
 
-export type LockedMedia = { storageId: Id<"_storage">; kind: MediaKind };
+export type LockedMedia = { storageId: Id<"_storage">; kind: MediaKind; /** Video length in seconds */ durationSec?: number };
 
 type Fields = {
   users: {
