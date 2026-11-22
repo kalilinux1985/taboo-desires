@@ -125,6 +125,7 @@ var TABLES = {
     columns: {
       tokenIdentifier: c("token_identifier"),
       name: c("name"),
+      username: c("username"),
       email: c("email"),
       shopName: c("shop_name"),
       bio: c("bio"),
@@ -6114,6 +6115,7 @@ __export(users_exports, {
   finishSignup: () => finishSignup,
   getCurrentUser: () => getCurrentUser,
   getProfile: () => getProfile,
+  idByUsername: () => idByUsername,
   menu: () => menu,
   myAccess: () => myAccess,
   mySettings: () => mySettings,
@@ -6124,6 +6126,7 @@ __export(users_exports, {
   sellerDetailsValidator: () => sellerDetailsValidator,
   setAccountType: () => setAccountType,
   setProfilePrivate: () => setProfilePrivate,
+  topSellers: () => topSellers,
   updateBuyerDetails: () => updateBuyerDetails,
   updateCurrentUser: () => updateCurrentUser,
   updateProfile: () => updateProfile,
@@ -6467,6 +6470,7 @@ var getProfile = query({
       isPrivate: isPrivateProfile(user),
       _id: user._id,
       name: publicSellerName(user),
+      username: user.username ?? null,
       bio: user.bio ?? null,
       location: user.location ?? null,
       memberSince: user._creationTime,
@@ -6730,6 +6734,40 @@ var findMembers = query({
         avatarUrl: r.avatar_storage_id ? await ctx.storage.getUrl(r.avatar_storage_id) : null
       }))
     );
+  }
+});
+var idByUsername = query({
+  args: { username: v.string() },
+  handler: async (ctx, { username }) => {
+    const u = await ctx.db.first("users", sql`where username = ${username.toLowerCase().slice(0, 60)}`);
+    return u?._id ?? null;
+  }
+});
+var topSellers = query({
+  args: {},
+  handler: async (ctx) => {
+    ctx.db.touch("users", "sellerStats");
+    const rows = await ctx.db.rows(sql`
+      select u.id, u.username, u.avatar_storage_id
+        from public.users u
+        left join public.seller_stats s on s.seller_id = u.id
+       where u.account_type = 'seller'
+         and u.avatar_storage_id is not null
+         and coalesce(u.settings->>'profilePrivate', 'no') <> 'yes'
+       order by coalesce(s.sales_count, 0) desc,
+                coalesce(s.rating_sum::float / nullif(s.review_count, 0), 0) desc,
+                coalesce(s.review_count, 0) desc,
+                coalesce(s.follower_count, 0) desc,
+                u.created_at
+       limit 9`);
+    const out = await Promise.all(
+      rows.map(async (r) => ({
+        _id: r.id,
+        username: r.username,
+        avatarUrl: await ctx.storage.getUrl(r.avatar_storage_id)
+      }))
+    );
+    return out.filter((r) => r.avatarUrl);
   }
 });
 
