@@ -570,7 +570,7 @@ export const updateProfile = mutation({
       args.avatarStorageId !== undefined &&
       args.avatarStorageId !== user.avatarStorageId;
     if (avatarChanged && args.avatarStorageId)
-      assertOwnFiles([args.avatarStorageId], user._id, "public");
+      await assertOwnFiles(ctx, [args.avatarStorageId], user._id, "public");
     // Free up the old picture file when it's replaced or removed
     if (avatarChanged && user.avatarStorageId) {
       ctx.storage.delete(user.avatarStorageId);
@@ -595,7 +595,7 @@ export const addProfilePhoto = mutation({
   },
   handler: async (ctx, { storageId, description, albumId }) => {
     const user = await requireUser(ctx);
-    assertOwnFiles([storageId], user._id, "public");
+    await assertOwnFiles(ctx, [storageId], user._id, "public");
     const caption = description?.trim() ?? "";
     if (caption.length > 300) {
       ctx.storage.delete(storageId);

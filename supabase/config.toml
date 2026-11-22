@@ -23,3 +23,8 @@ verify_jwt = false
 [functions.send-emails]
 # Called by the pg_cron schedule with the project's publishable key; the JWT check stays on.
 verify_jwt = true
+
+[functions.scrub-media]
+# Called by the browser after upload (with the member's token) and by a storage trigger
+# (with the publishable key). Only cleans files; safe to repeat.
+verify_jwt = true

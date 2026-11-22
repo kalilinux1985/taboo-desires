@@ -62,7 +62,8 @@ export async function validateLockedMedia(
   if (media.length > LOCKED_MEDIA_MAX)
     throw bad(`Instant Content can hold up to ${LOCKED_MEDIA_MAX} photos`);
   if (coverCount !== 1) throw bad("Add a cover photo");
-  assertOwnFiles(
+  await assertOwnFiles(
+    ctx,
     media.map((m) => m.storageId),
     sellerId,
     "private",

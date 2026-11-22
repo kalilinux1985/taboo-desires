@@ -1,3 +1,4 @@
+import { assertScrubbed } from "../lib/files.ts";
 import { AppError } from "../core/errors.ts";
 import { mutation, query, type QueryCtx } from "../core/functions.ts";
 import type { Id } from "../core/schema.ts";
@@ -27,6 +28,7 @@ async function requireOwnImage(
 ) {
   if (!isOwnFile(storageId, userId, "private"))
     throw new AppError({ code: "NOT_FOUND", message: "Photo not found" });
+  await assertScrubbed(ctx, [storageId]);
   const contentType = await ctx.storage.getContentType(storageId);
   if (contentType === undefined)
     throw new AppError({ code: "NOT_FOUND", message: "Photo not found" });

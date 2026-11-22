@@ -1,3 +1,4 @@
+import { assertScrubbed } from "../lib/files.ts";
 import { AppError } from "../core/errors.ts";
 import { mutation, query, type QueryCtx } from "../core/functions.ts";
 import type { Id } from "../core/schema.ts";
@@ -42,6 +43,7 @@ export const submit = mutation({
     const me = await requireUser(ctx);
     if (!isOwnFile(photoStorageId, me._id, "private"))
       throw new AppError({ code: "NOT_FOUND", message: "Photo not found" });
+    await assertScrubbed(ctx, [photoStorageId]);
     const reject = (
       message: string,
       code: "BAD_REQUEST" | "FORBIDDEN" | "CONFLICT" = "BAD_REQUEST",

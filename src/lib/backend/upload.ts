@@ -31,5 +31,22 @@ export async function uploadFile(
       contentType: file.type || undefined,
     });
   if (error) throw new Error("Upload failed");
+  await serverPrivacyCheck(ticket.storageId);
   return ticket.storageId;
+}
+
+/**
+ * The server checks every upload again (scrub-media) and removes anything the
+ * browser missed. Files can only be attached once that check has passed, so
+ * wait for it here. If the call itself fails, the server's every-minute sweep
+ * still checks the file.
+ */
+async function serverPrivacyCheck(storageId: string) {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const { data, error } = await supabase.functions.invoke<{ status: string }>("scrub-media", { body: { storageId } });
+    if (!error && data?.status === "clean") return;
+    if (!error && data?.status === "rejected")
+      throw new Error("This file couldn't be checked for privacy. Save it as a JPEG, PNG or MP4 and try again.");
+    await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
+  }
 }

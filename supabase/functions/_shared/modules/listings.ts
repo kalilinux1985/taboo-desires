@@ -499,7 +499,7 @@ export const create = mutation({
   handler: async (ctx, { saleType, durationHours, locked, ...fields }) => {
     const user = await requireCapability(ctx, "list");
     validateListing(fields);
-    assertOwnFiles(fields.imageIds, user._id, "public");
+    await assertOwnFiles(ctx, fields.imageIds, user._id, "public");
     const limits = PLAN_LIMITS[await getPlan(ctx, user._id)];
     if (locked) {
       if (!limits.lockedContent)
@@ -555,7 +555,8 @@ export const update = mutation({
   handler: async (ctx, { listingId, locked, ...fields }) => {
     const listing = await requireOwnListing(ctx, listingId);
     validateListing(fields);
-    assertOwnFiles(
+    await assertOwnFiles(
+      ctx,
       fields.imageIds,
       listing.sellerId,
       "public",

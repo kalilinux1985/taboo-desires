@@ -96,7 +96,7 @@ export const create = mutation({
         message: `Add up to ${POST_IMAGES_MAX} photos`,
       });
     }
-    assertOwnFiles(imageIds, me._id, "public");
+    await assertOwnFiles(ctx, imageIds, me._id, "public");
     const text = cleanBody(body, POST_BODY_MAX, "Post", imageIds.length === 0);
     return await ctx.db.insert("posts", {
       authorId: me._id,
