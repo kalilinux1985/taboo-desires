@@ -1173,6 +1173,39 @@ __export(ageVerification_exports, {
   submit: () => submit
 });
 
+// supabase/functions/_shared/lib/files.ts
+async function assertOwnFiles(ctx, ids, userId, visibility, alreadyAttached = []) {
+  const fresh = ids.filter((id) => !alreadyAttached.includes(id));
+  for (const id of fresh) {
+    if (!isOwnFile(id, userId, visibility)) {
+      throw new AppError({
+        code: "BAD_REQUEST",
+        message: "A file is missing. Please upload it again"
+      });
+    }
+  }
+  await assertScrubbed(ctx, fresh);
+}
+async function assertScrubbed(ctx, ids) {
+  if (ids.length === 0) return;
+  const rows = await ctx.db.rows(sql`
+    select storage_id, status from public.media_scrubs where storage_id = any(${[...ids]}::text[])`);
+  const status = new Map(rows.map((r) => [String(r.storage_id), String(r.status)]));
+  for (const id of ids) {
+    const s = status.get(id);
+    if (s === "rejected")
+      throw new AppError({
+        code: "BAD_REQUEST",
+        message: "One of your files couldn't be checked for privacy. Save it as a JPEG, PNG or MP4 and upload it again"
+      });
+    if (s !== "clean")
+      throw new AppError({
+        code: "CONFLICT",
+        message: "Your upload is still being checked for privacy. Try again in a moment"
+      });
+  }
+}
+
 // supabase/functions/_shared/domain/plans.ts
 var PLAN_LIMITS = {
   free: { maxPhotos: 4, auctions: false, lockedContent: false },
@@ -1257,6 +1290,7 @@ var bad = (message) => new AppError({ code: "BAD_REQUEST", message });
 async function requireOwnImage(ctx, storageId, userId) {
   if (!isOwnFile(storageId, userId, "private"))
     throw new AppError({ code: "NOT_FOUND", message: "Photo not found" });
+  await assertScrubbed(ctx, [storageId]);
   const contentType = await ctx.storage.getContentType(storageId);
   if (contentType === void 0)
     throw new AppError({ code: "NOT_FOUND", message: "Photo not found" });
@@ -3693,19 +3727,6 @@ var LISTING_STATUSES = ["active", "sold", "ended", "hidden"];
 var SALE_TYPES = ["fixed", "auction"];
 var MEDIA_KINDS = ["image", "video"];
 
-// supabase/functions/_shared/lib/files.ts
-function assertOwnFiles(ids, userId, visibility, alreadyAttached = []) {
-  for (const id of ids) {
-    if (alreadyAttached.includes(id)) continue;
-    if (!isOwnFile(id, userId, visibility)) {
-      throw new AppError({
-        code: "BAD_REQUEST",
-        message: "A file is missing. Please upload it again"
-      });
-    }
-  }
-}
-
 // supabase/functions/_shared/lib/lockedContent.ts
 async function getUnlock(ctx, listingId, buyerId) {
   return await ctx.db.first(
@@ -3734,7 +3755,8 @@ async function validateLockedMedia(ctx, sellerId, media, coverCount, alreadyAtta
   if (media.length > LOCKED_MEDIA_MAX)
     throw bad4(`Instant Content can hold up to ${LOCKED_MEDIA_MAX} photos`);
   if (coverCount !== 1) throw bad4("Add a cover photo");
-  assertOwnFiles(
+  await assertOwnFiles(
+    ctx,
     media.map((m) => m.storageId),
     sellerId,
     "private",
@@ -4337,7 +4359,7 @@ var create3 = mutation({
   handler: async (ctx, { saleType, durationHours, locked, ...fields }) => {
     const user = await requireCapability(ctx, "list");
     validateListing(fields);
-    assertOwnFiles(fields.imageIds, user._id, "public");
+    await assertOwnFiles(ctx, fields.imageIds, user._id, "public");
     const limits = PLAN_LIMITS[await getPlan(ctx, user._id)];
     if (locked) {
       if (!limits.lockedContent)
@@ -4388,7 +4410,8 @@ var update = mutation({
   handler: async (ctx, { listingId, locked, ...fields }) => {
     const listing = await requireOwnListing(ctx, listingId);
     validateListing(fields);
-    assertOwnFiles(
+    await assertOwnFiles(
+      ctx,
       fields.imageIds,
       listing.sellerId,
       "public",
@@ -5165,7 +5188,7 @@ var create5 = mutation({
         message: `Add up to ${POST_IMAGES_MAX} photos`
       });
     }
-    assertOwnFiles(imageIds, me._id, "public");
+    await assertOwnFiles(ctx, imageIds, me._id, "public");
     const text = cleanBody(body, POST_BODY_MAX, "Post", imageIds.length === 0);
     return await ctx.db.insert("posts", {
       authorId: me._id,
@@ -6947,7 +6970,7 @@ var updateProfile = mutation({
     }
     const avatarChanged = args.avatarStorageId !== void 0 && args.avatarStorageId !== user.avatarStorageId;
     if (avatarChanged && args.avatarStorageId)
-      assertOwnFiles([args.avatarStorageId], user._id, "public");
+      await assertOwnFiles(ctx, [args.avatarStorageId], user._id, "public");
     if (avatarChanged && user.avatarStorageId) {
       ctx.storage.delete(user.avatarStorageId);
     }
@@ -6968,7 +6991,7 @@ var addProfilePhoto = mutation({
   },
   handler: async (ctx, { storageId, description, albumId }) => {
     const user = await requireUser(ctx);
-    assertOwnFiles([storageId], user._id, "public");
+    await assertOwnFiles(ctx, [storageId], user._id, "public");
     const caption = description?.trim() ?? "";
     if (caption.length > 300) {
       ctx.storage.delete(storageId);
@@ -7140,6 +7163,7 @@ var submit3 = mutation({
     const me = await requireUser(ctx);
     if (!isOwnFile(photoStorageId, me._id, "private"))
       throw new AppError({ code: "NOT_FOUND", message: "Photo not found" });
+    await assertScrubbed(ctx, [photoStorageId]);
     const reject = (message, code = "BAD_REQUEST") => new AppError({ code, message });
     if (me.accountType !== "seller" && me.role !== "admin")
       throw reject("Only seller accounts can get verified", "FORBIDDEN");
