@@ -1,5 +1,6 @@
 import { supabase } from "./client.ts";
 import type { Id } from "./types.ts";
+import { stripMetadata } from "../strip-metadata.ts";
 
 type UploadTicket = {
   storageId: Id<"_storage">;
@@ -21,6 +22,8 @@ export async function uploadFile(
   file: Blob,
   visibility: Visibility = "public",
 ): Promise<Id<"_storage">> {
+  // Photos and videos lose their location and other hidden details before they leave the device
+  if (file.type.startsWith("image/") || file.type.startsWith("video/") || file.type === "") file = await stripMetadata(file);
   const ticket = await generateUploadUrl({ visibility });
   const { error } = await supabase.storage
     .from(ticket.bucket)
