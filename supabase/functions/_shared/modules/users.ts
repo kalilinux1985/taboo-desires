@@ -377,6 +377,7 @@ export const getProfile = query({
       isPrivate: isPrivateProfile(user),
       _id: user._id,
       name: publicSellerName(user),
+      username: user.username ?? null,
       bio: user.bio ?? null,
       location: user.location ?? null,
       memberSince: user._creationTime,
@@ -687,5 +688,43 @@ export const findMembers = query({
           : null,
       })),
     );
+  },
+});
+
+/** The member with this username (the profile address /username), or null. */
+export const idByUsername = query({
+  args: { username: v.string() },
+  handler: async (ctx, { username }) => {
+    const u = await ctx.db.first("users", sql`where username = ${username.toLowerCase().slice(0, 60)}`);
+    return u?._id ?? null;
+  },
+});
+
+/** Sellers with a picture, best first (sales, then rating and reviews): the home page's avatar grid. */
+export const topSellers = query({
+  args: {},
+  handler: async (ctx) => {
+    ctx.db.touch("users", "sellerStats");
+    const rows = await ctx.db.rows(sql`
+      select u.id, u.username, u.avatar_storage_id
+        from public.users u
+        left join public.seller_stats s on s.seller_id = u.id
+       where u.account_type = 'seller'
+         and u.avatar_storage_id is not null
+         and coalesce(u.settings->>'profilePrivate', 'no') <> 'yes'
+       order by coalesce(s.sales_count, 0) desc,
+                coalesce(s.rating_sum::float / nullif(s.review_count, 0), 0) desc,
+                coalesce(s.review_count, 0) desc,
+                coalesce(s.follower_count, 0) desc,
+                u.created_at
+       limit 9`);
+    const out = await Promise.all(
+      rows.map(async (r) => ({
+        _id: r.id as Id<"users">,
+        username: r.username as string,
+        avatarUrl: await ctx.storage.getUrl(r.avatar_storage_id as Id<"_storage">),
+      })),
+    );
+    return out.filter((r) => r.avatarUrl);
   },
 });

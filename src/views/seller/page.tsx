@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useQuery } from "@/lib/backend/react.tsx";
 import { Lock, UserX } from "lucide-react";
@@ -40,6 +40,14 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
   const access = useQuery(api.users.profileAccess, { userId: sellerId });
   const [tab, setTab] = useState<Tab>("overview");
   useRecordProfileVisit(sellerId);
+  // The address bar shows the site followed by the member's username
+  const username = profile?.username;
+  useEffect(() => {
+    if (!username) return;
+    const path = `/${username}`;
+    if (window.location.pathname !== path)
+      window.history.replaceState(window.history.state, "", `${path}${window.location.search}${window.location.hash}`);
+  }, [username]);
 
   if (profile === undefined || (profile === null && access === undefined)) {
     return (
@@ -154,6 +162,31 @@ function SellerView({ sellerId }: { sellerId: Id<"users"> }) {
       </div>
     </ProfilePage>
   );
+}
+
+/** /username: looks the member up, then shows their profile. */
+export function UsernamePage() {
+  const { username } = useParams<{ username: string }>();
+  const id = useQuery(api.users.idByUsername, username ? { username: decodeURIComponent(username) } : "skip");
+  if (id === undefined)
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-10">
+        <Skeleton className="h-28 w-full" />
+      </div>
+    );
+  if (id === null)
+    return (
+      <Empty className="py-20">
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <UserX />
+          </EmptyMedia>
+          <EmptyTitle>Profile not found</EmptyTitle>
+          <EmptyDescription>No member has this username.</EmptyDescription>
+        </EmptyHeader>
+      </Empty>
+    );
+  return <SellerView sellerId={id} />;
 }
 
 export function SellerPage() {

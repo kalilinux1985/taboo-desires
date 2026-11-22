@@ -40,6 +40,8 @@ type Fields = {
   users: {
     tokenIdentifier: string;
     name?: string;
+    /** Unique, set by the database from the shop name or name: the profile address /username */
+    username?: string;
     email?: string;
     shopName?: string;
     bio?: string;
@@ -293,6 +295,7 @@ export const TABLES: { [T in DbTable]: TableDef<T> } = {
     columns: {
       tokenIdentifier: c("token_identifier"),
       name: c("name"),
+      username: c("username"),
       email: c("email"),
       shopName: c("shop_name"),
       bio: c("bio"),

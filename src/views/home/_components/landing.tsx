@@ -85,6 +85,7 @@ function StepCards({ steps }: { steps: Step[] }) {
 
 export default function Landing() {
   const counts = useQuery(api.listings.landingCounts, {}) as Counts | undefined;
+  const sellers = useQuery(api.users.topSellers, {});
 
   return (
     <div className={cn(PAGE, "min-h-[calc(100dvh-3.5rem)] text-white")}>
@@ -102,12 +103,25 @@ export default function Landing() {
             <Link href="/signin">Get Started</Link>
           </Button>
         </div>
-        <div className="mx-auto grid w-full max-w-[400px] grid-cols-3 gap-[11px]" aria-hidden>
-          {Array.from({ length: 9 }).map((_, i) => (
-            <div key={i} className="flex aspect-square items-end justify-center overflow-hidden rounded-[5px] bg-[#a8a9ae]">
-              <UserRound className="size-[88%] translate-y-[8%] text-[#222226]" strokeWidth={1.1} fill="currentColor" />
-            </div>
-          ))}
+        {/* Top sellers: just their pictures, each linking to their profile */}
+        <div className="mx-auto grid w-full max-w-[400px] grid-cols-3 gap-[11px]">
+          {Array.from({ length: 9 }).map((_, i) => {
+            const s = sellers?.[i];
+            return s ? (
+              <Link
+                key={s._id}
+                href={`/${s.username}`}
+                aria-label="View top seller's profile"
+                className="block aspect-square cursor-pointer overflow-hidden rounded-[5px] bg-[#a8a9ae] transition-opacity hover:opacity-85"
+              >
+                <img src={s.avatarUrl!} alt="" loading="lazy" className="size-full object-cover" />
+              </Link>
+            ) : (
+              <div key={`empty-${i}`} aria-hidden className="flex aspect-square items-end justify-center overflow-hidden rounded-[5px] bg-[#a8a9ae]">
+                <UserRound className="size-[88%] translate-y-[8%] text-[#222226]" strokeWidth={1.1} fill="currentColor" />
+              </div>
+            );
+          })}
         </div>
       </section>
 
