@@ -230,7 +230,27 @@ type Fields = {
     conversationId: Id<"conversations">;
     senderId: Id<"users">;
     body: string;
+    /** The message carries a contract card */
+    contractId?: Id<"contracts">;
   };
+  contracts: {
+    conversationId: Id<"conversations">;
+    sellerId: Id<"users">;
+    buyerId: Id<"users">;
+    listingId?: Id<"listings">;
+    itemTitle: string;
+    itemUrl?: string;
+    totalCents: number;
+    paymentCount: number;
+    paymentMethod?: string;
+    schedule: { dueDate: string; amountCents: number }[];
+    terms?: string;
+    status: "pending" | "accepted" | "rejected" | "cancelled";
+    respondedAt?: string;
+    orderId?: Id<"orders">;
+    updatedAt: string;
+  };
+  contractComments: { contractId: Id<"contracts">; authorId: Id<"users">; body: string };
   orders: {
     sellerId: Id<"users">;
     buyerId: Id<"users">;
@@ -251,6 +271,9 @@ type Fields = {
     shippedAt?: string;
     deliveredAt?: string;
     updatedAt: string;
+    contractId?: Id<"contracts">;
+    /** Last time the seller added or changed the tracking number */
+    trackingUpdatedAt?: string;
   };
   shippingAddresses: {
     userId: Id<"users">;
@@ -565,6 +588,35 @@ export const TABLES: { [T in DbTable]: TableDef<T> } = {
       conversationId: c("conversation_id", "uuid"),
       senderId: c("sender_id", "uuid"),
       body: c("body"),
+      contractId: c("contract_id", "uuid"),
+    },
+  },
+  contracts: {
+    sqlName: "contracts",
+    columns: {
+      conversationId: c("conversation_id", "uuid"),
+      sellerId: c("seller_id", "uuid"),
+      buyerId: c("buyer_id", "uuid"),
+      listingId: c("listing_id", "uuid"),
+      itemTitle: c("item_title"),
+      itemUrl: c("item_url"),
+      totalCents: c("total_cents", "int"),
+      paymentCount: c("payment_count", "int"),
+      paymentMethod: c("payment_method"),
+      schedule: c("schedule", "json"),
+      terms: c("terms"),
+      status: c("status"),
+      respondedAt: c("responded_at", "ts"),
+      orderId: c("order_id", "uuid"),
+      updatedAt: c("updated_at", "ts"),
+    },
+  },
+  contractComments: {
+    sqlName: "contract_comments",
+    columns: {
+      contractId: c("contract_id", "uuid"),
+      authorId: c("author_id", "uuid"),
+      body: c("body"),
     },
   },
   orders: {
@@ -589,6 +641,8 @@ export const TABLES: { [T in DbTable]: TableDef<T> } = {
       shippedAt: c("shipped_at", "ts"),
       deliveredAt: c("delivered_at", "ts"),
       updatedAt: c("updated_at", "ts"),
+      contractId: c("contract_id", "uuid"),
+      trackingUpdatedAt: c("tracking_updated_at", "ts"),
     },
   },
   shippingAddresses: {

@@ -26,7 +26,7 @@ function cleanBody(body: string): string {
 }
 
 /** Loads a conversation and verifies the caller is the buyer or seller in it. */
-async function requireParticipant(
+export async function requireParticipant(
   ctx: QueryCtx,
   conversationId: Id<"conversations">,
 ) {
@@ -42,17 +42,19 @@ async function requireParticipant(
   return { user, convo, isBuyer: convo.buyerId === user._id };
 }
 
-async function appendMessage(
+export async function appendMessage(
   ctx: QueryCtx,
   convo: Doc<"conversations">,
   senderId: Id<"users">,
   body: string,
+  contractId?: Id<"contracts">,
 ) {
   await assertNotBlocked(ctx, convo.buyerId, convo.sellerId);
   await ctx.db.insert("messages", {
     conversationId: convo._id,
     senderId,
     body,
+    ...(contractId ? { contractId } : {}),
   });
   const senderIsBuyer = senderId === convo.buyerId;
   await ctx.db.patch("conversations", convo._id, {

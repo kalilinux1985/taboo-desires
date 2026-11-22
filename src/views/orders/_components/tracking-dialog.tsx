@@ -29,10 +29,18 @@ import { getErrorMessage } from "@/lib/listings.ts";
 import { CARRIERS } from "@/shared/shipping.ts";
 
 /** For sellers who bought postage somewhere else: add the tracking number by hand. */
-export default function TrackingDialog({ orderId }: { orderId: Id<"orders"> }) {
+export default function TrackingDialog({
+  orderId,
+  current,
+}: {
+  orderId: Id<"orders">;
+  /** Tracking already on the order: the dialog then updates it */
+  current?: { carrier: string | null; code: string | null };
+}) {
+  const updating = !!current;
   const [open, setOpen] = useState(false);
-  const [carrier, setCarrier] = useState<string>("USPS");
-  const [code, setCode] = useState("");
+  const [carrier, setCarrier] = useState<string>(current?.carrier ?? "USPS");
+  const [code, setCode] = useState(current?.code ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const addTracking = useMutation(api.orders.addTracking);
@@ -43,7 +51,7 @@ export default function TrackingDialog({ orderId }: { orderId: Id<"orders"> }) {
     setError(null);
     try {
       await addTracking({ orderId, carrier, trackingCode: code });
-      toast.success("Marked as shipped");
+      toast.success(updating ? "Tracking updated. The buyer has been notified." : "Marked as shipped. The buyer has been notified.");
       setOpen(false);
     } catch (err) {
       setError(getErrorMessage(err, "Couldn't save the tracking number"));
@@ -56,13 +64,17 @@ export default function TrackingDialog({ orderId }: { orderId: Id<"orders"> }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm" variant="secondary" className="cursor-pointer">
-          <PackageCheck /> I shipped it myself
+          <PackageCheck /> {updating ? "Update tracking" : "Add tracking"}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add tracking</DialogTitle>
-          <DialogDescription>Bought postage somewhere else? Enter the tracking number so the buyer can follow it.</DialogDescription>
+          <DialogTitle>{updating ? "Update tracking" : "Add tracking"}</DialogTitle>
+          <DialogDescription>
+            {updating
+              ? "Fix or replace the tracking number. The buyer gets a notification with the new number."
+              : "Shipped it? Enter the tracking number. The buyer gets a notification so they can follow it."}
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="flex flex-col gap-3">
           <div className="grid grid-cols-[7rem_1fr] gap-2">

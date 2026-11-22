@@ -2,7 +2,8 @@ import { useEffect, useState, type FormEvent, type KeyboardEvent } from "react";
 import Link from "next/link";
 import { useMutation, usePaginatedQuery, useQuery } from "@/lib/backend/react.tsx";
 import { format, formatDistanceToNow, isSameDay, isToday } from "date-fns";
-import { ArrowLeft, EllipsisVertical, Send } from "lucide-react";
+import { ArrowLeft, EllipsisVertical, FileSignature, Send } from "lucide-react";
+import { ContractCard, ContractDialog } from "./contract.tsx";
 import { toast } from "sonner";
 import { api } from "@/lib/backend/api.ts";
 import type { Id } from "@/lib/backend/types.ts";
@@ -23,7 +24,8 @@ function formatTime(ms: number) {
   return isToday(ms) ? format(ms, "h:mm a") : format(ms, "MMM d, h:mm a");
 }
 
-function Composer({ conversationId }: { conversationId: Id<"conversations"> }) {
+function Composer({ conversationId, isSeller }: { conversationId: Id<"conversations">; isSeller: boolean }) {
+  const [contractOpen, setContractOpen] = useState(false);
   const access = useAccess();
   const { blockAndRedirect } = useUpgradeGate();
   const send = useMutation(api.messages.send);
@@ -64,6 +66,21 @@ function Composer({ conversationId }: { conversationId: Id<"conversations"> }) {
 
   return (
     <form onSubmit={submit} className="flex items-center gap-3 border-t border-white/5 bg-[#141519] p-4">
+      {isSeller && (
+        <>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => setContractOpen(true)}
+            aria-label="Send a contract"
+            title="Send a contract"
+            className="h-11 shrink-0 cursor-pointer gap-1.5 rounded-[5px] border border-violet-600/60 px-3 text-white hover:bg-violet-600/20"
+          >
+            <FileSignature className="size-5 text-violet-500" /> <span className="hidden sm:inline">Contract</span>
+          </Button>
+          <ContractDialog conversationId={conversationId} open={contractOpen} onOpenChange={setContractOpen} />
+        </>
+      )}
       <Textarea
         value={body}
         onChange={(e) => setBody(e.target.value)}
@@ -118,6 +135,8 @@ function MessageList({
     <div className="flex min-h-0 flex-1 flex-col-reverse gap-2 overflow-y-auto p-4">
       {results.map((m, i) => {
         const mine = m.senderId === meId;
+        // A contract's card shows once, on the message that sent it; later replies about it stay text
+        const contractCard = m.contractId && !results.slice(i + 1).some((x) => x.contractId === m.contractId);
         const older = results[i + 1];
         const newDay = !older || !isSameDay(older._creationTime, m._creationTime);
         const bubble = (
@@ -130,6 +149,7 @@ function MessageList({
             >
               {m.body}
             </div>
+            {contractCard && m.contractId && <ContractCard contractId={m.contractId} />}
             <span className="px-1 text-xs text-violet-500">{format(m._creationTime, "h:mm a")}</span>
           </div>
         );
@@ -230,7 +250,7 @@ export default function ConversationThread({
         </DropdownMenu>
       </div>
       <MessageList conversationId={conversationId} meId={convo.meId} other={convo.other} />
-      <Composer conversationId={conversationId} />
+      <Composer conversationId={conversationId} isSeller={convo.role === "seller"} />
     </div>
   );
 }

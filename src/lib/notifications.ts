@@ -1,7 +1,7 @@
 // Wording, icon and link for each kind of notification, shared by the
 // Notifications page and the bell's dropdown in the header.
 import type { ComponentType } from "react";
-import { Check, Gavel, Heart, MessageSquare, Sparkles, Star, Trophy, Unlock, UserPlus, X } from "lucide-react";
+import { Check, FileSignature, Gavel, Heart, MessageSquare, Sparkles, Star, Trophy, Truck, Unlock, UserPlus, X } from "lucide-react";
 import type { api } from "@/lib/backend/api.ts";
 import type { FunctionReturnType } from "@/lib/backend/types.ts";
 import { formatPrice } from "@/lib/listings.ts";
@@ -51,6 +51,18 @@ export function describeNotification(
       };
     case "post_comment":
       return { icon: MessageSquare, text: `${who} commented on your post`, href: post(true) };
+    case "contract_sent":
+      return { icon: FileSignature, text: `${who} sent you a contract for “${n.title}” (${money})`, href: `/messages/${n.targetId}` };
+    case "contract_answered":
+      return {
+        icon: n.title === "accepted" ? Check : X,
+        text: `${who} ${n.title} your contract (${money})`,
+        href: n.title === "accepted" ? "/orders" : `/messages/${n.targetId}`,
+      };
+    case "contract_comment":
+      return { icon: MessageSquare, text: `${who} commented on the contract for “${n.title}”`, href: `/messages/${n.targetId}` };
+    case "tracking":
+      return { icon: Truck, text: `${who} added tracking for “${n.title}”`, href: "/orders" };
   }
 }
 

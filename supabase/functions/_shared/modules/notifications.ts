@@ -19,7 +19,11 @@ export type NotificationKind =
   | "review"
   | "post_like"
   | "post_comment"
-  | "comment_like";
+  | "comment_like"
+  | "contract_sent"
+  | "contract_answered"
+  | "contract_comment"
+  | "tracking";
 
 const WINDOW_DAYS = 30;
 const LIMIT = 50;
@@ -35,6 +39,9 @@ async function recentFor(ctx: QueryCtx, userId: Id<"users">) {
     "postLikes",
     "postComments",
     "postCommentLikes",
+    "contracts",
+    "contractComments",
+    "orders",
     "users",
   );
   const me = sql`${userId}::uuid`;
@@ -110,6 +117,31 @@ async function recentFor(ctx: QueryCtx, userId: Id<"users">) {
         join public.posts p on p.id = pc.post_id
         join public.users a on a.id = cl.user_id
        where pc.author_id = ${me} and cl.user_id <> ${me} and cl.created_at > ${since}
+      union all
+      -- a seller sent me a contract; target is the conversation
+      select 'contract_sent', k.created_at, a.id,
+             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'The seller'), k.item_title, k.conversation_id, k.total_cents
+        from public.contracts k join public.users a on a.id = k.seller_id
+       where k.buyer_id = ${me} and k.created_at > ${since}
+      union all
+      -- the buyer accepted or rejected my contract; title is the answer
+      select 'contract_answered', k.responded_at, a.id,
+             coalesce(nullif(a.name, ''), 'The buyer'), k.status, k.conversation_id, k.total_cents
+        from public.contracts k join public.users a on a.id = k.buyer_id
+       where k.seller_id = ${me} and k.status in ('accepted', 'rejected') and k.responded_at > ${since}
+      union all
+      select 'contract_comment', cc.created_at, a.id,
+             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'Someone'), k.item_title, k.conversation_id, null
+        from public.contract_comments cc
+        join public.contracts k on k.id = cc.contract_id
+        join public.users a on a.id = cc.author_id
+       where (k.buyer_id = ${me} or k.seller_id = ${me}) and cc.author_id <> ${me} and cc.created_at > ${since}
+      union all
+      -- the seller added or changed the tracking number on my order
+      select 'tracking', o.tracking_updated_at, a.id,
+             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'The seller'), o.title, o.id, null
+        from public.orders o join public.users a on a.id = o.seller_id
+       where o.buyer_id = ${me} and o.tracking_updated_at > ${since}
     ) n
     order by at desc
     limit ${LIMIT}::int`);

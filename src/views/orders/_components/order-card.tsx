@@ -42,6 +42,7 @@ import {
 import AddressForm from "./address-form.tsx";
 import LabelDialog, { PrintLabelLink } from "./label-dialog.tsx";
 import TrackingDialog from "./tracking-dialog.tsx";
+import { ContractTerms } from "@/views/messages/_components/contract.tsx";
 
 export type OrderRow = FunctionReturnType<typeof api.orders.list>["page"][number];
 
@@ -216,12 +217,29 @@ export default function OrderCard({ order: o }: { order: OrderRow }) {
         )}
       </div>
 
+      {o.contract && (
+        <details open={seller} className="rounded-[5px] border border-violet-600/40 bg-[#141519] px-4 py-3">
+          <summary className="cursor-pointer text-sm font-bold text-white">
+            Contract · {formatPrice(o.contract.totalCents)} in {o.contract.paymentCount} {o.contract.paymentCount === 1 ? "payment" : "payments"}
+          </summary>
+          <div className="mt-2">
+            <ContractTerms c={o.contract} />
+            <Link href={`/messages/${o.contract.conversationId}`} className="mt-2 inline-block text-sm text-violet-400 hover:underline">
+              Open the conversation
+            </Link>
+          </div>
+        </details>
+      )}
+
       {step && <p className="text-sm text-muted-foreground">{step}</p>}
 
       <div className="flex flex-wrap gap-2">
         {!seller && canCancel && <AddressDialog order={o} />}
         {seller && o.status === "ready_to_ship" && <LabelDialog orderId={o._id} shipsTo={o.shipsTo} />}
         {seller && canCancel && <TrackingDialog orderId={o._id} />}
+        {seller && o.status === "shipped" && !o.hasLabel && (
+          <TrackingDialog orderId={o._id} current={{ carrier: o.carrier, code: o.trackingCode }} />
+        )}
         {seller && o.status === "label_created" && o.labelUrl && <PrintLabelLink url={o.labelUrl} />}
         {o.hasLabel && (o.status === "label_created" || o.status === "shipped") && (
           <Button

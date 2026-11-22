@@ -25,6 +25,7 @@ import { getCurrentUserDoc, publicSellerName, requireUser } from "../lib/auth.ts
 import { shippingError, verifyAddress } from "../lib/easypost.ts";
 import { bumpStats } from "../lib/sellerStats.ts";
 import { queueEmail } from "../lib/email.ts";
+import { view as contractView } from "./contracts.ts";
 
 export const addressValidator = v.object({
   name: v.string(),
@@ -184,9 +185,10 @@ export async function liveOrderForListing(ctx: QueryCtx, listingId: Id<"listings
 }
 
 async function toView(ctx: QueryCtx, o: Doc<"orders">, role: "buyer" | "seller") {
-  const [other, listing] = await Promise.all([
+  const [other, listing, contract] = await Promise.all([
     ctx.db.get("users", role === "buyer" ? o.sellerId : o.buyerId),
     o.listingId ? ctx.db.get("listings", o.listingId) : null,
+    o.contractId ? ctx.db.get("contracts", o.contractId) : null,
   ]);
   const imageId = listing?.imageIds[0];
   return {
@@ -225,6 +227,9 @@ async function toView(ctx: QueryCtx, o: Doc<"orders">, role: "buyer" | "seller")
     labelCreatedAt: o.labelCreatedAt ?? null,
     shippedAt: o.shippedAt ?? null,
     deliveredAt: o.deliveredAt ?? null,
+    trackingUpdatedAt: o.trackingUpdatedAt ?? null,
+    /** The agreed contract, when the order came from one */
+    contract: contract ? { ...contractView(contract, listing), conversationId: contract.conversationId } : null,
   };
 }
 
@@ -409,23 +414,43 @@ export const addTracking = mutation({
     trackingCode: v.string(),
   },
   handler: async (ctx, { orderId, carrier, trackingCode }) => {
-    const { order } = await getOrderAs(ctx, orderId, "seller");
-    if (order.status !== "ready_to_ship" && order.status !== "awaiting_address")
-      throw new AppError({ code: "CONFLICT", message: "This order already has tracking" });
+    const { order, me } = await getOrderAs(ctx, orderId, "seller");
+    // New tracking, or a correction to tracking the seller typed in (not a bought label's)
+    const updating = order.status === "shipped" && !order.labelUrl;
+    if (order.status !== "ready_to_ship" && order.status !== "awaiting_address" && !updating)
+      throw new AppError({ code: "CONFLICT", message: "This order's tracking can't be changed" });
     const code = trackingCode.replace(/\s+/g, "").toUpperCase();
     if (!/^[A-Z0-9]{8,40}$/.test(code))
       throw new AppError({ code: "BAD_REQUEST", message: "Enter a valid tracking number" });
     if (!(CARRIERS as readonly string[]).includes(carrier))
       throw new AppError({ code: "BAD_REQUEST", message: "Pick a carrier" });
     const now = nowIso(ctx);
+    if (updating && order.trackingCode === code && order.carrier === carrier) return null;
     await ctx.db.patch("orders", orderId, {
       status: "shipped",
       carrier,
       trackingCode: code,
       trackingUrl: carrierTrackingUrl(carrier, code) ?? undefined,
-      shippedAt: now,
+      shippedAt: order.shippedAt ?? now,
+      trackingUpdatedAt: now,
       updatedAt: now,
     });
+    // Tell the buyer (the bell notification comes from tracking_updated_at)
+    const buyer = await ctx.db.get("users", order.buyerId);
+    if (buyer)
+      await queueEmail(ctx, {
+        to: buyer,
+        kind: "tracking",
+        transactional: true,
+        subject: updating ? `Updated tracking for ${order.title}` : `${order.title} has shipped`,
+        heading: updating ? "Tracking number updated" : "Your order has shipped",
+        lines: [
+          `${publicSellerName(me)} ${updating ? "updated the tracking number for" : "shipped"} "${order.title}".`,
+          `${carrier} tracking number: ${code}`,
+        ],
+        button: { label: "Track your order", path: "/orders" },
+        dedupeKey: `tracking:${order._id}:${code}`,
+      });
     return null;
   },
 });
