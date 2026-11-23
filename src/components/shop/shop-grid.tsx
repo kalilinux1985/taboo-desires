@@ -39,9 +39,11 @@ export function ShopCard({ listing }: { listing: ListingCardData }) {
             <div className="size-full" />
           )}
         </div>
-        <span className="absolute left-3 top-3 rounded-[5px] bg-background/75 px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-accent-foreground">
-          {CONDITION_LABEL[listing.condition]}
-        </span>
+        {listing.condition !== "custom_wear" && (
+          <span className="absolute left-3 top-3 rounded-[5px] bg-background/75 px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-accent-foreground">
+            {CONDITION_LABEL[listing.condition]}
+          </span>
+        )}
         <FavoriteButton
           listingId={listing._id}
           sellerId={listing.sellerId}
@@ -67,7 +69,7 @@ export function ShopCard({ listing }: { listing: ListingCardData }) {
         </p>
         <h3 className="truncate text-base font-extrabold">{listing.title}</h3>
         <p className="line-clamp-2 min-h-[2.6em] text-sm text-muted-foreground">
-          {listing.description || `${listing.brand} · Size ${listing.size}`}
+          {listing.description || [listing.brand, listing.size && `Size ${listing.size}`].filter(Boolean).join(" · ")}
         </p>
       </div>
       <div className="flex flex-wrap items-center gap-3 px-4 pb-4">
@@ -197,7 +199,7 @@ export function CategoryCard({ listing }: { listing: ListingCardData }) {
         </p>
         <h3 className="mt-1 truncate text-base">{listing.title}</h3>
         <p className="mt-2 line-clamp-2 min-h-[2.8em] text-sm">
-          {listing.description || `${listing.brand} · Size ${listing.size}`}
+          {listing.description || [listing.brand, listing.size && `Size ${listing.size}`].filter(Boolean).join(" · ")}
         </p>
         <div className="mt-3 flex items-end justify-between gap-3">
           <span className="text-2xl text-violet-600 tabular-nums">

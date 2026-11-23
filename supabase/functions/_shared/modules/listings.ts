@@ -68,9 +68,10 @@ const listingFields = {
   description: v.string(),
   category: categoryValidator,
   subcategory: v.optional(v.union(...SUBCATEGORY_VALUES.map((s) => v.literal(s)))),
-  brand: v.string(),
-  size: v.string(),
-  condition: conditionValidator,
+  // The sell form no longer asks for these; older listings keep theirs
+  brand: v.optional(v.string()),
+  size: v.optional(v.string()),
+  condition: v.optional(conditionValidator),
   priceCents: v.number(),
   imageIds: v.array(v.storageId(), 20),
   // Paywalled listing: original files; imageIds then hold their blurred previews
@@ -87,8 +88,8 @@ type ListingInput = {
   description: string;
   category: string;
   subcategory?: Subcategory;
-  brand: string;
-  size: string;
+  brand?: string;
+  size?: string;
   priceCents: number;
   imageIds: Id<"_storage">[];
 };
@@ -99,8 +100,8 @@ function validateListing(input: ListingInput) {
   if (input.title.trim().length < 3 || input.title.length > 80)
     throw bad("Title must be 3-80 characters");
   if (input.description.length > 2000) throw bad("Description is too long");
-  if (!input.brand.trim()) throw bad("Brand is required");
-  if (!input.size.trim()) throw bad("Size is required");
+  if ((input.brand ?? "").length > 40) throw bad("Brand is too long");
+  if ((input.size ?? "").length > 20) throw bad("Size is too long");
   if (
     !Number.isInteger(input.priceCents) ||
     input.priceCents < 100 ||
@@ -124,13 +125,13 @@ function checkPhotoLimit(count: number, maxPhotos: number, alreadyHad = 0) {
     });
 }
 
-function cleanListing<T extends ListingInput>(input: T): T {
+function cleanListing<T extends ListingInput>(input: T): T & { brand: string; size: string } {
   return {
     ...input,
     title: input.title.trim(),
     description: input.description.trim(),
-    brand: input.brand.trim(),
-    size: input.size.trim(),
+    brand: (input.brand ?? "").trim(),
+    size: (input.size ?? "").trim(),
     // Always sent, so changing category can clear an old sub-category
     subcategory: input.subcategory ?? undefined,
   };
@@ -532,6 +533,8 @@ export const create = mutation({
 
     const listingId = await ctx.db.insert("listings", {
       ...cleanListing(fields),
+      // No wear time asked any more: "custom wear" (agreed with the buyer)
+      condition: fields.condition ?? "custom_wear",
       sellerId: user._id,
       status: "active",
       saleType,
@@ -595,8 +598,11 @@ export const update = mutation({
     const auction = await getAuctionByListing(ctx, listingId);
     const priceCents = await syncAuctionPrice(ctx, auction, fields.priceCents);
     removed.forEach((id) => ctx.storage.delete(id));
+    const { condition, ...rest } = cleanListing(fields);
     await ctx.db.patch("listings", listingId, {
-      ...cleanListing(fields),
+      ...rest,
+      // Keep the wear time an older listing had
+      ...(condition ? { condition } : {}),
       priceCents,
       ...(locked ? { paywall: { media: locked } } : {}),
     });

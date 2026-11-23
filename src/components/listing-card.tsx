@@ -48,9 +48,11 @@ export function ListingCard({ listing }: { listing: ListingCardData }) {
             </span>
           </div>
         )}
-        <Badge className="absolute left-2 top-2 rounded-[5px] bg-background/90 text-foreground uppercase tracking-wide">
-          {CONDITION_LABEL[listing.condition]}
-        </Badge>
+        {listing.condition !== "custom_wear" && (
+          <Badge className="absolute left-2 top-2 rounded-[5px] bg-background/90 text-foreground uppercase tracking-wide">
+            {CONDITION_LABEL[listing.condition]}
+          </Badge>
+        )}
         <FavoriteButton
           listingId={listing._id}
           sellerId={listing.sellerId}
@@ -88,7 +90,8 @@ export function ListingCard({ listing }: { listing: ListingCardData }) {
         <p className="truncate font-medium">{listing.title}</p>
         <p className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
           <span className="truncate">
-            Size {listing.size} · {listing.sellerName}
+            {listing.size ? `Size ${listing.size} · ` : ""}
+            {listing.sellerName}
           </span>
           {listing.sellerVerified && <VerifiedBadge />}
           <AccountBadge kind="seller" className="px-1.5 py-0 text-[9px]" />

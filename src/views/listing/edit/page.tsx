@@ -56,6 +56,7 @@ function EditForm({ listingId }: { listingId: Id<"listings"> }) {
       submitLabel="Save changes"
       onSubmit={onSubmit}
       isEdit
+      instant={!!listing.locked}
       priceLocked={listing.auctionHasBids}
       defaultPhotos={listing.images}
       defaultLocked={listing.locked?.media ?? undefined}

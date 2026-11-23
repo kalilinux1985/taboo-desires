@@ -20,6 +20,7 @@ import {
 } from "@/components/shop/shop-filters.tsx";
 import { CategoryGrid, type BrowseArgs } from "@/components/shop/shop-grid.tsx";
 import type { ShopPage } from "@/lib/shop-pages.ts";
+import PostContentButton from "@/views/sell/_components/post-content.tsx";
 
 const SORTS = [
   { value: "newest", label: "Newest Items" },
@@ -58,6 +59,12 @@ export default function ShopCategoryPage({ page }: { page: ShopPage }) {
         <h1 className="font-display text-4xl font-bold text-balance text-violet-600 sm:text-5xl md:text-6xl">
           {page.title}
         </h1>
+        {/* Sellers post locked photos and videos from the Instant Content pages */}
+        {page.filter.lockedOnly && (
+          <div className="mt-4 flex justify-center">
+            <PostContentButton />
+          </div>
+        )}
       </section>
 
       <div className="mx-auto grid w-full max-w-7xl items-start gap-8 px-4 py-6 md:py-8 lg:grid-cols-[300px_minmax(0,1fr)]">

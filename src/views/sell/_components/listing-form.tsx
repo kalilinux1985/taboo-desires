@@ -22,16 +22,13 @@ import {
   SelectValue,
 } from "@/components/ui/select.tsx";
 import { CATEGORIES, CONDITIONS, type Category, type Condition } from "@/lib/listings.ts";
-import { AUCTION_DURATIONS } from "@/shared/bidding.ts";
 import { PLAN_LIMITS } from "@/shared/plans.ts";
 import { useQuery } from "@/lib/backend/react.tsx";
 import Link from "next/link";
 import { api } from "@/lib/backend/api.ts";
 import PhotoUploader, { type Photo } from "@/components/photo-uploader.tsx";
-import SaleTypePicker from "./sale-type-picker.tsx";
 import LockedMediaUploader, { type LockedCover, type LockedItem } from "./locked-media-uploader.tsx";
-import { Switch } from "@/components/ui/switch.tsx";
-import { Crown, Lock } from "lucide-react";
+import { Lock } from "lucide-react";
 import { LOCKED_MEDIA_MAX } from "@/shared/plans.ts";
 import { type Subcategory } from "@/shared/subcategories.ts";
 import { SELL_SECTIONS, findSellItem, sellItemFor } from "@/lib/sell-sections.ts";
@@ -39,20 +36,36 @@ import { SELL_SECTIONS, findSellItem, sellItemFor } from "@/lib/sell-sections.ts
 const CATEGORY_VALUES = CATEGORIES.map((c) => c.value) as [Category, ...Category[]];
 const CONDITION_VALUES = CONDITIONS.map((c) => c.value) as [Condition, ...Condition[]];
 
+/** The sections a seller picks from on the Sell an item form (Instant Content has its own form). */
+const ITEM_SECTIONS = SELL_SECTIONS.filter((s) => ["underwear", "shoes", "clothing", "hosiery", "extras"].includes(s.key)).map((s) =>
+  s.key === "extras" ? { ...s, label: "Used Extras" } : s,
+);
+
+/** A listing title from its description: the first line, up to 80 characters. */
+export function titleFrom(description: string, fallback: string): string {
+  const line = description.trim().split(/\n/)[0].replace(/\s+/g, " ").trim();
+  if (line.length < 3) return fallback;
+  if (line.length <= 80) return line;
+  const cut = line.slice(0, 79);
+  return `${cut.slice(0, cut.lastIndexOf(" ") > 40 ? cut.lastIndexOf(" ") : 79)}…`;
+}
+
 const schema = z.object({
-  title: z.string().trim().min(3, "At least 3 characters").max(80),
-  brand: z.string().trim().min(1, "Required").max(40),
-  size: z.string().trim().min(1, "Required").max(20),
+  // Items: made from the description; Instant Content: typed by the seller
+  title: z.string().trim().max(80),
+  // Kept for older listings; the form no longer asks for them
+  brand: z.string(),
+  size: z.string(),
   category: z.enum(CATEGORY_VALUES, { message: "Pick a category" }),
   // "" while not chosen; optional so older listings can be saved as they are
   subcategory: z.string(),
-  condition: z.enum(CONDITION_VALUES, { message: "Pick a condition" }),
+  condition: z.enum(CONDITION_VALUES).optional(),
   price: z
     .string()
     .trim()
     .regex(/^\d+(\.\d{1,2})?$/, "Enter a price like 180 or 180.50")
     .refine((v) => Number(v) >= 1 && Number(v) <= 100000, "Between $1 and $100,000"),
-  description: z.string().max(2000),
+  description: z.string().trim().min(3, "Describe what you're selling").max(2000),
   saleType: z.enum(["fixed", "auction"]),
   durationHours: z.string(),
 });
@@ -76,12 +89,13 @@ export default function ListingForm({
   onSubmit,
   isEdit = false,
   priceLocked = false,
+  instant = false,
 }: {
   defaultValues?: Partial<ListingFormValues>;
   defaultPhotos?: Photo[];
-  /** Set when editing a locked listing */
+  /** Set when editing Instant Content */
   defaultLocked?: LockedItem[];
-  /** The public cover picture of a locked listing being edited */
+  /** The public cover picture of Instant Content being edited */
   defaultCover?: LockedCover | null;
   submitLabel: string;
   onSubmit: (values: ListingSubmit) => Promise<void>;
@@ -89,10 +103,15 @@ export default function ListingForm({
   isEdit?: boolean;
   /** Auction already has bids, so the starting price is fixed */
   priceLocked?: boolean;
+  /**
+   * Instant Content: locked photos (up to 10, the first is the public cover)
+   * or one locked video with a public thumbnail, plus title, description and price.
+   * Otherwise a regular item: photos, category, sub category, description and price.
+   */
+  instant?: boolean;
 }) {
   const [photos, setPhotos] = useState<Photo[]>(defaultPhotos);
   const [photoError, setPhotoError] = useState(false);
-  const [isLocked, setIsLocked] = useState(!!defaultLocked);
   const [lockedItems, setLockedItems] = useState<LockedItem[]>(defaultLocked ?? []);
   const [lockedCover, setLockedCover] = useState<LockedCover | null>(
     defaultCover ? { ...defaultCover, forItem: defaultLocked?.[0]?.storageId } : null,
@@ -108,6 +127,7 @@ export default function ListingForm({
       saleType: "fixed",
       durationHours: "72",
       subcategory: "",
+      ...(instant ? { category: "extras" as Category } : {}),
       ...defaultValues,
     },
   });
@@ -119,85 +139,58 @@ export default function ListingForm({
   const saleType = useWatch({ control: form.control, name: "saleType" });
   const isAuction = saleType === "auction";
 
-  const toggleLocked = (on: boolean) => {
-    setIsLocked(on);
-    setPhotoError(false);
-    // Locked content is sold at a fixed price only
-    if (on) form.setValue("saleType", "fixed");
-  };
-
-  // Section and item pickers (the shop menu); the item sets category and type
+  // Category (menu section) and Sub Category (an item under it); the item sets category and type
   const [itemKey, setItemKey] = useState(
-    () => sellItemFor(defaultValues?.category, defaultValues?.subcategory, !!defaultLocked)?.key ?? "",
+    () => sellItemFor(defaultValues?.category, defaultValues?.subcategory)?.key ?? "",
   );
-  const [sectionKey, setSectionKey] = useState(() => itemKey.split(":")[0] ?? "");
-  const sectionItems = SELL_SECTIONS.find((s) => s.key === sectionKey)?.items ?? [];
+  const [sectionKey, setSectionKey] = useState(() => {
+    const key = itemKey.split(":")[0] ?? "";
+    return ITEM_SECTIONS.some((s) => s.key === key) ? key : "";
+  });
+  const sectionItems = ITEM_SECTIONS.find((s) => s.key === sectionKey)?.items ?? [];
 
-  const submit = form.handleSubmit(async ({ price, durationHours, subcategory, ...values }) => {
-    if ((isLocked ? lockedItems.length : photos.length) === 0 || (isLocked && !lockedCover)) {
+  const submit = form.handleSubmit(async ({ price, durationHours, subcategory, title, ...values }) => {
+    if ((instant ? lockedItems.length : photos.length) === 0 || (instant && !lockedCover)) {
       setPhotoError(true);
       return;
     }
+    if (instant && title.trim().length < 3) {
+      form.setError("title", { message: "At least 3 characters" });
+      return;
+    }
+    if (!instant && !subcategory) {
+      form.setError("category", { message: "Pick a category and sub category" });
+      return;
+    }
+    const video = lockedItems.some((m) => m.kind === "video");
+    const subLabel = sectionItems.find((it) => it.key === itemKey)?.label ?? "Item for sale";
     await onSubmit({
       ...values,
-      subcategory: (subcategory || undefined) as Subcategory | undefined,
+      title: instant ? title.trim() : titleFrom(values.description, subLabel),
+      // Instant Content files under Extras as a photo set or a video clip
+      ...(instant ? { category: "extras" as Category } : {}),
+      subcategory: (instant ? (video ? "video_clips" : "photo_sets") : subcategory || undefined) as Subcategory | undefined,
       priceCents: Math.round(Number(price) * 100),
       durationHours: Number(durationHours),
-      // Locked listings show one public cover (the first photo, or the video's thumbnail)
-      imageIds: isLocked && lockedCover ? [lockedCover.id] : photos.map((p) => p.id),
-      locked: isLocked
+      // Instant Content shows one public cover (the first photo, or the video's thumbnail)
+      imageIds: instant && lockedCover ? [lockedCover.id] : photos.map((p) => p.id),
+      locked: instant
         ? lockedItems.map(({ storageId, kind, durationSec }) => ({ storageId, kind, ...(durationSec ? { durationSec } : {}) }))
         : undefined,
     });
   });
 
-  const lockedAllowed = limits.lockedContent;
-
   return (
     <Form {...form}>
       <form onSubmit={submit} className="flex flex-col gap-6">
-        <div className="flex items-start justify-between gap-4 rounded-[5px] border border-white/[3%] bg-card shadow-[0_14px_34px_-8px_rgba(0,0,0,0.3)] p-4">
-          <div className="flex gap-3">
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-[5px] bg-accent text-accent-foreground">
-              <Lock className="size-4" />
-            </span>
-            <div className="flex flex-col gap-0.5">
-              <label htmlFor="paywall" className="flex items-center gap-2 font-semibold">
-                Paywall this listing
-                {!lockedAllowed && mine !== undefined && (
-                  <span className="flex items-center gap-1 rounded-[5px] bg-primary px-2 py-0.5 text-[10px] font-bold uppercase text-primary-foreground">
-                    <Crown className="size-3" /> Pro
-                  </span>
-                )}
-              </label>
-              <p className="text-xs text-muted-foreground">
-                Sell up to 10 photos or one video. Buyers see the cover until they unlock the rest.
-                {!lockedAllowed && mine !== undefined && (
-                  <>
-                    {" "}
-                    <Link href="/pricing" className="cursor-pointer font-semibold text-violet-600 hover:underline">
-                      Upgrade to Pro
-                    </Link>
-                  </>
-                )}
-              </p>
-            </div>
-          </div>
-          <Switch
-            id="paywall"
-            checked={isLocked}
-            onCheckedChange={toggleLocked}
-            disabled={isEdit || (!lockedAllowed && !isLocked)}
-            className="cursor-pointer"
-          />
-        </div>
-
-        {isLocked ? (
+        {instant ? (
           <div className="flex flex-col gap-2">
             <div className="flex items-baseline justify-between gap-2">
-              <p className="text-sm font-medium">Locked photos and videos</p>
+              <p className="flex items-center gap-1.5 text-sm font-medium">
+                <Lock className="size-3.5 text-violet-500" /> Photos or video
+              </p>
               <p className="text-xs text-muted-foreground">
-                {lockedItems.some((m) => m.kind === "video") ? "1 video" : `${lockedItems.length}/${LOCKED_MEDIA_MAX} photos`}
+                {lockedItems.some((m) => m.kind === "video") ? "1 video + thumbnail" : `${lockedItems.length}/${LOCKED_MEDIA_MAX} photos`}
               </p>
             </div>
             <LockedMediaUploader
@@ -209,260 +202,154 @@ export default function ListingForm({
               }}
             />
             <p className="text-xs text-muted-foreground">
-              Photos: the first one is the cover. Video: add one video and a thumbnail photo. The cover shows to everyone
-              (not blurred), the rest stays hidden until a buyer unlocks it.
+              Everything is locked. Photos: up to {LOCKED_MEDIA_MAX}, and the first one is the public thumbnail. Video: one
+              video plus a thumbnail photo. Everyone sees the thumbnail; the rest stays hidden until a buyer unlocks it.
             </p>
-            {photoError && (
-              <p className="text-sm text-destructive">Add at least one photo, or a video with a thumbnail photo</p>
-            )}
+            {photoError && <p className="text-sm text-destructive">Add at least one photo, or a video with a thumbnail photo</p>}
           </div>
         ) : (
-        <div className="flex flex-col gap-2">
-          <div className="flex items-baseline justify-between gap-2">
-            <p className="text-sm font-medium">Photos</p>
-            <p className="text-xs text-muted-foreground">
-              {photos.length}/{maxPhotos}
-              {mine?.plan !== "pro" && (
-                <>
-                  {" · "}
-                  <Link href="/pricing" className="cursor-pointer font-semibold text-violet-600 hover:underline">
-                    Pro gets {PLAN_LIMITS.pro.maxPhotos}
-                  </Link>
-                </>
-              )}
-            </p>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-baseline justify-between gap-2">
+              <p className="text-sm font-medium">Photos</p>
+              <p className="text-xs text-muted-foreground">
+                {photos.length}/{maxPhotos}
+                {mine?.plan !== "pro" && (
+                  <>
+                    {" · "}
+                    <Link href="/pricing" className="cursor-pointer font-semibold text-violet-600 hover:underline">
+                      Pro gets {PLAN_LIMITS.pro.maxPhotos}
+                    </Link>
+                  </>
+                )}
+              </p>
+            </div>
+            <PhotoUploader
+              photos={photos}
+              maxPhotos={maxPhotos}
+              onChange={(p) => {
+                setPhotos(p);
+                setPhotoError(false);
+              }}
+            />
+            {photoError && <p className="text-sm text-destructive">Add at least one photo</p>}
           </div>
-          <PhotoUploader
-            photos={photos}
-            maxPhotos={maxPhotos}
-            onChange={(p) => {
-              setPhotos(p);
-              setPhotoError(false);
-            }}
-          />
-          {photoError && <p className="text-sm text-destructive">Add at least one photo</p>}
-        </div>
         )}
 
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Title</FormLabel>
-              <FormControl>
-                <Input placeholder="Black lace thong, 2-day wear" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="grid gap-6 sm:grid-cols-2">
+        {instant ? (
           <FormField
             control={form.control}
-            name="brand"
+            name="title"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Brand</FormLabel>
+                <FormLabel>Title</FormLabel>
                 <FormControl>
-                  <Input placeholder="Victoria's Secret" {...field} />
+                  <Input placeholder="10 pics in my black lace set" maxLength={80} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="size"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Size</FormLabel>
-                <FormControl>
-                  <Input placeholder="M or US 7" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        ) : (
           <FormField
             control={form.control}
             name="category"
             render={() => (
-              <FormItem className="flex flex-col gap-4">
-                <div className="grid gap-2">
-                  <FormLabel>Category</FormLabel>
-                  <Select
-                    value={sectionKey}
-                    onValueChange={(v) => {
-                      setSectionKey(v);
-                      setItemKey("");
-                    }}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {SELL_SECTIONS.map((sec) => (
-                        <SelectItem key={sec.key} value={sec.key}>
-                          {sec.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                {sectionKey && (
+              <FormItem>
+                <div className="grid gap-6 sm:grid-cols-2">
                   <div className="grid gap-2">
-                    <FormLabel>Item</FormLabel>
+                    <FormLabel>Category</FormLabel>
+                    <Select
+                      value={sectionKey}
+                      onValueChange={(v) => {
+                        setSectionKey(v);
+                        setItemKey("");
+                        form.setValue("subcategory", "");
+                      }}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="w-full cursor-pointer">
+                          <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {ITEM_SECTIONS.map((sec) => (
+                          <SelectItem key={sec.key} value={sec.key} className="cursor-pointer">
+                            {sec.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <FormLabel>Sub Category</FormLabel>
                     <Select
                       value={itemKey}
+                      disabled={!sectionKey}
                       onValueChange={(v) => {
                         const item = findSellItem(v);
                         if (!item) return;
                         setItemKey(v);
                         form.setValue("category", item.category, { shouldValidate: true });
                         form.setValue("subcategory", item.subcategory);
-                        // Instant Pics / Vids are sold as locked photos or videos
-                        if (item.instant && !isEdit && lockedAllowed && !isLocked) toggleLocked(true);
                       }}
                     >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select what you're selling" />
+                      <SelectTrigger className="w-full cursor-pointer">
+                        <SelectValue placeholder={sectionKey ? "Select a sub category" : "Pick a category first"} />
                       </SelectTrigger>
                       <SelectContent>
                         {sectionItems.map((it) => (
-                          <SelectItem key={it.key} value={it.key}>
+                          <SelectItem key={it.key} value={it.key} className="cursor-pointer">
                             {it.label}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
-                )}
-                {sectionKey === "mens" && (
-                  <p className="text-xs text-muted-foreground">
-                    Men&apos;s pages show listings from sellers whose gender in Settings is Male or Trans man.
-                  </p>
-                )}
+                </div>
                 <FormMessage />
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="condition"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Wear time</FormLabel>
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <FormControl>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select wear time" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {CONDITIONS.map((c) => (
-                      <SelectItem key={c.value} value={c.value}>
-                        {c.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <FormField
-          control={form.control}
-          name="saleType"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>How do you want to sell?</FormLabel>
-              <SaleTypePicker
-                value={field.value}
-                onChange={field.onChange}
-                disabled={isEdit || isLocked}
-                auctionLocked={mine !== undefined && !limits.auctions}
-              />
-            </FormItem>
-          )}
-        />
-
-        <div className={isAuction ? "grid gap-6 sm:grid-cols-2" : ""}>
-          <FormField
-            control={form.control}
-            name="price"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{isAuction ? "Starting bid (USD)" : "Price (USD)"}</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
-                    <Input
-                      inputMode="decimal"
-                      placeholder={isAuction ? "100" : "180"}
-                      className="pl-7 font-mono"
-                      {...field}
-                      disabled={priceLocked}
-                    />
-                  </div>
-                </FormControl>
-                <p className="text-xs text-muted-foreground">
-                  {priceLocked
-                    ? "Bids are in, so the starting bid is locked."
-                    : "You keep 100%. Taboo Desires takes no commission."}
-                </p>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          {isAuction && (
-            <FormField
-              control={form.control}
-              name="durationHours"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Auction length</FormLabel>
-                  <Select value={field.value} onValueChange={field.onChange} disabled={isEdit}>
-                    <FormControl>
-                      <SelectTrigger className="w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {AUCTION_DURATIONS.map((d) => (
-                        <SelectItem key={d.hours} value={String(d.hours)}>
-                          {d.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground">
-                    {isEdit ? "Length is set once the auction starts." : "Late bids add 2 minutes."}
-                  </p>
-                </FormItem>
-              )}
-            />
-          )}
-        </div>
+        )}
 
         <FormField
           control={form.control}
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description</FormLabel>
+              <FormLabel>{instant ? "Description" : "Description of the item or service"}</FormLabel>
               <FormControl>
                 <Textarea
                   rows={5}
-                  placeholder="Worn through a long day at the gym. Sealed and shipped discreetly."
+                  placeholder={
+                    instant
+                      ? "What's in the set, how many pics, how long the video is…"
+                      : "Black lace thong, worn 2 days at the gym. Sealed and shipped discreetly."
+                  }
                   {...field}
                 />
               </FormControl>
+              {!instant && <p className="text-xs text-muted-foreground">The first line becomes the listing's title.</p>}
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="price"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{isAuction ? "Starting bid (USD)" : "Price (USD)"}</FormLabel>
+              <FormControl>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                  <Input inputMode="decimal" placeholder="180" className="pl-7 font-mono" {...field} disabled={priceLocked} />
+                </div>
+              </FormControl>
+              <p className="text-xs text-muted-foreground">
+                {priceLocked ? "Bids are in, so the starting bid is locked." : "You keep 100%. Taboo Desires takes no commission."}
+              </p>
               <FormMessage />
             </FormItem>
           )}

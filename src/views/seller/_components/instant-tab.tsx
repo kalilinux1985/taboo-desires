@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton.tsx";
 import FavoriteButton from "@/components/favorite-button.tsx";
 import { NURMA, SERIF } from "../_lib/profile-design.tsx";
 import { Pager } from "./photos-tab.tsx";
+import PostContentButton from "@/views/sell/_components/post-content.tsx";
 
 type Item = FunctionReturnType<typeof api.listings.shopPage>["items"][number];
 
@@ -99,6 +100,7 @@ export function InstantTab({ sellerId, total: allCount, isMe }: { sellerId: Id<"
 
   return (
     <div ref={top} className="flex flex-col gap-[22px]">
+      <div className="flex items-start justify-between gap-4">
       <div className="flex flex-col gap-1.5">
         <h2 className={cn(NURMA, "flex flex-wrap items-baseline gap-x-1.5 leading-tight")}>
           <span className="text-[27px] text-white">Instant Content</span>
@@ -107,6 +109,8 @@ export function InstantTab({ sellerId, total: allCount, isMe }: { sellerId: Id<"
           </span>
         </h2>
         <span className="h-[3px] w-[62px] rounded-full bg-[#7b3aec]" />
+      </div>
+        {isMe && <PostContentButton />}
       </div>
 
       <p className={cn(SERIF, "text-[15px] text-white")}>
@@ -123,9 +127,7 @@ export function InstantTab({ sellerId, total: allCount, isMe }: { sellerId: Id<"
         <div className={cn(SERIF, "flex flex-col items-center gap-3 py-16 text-center text-white")}>
           <p>No Instant Content yet</p>
           {isMe && (
-            <Button asChild size="sm" className="cursor-pointer">
-              <Link href="/sell">Add Instant Content</Link>
-            </Button>
+            <PostContentButton />
           )}
         </div>
       ) : (

@@ -415,7 +415,7 @@ export default function ListingPage() {
   const buyBlocked = access && !access.can.buy ? deniedMessage("buy", access.accountType ?? undefined, access.ageVerified) : null;
   const specs = [
     { label: "Size", value: listing.size },
-    { label: "Wear time", value: CONDITION_LABEL[listing.condition] },
+    { label: "Wear time", value: listing.condition === "custom_wear" ? "" : CONDITION_LABEL[listing.condition] },
     {
       label: "Category",
       value: subcategoryInfo(listing.subcategory)

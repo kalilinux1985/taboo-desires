@@ -100,7 +100,11 @@ export default function SellPage() {
     <div className="mx-auto max-w-2xl px-4 py-10">
       <h1 className="font-display text-5xl md:text-6xl">Sell an item</h1>
       <p className="pb-8 pt-2 text-muted-foreground">
-        List it in a minute. Keep every dollar. Stay anonymous.
+        List it in a minute. Keep every dollar. Stay anonymous. Selling locked photos or videos? Use{" "}
+        <a href="/used/instant-content" className="text-violet-500 hover:underline">
+          Instant Content
+        </a>
+        .
       </p>
       <RequireAuth message="Sign in to start selling on Taboo Desires.">
         <SellForm />
