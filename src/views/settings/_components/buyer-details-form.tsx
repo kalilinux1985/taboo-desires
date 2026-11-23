@@ -14,6 +14,7 @@ import { Spinner } from "@/components/ui/spinner.tsx";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
 import { getErrorMessage } from "@/lib/listings.ts";
 import { cn } from "@/lib/utils.ts";
+import { REQUIRED_BASICS } from "@/lib/settings.ts";
 
 // Select items can't use an empty value, so this stands in for "not answered"
 const NONE = "none";
@@ -32,6 +33,10 @@ export default function BuyerDetailsForm({ initial }: { initial: BuyerDetails })
     });
 
   const save = async () => {
+    if (REQUIRED_BASICS.some((k) => !details[k as keyof BuyerDetails])) {
+      toast.error("Choose your age, country and gender");
+      return;
+    }
     setSaving(true);
     try {
       const clean: BuyerDetails = {};
@@ -51,21 +56,29 @@ export default function BuyerDetailsForm({ initial }: { initial: BuyerDetails })
       <div className="flex flex-col gap-4">
         {BUYER_DETAIL_FIELDS.map((field) => {
           const id = `buyer-${field.key}`;
+          // Age, country and gender must be chosen: no "Prefer not to say"
+          const required = REQUIRED_BASICS.includes(field.key);
+          const value = details[field.key];
           return (
             <div key={field.key} className="grid gap-2">
-              <Label htmlFor={id}>{field.label}</Label>
+              <Label htmlFor={id}>
+                {field.label}
+                {required && <span className="text-red-500">*</span>}
+              </Label>
               <Select
-                value={details[field.key] ?? NONE}
+                value={value ?? (required ? "" : NONE)}
                 onValueChange={(v) => setDetails((d) => ({ ...d, [field.key]: v === NONE ? undefined : v }))}
               >
-                <SelectTrigger id={id} className="w-full cursor-pointer">
-                  <SelectValue placeholder="Choose" />
+                <SelectTrigger id={id} aria-required={required} className={cn("w-full cursor-pointer", required && !value && "ring-1 ring-red-500/70")}>
+                  <SelectValue placeholder={required ? "Required: choose one" : "Choose"} />
                 </SelectTrigger>
                 <SelectContent className="max-h-72 bg-[#111317] shadow-none">
-                  <SelectItem value={NONE} className="cursor-pointer text-muted-foreground">
-                    Prefer not to say
-                  </SelectItem>
-                  {field.options.map((o) => (
+                  {!required && (
+                    <SelectItem value={NONE} className="cursor-pointer text-muted-foreground">
+                      Prefer not to say
+                    </SelectItem>
+                  )}
+                {field.options.map((o) => (
                     <SelectItem key={o} value={o} className="cursor-pointer">
                       {o}
                     </SelectItem>

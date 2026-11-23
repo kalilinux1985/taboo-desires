@@ -1,6 +1,5 @@
 "use client";
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Checkbox } from "@/components/ui/checkbox.tsx";
 import { Button } from "@/components/ui/button.tsx";
@@ -10,7 +9,6 @@ import { useNavigate, useSearchParams } from "@/lib/navigation.ts";
 import { toast } from "sonner";
 import { Mail } from "lucide-react";
 import { callBackend, supabase } from "@/lib/backend/client.ts";
-import { SELLER_DETAIL_FIELDS } from "@/shared/sellerDetails.ts";
 import { useAuth } from "@/components/providers/auth.tsx";
 import { Spinner } from "@/components/ui/spinner.tsx";
 import { cn } from "@/lib/utils.ts";
@@ -24,10 +22,6 @@ type Mode = "signin" | "signup" | "link";
 
 const MIN_PASSWORD = 8;
 const MIN_AGE = 18;
-const optionsOf = (key: "country" | "gender" | "ageRange") => SELLER_DETAIL_FIELDS.find((f) => f.key === key)?.options ?? [];
-const COUNTRIES = optionsOf("country");
-const GENDERS = optionsOf("gender");
-const AGE_RANGES = optionsOf("ageRange");
 
 
 const ROUNDED = "[font-family:var(--font-signin-rounded),'Comfortaa',ui-rounded,sans-serif]";
@@ -90,9 +84,6 @@ export default function SignInPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [country, setCountry] = useState("");
-  const [gender, setGender] = useState("");
-  const [age, setAge] = useState("");
   const [is18, setIs18] = useState(false);
   const [accountType, setAccountType] = useState<"buyer" | "seller" | null>(null);
   const [busy, setBusy] = useState(false);
@@ -139,10 +130,6 @@ export default function SignInPage() {
       toast.error("Choose whether you're signing up as a buyer or a seller");
       return;
     }
-    if (!country || !gender || !age) {
-      toast.error("Choose your country, age and gender");
-      return;
-    }
     if (!is18) {
       toast.error(`Confirm that you are ${MIN_AGE} or older`);
       return;
@@ -155,7 +142,8 @@ export default function SignInPage() {
         password,
         options: {
           emailRedirectTo: callbackUrl(returnTo),
-          data: { accountType, name: name.trim(), country, gender, ageRange: age },
+          // Age, country and gender are chosen in Settings right after the email is confirmed
+          data: { accountType, name: name.trim() },
         },
       });
       if (error) throw error;
@@ -306,32 +294,6 @@ export default function SignInPage() {
               onChange={(e) => setPassword(e.target.value)}
               className={FIELD}
             />
-            <Select name="country" required value={country} onValueChange={setCountry}>
-              <SelectTrigger id="country" aria-label="Country" className={cn(FIELD, "justify-between", !country && "text-[#4f5051]")}>
-                <SelectValue placeholder="COUNTRY" />
-              </SelectTrigger>
-              <SelectContent>
-                {COUNTRIES.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <div className="grid grid-cols-[110px_1fr] gap-3">
-              <Select name="age" required value={age} onValueChange={setAge}>
-              <SelectTrigger id="age" aria-label="Age" className={cn(FIELD, "justify-between", !age && "text-[#4f5051]")}>
-                <SelectValue placeholder="AGE" />
-              </SelectTrigger>
-              <SelectContent>
-                {AGE_RANGES.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
-              </SelectContent>
-            </Select>
-              <Select name="gender" required value={gender} onValueChange={setGender}>
-              <SelectTrigger id="gender" aria-label="Gender" className={cn(FIELD, "justify-between", !gender && "text-[#4f5051]")}>
-                <SelectValue placeholder="GENDER" />
-              </SelectTrigger>
-              <SelectContent>
-                {GENDERS.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            </div>
           </div>
           <div role="radiogroup" aria-label="Account type" className="flex flex-col gap-2">
             <p className={cn(FOOTNOTE, "text-[13px]")}>Choose what type of profile you want to signup for?</p>

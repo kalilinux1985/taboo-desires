@@ -38,11 +38,22 @@ function SettingsInner({ kind }: { kind?: SettingsKind }) {
   }
 
   const isSeller = kind === "seller";
+  // Shown until age, country and gender are chosen (the site sends new members here after sign-up)
+  const setupBanner = me.missingBasics.length > 0 && (
+    <div role="alert" className="rounded-[5px] border border-violet-600 bg-violet-600/15 p-4 text-sm text-white">
+      <p className="font-semibold">Welcome! One more step before you start.</p>
+      <p className="mt-1">
+        Choose your <b>age</b>, <b>country</b> and <b>gender</b> below (marked <span className="text-red-500">*</span>), then save.
+        You can use the rest of the site once they're set.
+      </p>
+    </div>
+  );
 
   // Sellers: profile, More About You, Login Credentials, Notifications & Visibility, delete
   if (isSeller) {
     return (
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
+        {setupBanner}
         <Card>
           <CardContent className="pt-6">
             <ProfileForm profile={profile} />
@@ -72,6 +83,7 @@ function SettingsInner({ kind }: { kind?: SettingsKind }) {
   // Buyers: the same single column as sellers: profile, About you, visibility, delete
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
+      {setupBanner}
       <Card>
         <CardHeader className="border-b border-white/[3%] pb-4">
           <CardTitle className="font-display text-2xl">Profile Information</CardTitle>

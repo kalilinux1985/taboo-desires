@@ -1,6 +1,6 @@
 import { AppError } from "../core/errors.ts";
 import { mutation, query, type QueryCtx } from "../core/functions.ts";
-import type { Id } from "../core/schema.ts";
+import type { Doc, Id } from "../core/schema.ts";
 import { empty, raw, sql } from "../core/sql.ts";
 import { paginationOptsValidator, v } from "../core/values.ts";
 import {
@@ -111,6 +111,23 @@ export const getCurrentUser = query({
 });
 
 /** Compact signed-in user summary for the header account menu. */
+/** Age, country and gender: every member must choose them (in Settings) after signing up. */
+const REQUIRED_BASICS = ["ageRange", "country", "gender"] as const;
+
+/** The required profile answers this member hasn't chosen yet (admins and members with no account type: none). */
+function missingBasics(user: Doc<"users">): string[] {
+  if (user.role === "admin" || !user.accountType) return [];
+  const details = (user.accountType === "seller" ? user.sellerDetails : user.buyerDetails) as Record<string, unknown> | undefined;
+  return REQUIRED_BASICS.filter((k) => !details?.[k]);
+}
+
+function requireBasics(user: Doc<"users">, details: Record<string, unknown>) {
+  if (user.role === "admin") return;
+  const missing = REQUIRED_BASICS.filter((k) => !details[k]);
+  if (missing.length)
+    throw new AppError({ code: "BAD_REQUEST", message: "Choose your age, country and gender" });
+}
+
 export const menu = query({
   args: {},
   handler: async (ctx) => {
@@ -126,6 +143,8 @@ export const menu = query({
       avatarUrl: me.avatarStorageId
         ? await ctx.storage.getUrl(me.avatarStorageId)
         : null,
+      /** Age, country or gender still to choose: the site sends them to Settings until done */
+      missingBasics: missingBasics(me),
     };
   },
 });
@@ -480,6 +499,7 @@ export const updateSellerDetails = mutation({
     }
     const problem = invalidSellerDetail(details);
     if (problem) throw new AppError({ code: "BAD_REQUEST", message: problem });
+    requireBasics(user, details);
     await ctx.db.patch("users", user._id, { sellerDetails: details });
     return null;
   },
@@ -541,6 +561,7 @@ export const updateBuyerDetails = mutation({
     }
     const problem = invalidBuyerDetail(details);
     if (problem) throw new AppError({ code: "BAD_REQUEST", message: problem });
+    requireBasics(user, details);
     await ctx.db.patch("users", user._id, { buyerDetails: details });
     return null;
   },

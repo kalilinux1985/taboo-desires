@@ -1,5 +1,7 @@
 import { SELLER_DETAIL_FIELDS } from "@/shared/sellerDetails.ts";
+import { cn } from "@/lib/utils.ts";
 import { Label } from "@/components/ui/label.tsx";
+import { REQUIRED_BASICS } from "@/lib/settings.ts";
 import {
   Select,
   SelectContent,
@@ -23,17 +25,24 @@ export function DetailSelect({
   onChange: (v: string | undefined) => void;
 }) {
   const id = `detail-${field.key}`;
+  // Age, country and gender must be chosen: no "Prefer not to say"
+  const required = REQUIRED_BASICS.includes(field.key);
   return (
     <div className="grid gap-2">
-      <Label htmlFor={id}>{field.label}</Label>
-      <Select value={value ?? NONE} onValueChange={(v) => onChange(v === NONE ? undefined : v)}>
-        <SelectTrigger id={id} className="w-full cursor-pointer">
-          <SelectValue placeholder="Choose" />
+      <Label htmlFor={id}>
+        {field.label}
+        {required && <span className="text-red-500">*</span>}
+      </Label>
+      <Select value={value ?? (required ? "" : NONE)} onValueChange={(v) => onChange(v === NONE ? undefined : v)}>
+        <SelectTrigger id={id} aria-required={required} className={cn("w-full cursor-pointer", required && !value && "ring-1 ring-red-500/70")}>
+          <SelectValue placeholder={required ? "Required: choose one" : "Choose"} />
         </SelectTrigger>
         <SelectContent className="max-h-72 bg-[#111317] shadow-none">
-          <SelectItem value={NONE} className="cursor-pointer text-muted-foreground">
-            Prefer not to say
-          </SelectItem>
+          {!required && (
+            <SelectItem value={NONE} className="cursor-pointer text-muted-foreground">
+              Prefer not to say
+            </SelectItem>
+          )}
           {field.options.map((o) => (
             <SelectItem key={o} value={o} className="cursor-pointer">
               {o}

@@ -32,6 +32,7 @@ import {
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible.tsx";
 import MultiSelect from "@/components/multi-select.tsx";
 import { DetailSelect, type Field } from "./detail-select.tsx";
+import { REQUIRED_BASICS } from "@/lib/settings.ts";
 
 const MIN_PASSWORD = 6;
 
@@ -82,6 +83,10 @@ function Form({
   );
 
   const save = async () => {
+    if (REQUIRED_BASICS.some((k) => !details[k as keyof SellerDetails])) {
+      toast.error("Choose your age, country and gender");
+      return;
+    }
     const emailChanged = newEmail.trim().toLowerCase() !== email.toLowerCase();
     if (password && password.length < MIN_PASSWORD) {
       toast.error(`Use a password of at least ${MIN_PASSWORD} characters`);
