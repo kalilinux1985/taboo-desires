@@ -200,7 +200,7 @@ function SellerCard({ seller }: { seller: Seller }) {
       <ProfileAvatar
         name={seller.name}
         url={seller.avatarUrl}
-        className="size-[90px] shrink-0 rounded-[5px] bg-white text-3xl text-[#2a2a2e]"
+        className="size-[90px] shrink-0 rounded-[5px] bg-[#a8a9ae] text-3xl text-[#2a2a2e]"
       />
       <div className="flex min-w-0 flex-1 flex-col">
         <span className={cn(SANS, "text-[11px] text-[#7b3aec]")}>{seller.isPro ? "Premium Seller" : "Seller"}</span>
@@ -407,138 +407,58 @@ export default function ListingPage() {
     return <InstantContentView listing={listing} locked={listing.locked} buyBlocked={instantBlocked} />;
   }
 
-  const comingSoon = () => toast("Coming soon in a future milestone!");
-  const isAuction = listing.saleType === "auction";
-  const locked = listing.locked as Listing["locked"];
   const seller = listing.seller;
-  // Signed-in sellers (and members without an account type) can't buy
-  const buyBlocked = access && !access.can.buy ? deniedMessage("buy", access.accountType ?? undefined, access.ageVerified) : null;
-  const specs = [
-    { label: "Size", value: listing.size },
-    { label: "Wear time", value: listing.condition === "custom_wear" ? "" : CONDITION_LABEL[listing.condition] },
-    {
-      label: "Category",
-      value: subcategoryInfo(listing.subcategory)
-        ? `${CATEGORY_LABEL[listing.category]} · ${subcategoryInfo(listing.subcategory)!.label}`
-        : CATEGORY_LABEL[listing.category],
-    },
-    { label: "Brand", value: listing.brand },
-    { label: "Listed", value: formatDistanceToNow(listing._creationTime, { addSuffix: true }) },
-  ].filter((s) => !!s.value);
+  // Signed-in sellers (and members without an account type) can't buy, so they can't message about it either
+  const buyBlocked = access && !access.can.buy;
 
-  const badges = (
-    <>
-      {isAuction && <Badge className="rounded-[5px] uppercase">Auction</Badge>}
-      {locked && (
-        <Badge className="rounded-[5px] uppercase">
-          <Lock /> Paywalled
-        </Badge>
-      )}
-      {listing.status === "sold" && <Badge variant="destructive">Sold</Badge>}
-      {listing.status === "ended" && <Badge variant="secondary">Unsold</Badge>}
-      {listing.status === "hidden" && <Badge variant="destructive">Hidden: under review</Badge>}
-    </>
-  );
-  const hasBadges = isAuction || !!locked || listing.status === "sold" || listing.status === "ended" || listing.status === "hidden";
-
+  // Exactly the design: title, one picture; the seller panel (badge, name, rating,
+  // ID Verified, description, price, Payment Methods, Message Seller); More from <seller>
   return (
     <div className="profile-design min-h-[calc(100dvh-3.5rem)] bg-[#0C0F15]">
-      <div className="mx-auto flex max-w-[1170px] flex-col gap-5 px-5 py-8 lg:py-[60px]">
+      <div className="mx-auto flex max-w-[1170px] flex-col gap-5 px-5 py-8 lg:py-[40px]">
         <div className="grid gap-5 lg:grid-cols-[minmax(0,665fr)_minmax(0,445fr)]">
           {/* Title and picture */}
           <div className="flex min-w-0 flex-col gap-6 pt-[6px]">
-            {hasBadges && <div className="flex flex-wrap items-center gap-2">{badges}</div>}
             <h1 className={cn(NURMA, "break-words text-[30px] leading-tight text-white")}>{listing.title}</h1>
-            <Gallery images={listing.images} title={listing.title} locked={!!locked && !locked.media} />
-            {locked?.media && <UnlockedMedia media={locked.media} />}
+            <Gallery images={listing.images.slice(0, 1)} title={listing.title} />
           </div>
 
           {/* Seller panel */}
-          <aside className={cn(OUTER, "flex min-w-0 flex-col p-[19px]")}>
+          <aside className={cn(OUTER, "flex min-w-0 flex-col self-start p-[16px] pb-[48px]")}>
             {seller && <SellerCard seller={seller} />}
 
-            <div className={cn(SANS, "mt-[18px] flex flex-col gap-[18px] px-[7px]")}>
-              {listing.description ? (
+            <div className={cn(SANS, "mt-[18px] flex flex-col gap-[18px] px-[10px]")}>
+              {listing.description && (
                 <ExpandableBio
                   text={listing.description}
                   className="gap-2 text-[14px] leading-6 [&>button]:h-[14px] [&>button]:px-1.5 [&>button]:py-0 [&>button]:text-[7px] [&>button]:uppercase [&>p]:text-white"
                 />
-              ) : (
-                <p className="text-[14px] text-[#ffffff]">No description.</p>
               )}
-
-              {!isAuction && (
-                <p className={cn(SERIF, "text-[26px] leading-none text-[#7b3aec]")}>${(listing.priceCents / 100).toFixed(2)} USD</p>
-              )}
-
-              {isAuction && <AuctionPanel listingId={listing._id} isOwner={listing.isOwner} buyBlocked={buyBlocked} />}
-
-              {/* Placeholder from the design; payment methods aren't wired up yet */}
-              <h2 className={SUBHEAD}>Payment Methods</h2>
-
-              {specs.length > 0 && (
-                <div className="flex flex-col gap-1">
-                  <h2 className={SUBHEAD}>Details</h2>
-                  <dl>
-                    {specs.map((s) => (
-                      <Detail key={s.label} label={s.label} value={s.value!} />
-                    ))}
-                  </dl>
-                </div>
-              )}
-
-              {locked && !listing.isOwner && !buyBlocked && (
-                <BuyLockedPanel
-                  listingId={listing._id}
-                  locked={locked}
-                  priceCents={listing.priceCents}
-                  sellerName={seller?.name ?? "the seller"}
-                  isActive={listing.status === "active"}
-                />
-              )}
+              <p className={cn(SERIF, "text-[26px] leading-none text-[#7b3aec]")}>${(listing.priceCents / 100).toFixed(2)} USD</p>
+              {/* From the design; payment methods aren't wired up yet */}
+              <h2 className={cn(SUBHEAD, "pb-8")}>Payment Methods</h2>
             </div>
 
-            <div className="mt-[22px] border-t border-[#3b2a5e] pt-[22px]">
+            <div className="mt-[22px] border-t border-[#3b2a5e] px-[10px] pt-[18px]">
               {listing.isOwner ? (
-                <div className="flex flex-col gap-4">
-                  <OwnerActions
-                    listingId={listing._id}
-                    status={listing.status}
-                    isAuction={isAuction}
-                    canDelete={!(isAuction && listing.auctionHasBids)}
-                  />
-                  {locked && <UnlockRequests listingId={listing._id} />}
-                </div>
+                // Only the seller sees these: they can't message themselves
+                <OwnerActions
+                  listingId={listing._id}
+                  status={listing.status}
+                  isAuction={listing.saleType === "auction"}
+                  canDelete={!(listing.saleType === "auction" && listing.auctionHasBids)}
+                />
               ) : (
-                <div className="flex flex-col gap-3">
-                  {buyBlocked && !isAuction && <UpgradeNotice message={buyBlocked} showUpgrade={false} />}
-                  {!isAuction && !locked && !buyBlocked && (
-                    <Button variant="plain" size="none"
-                      type="button"
-                      className={WIDE_ACTION}
-                      disabled={listing.status !== "active"}
-                      onClick={comingSoon}
-                    >
-                      Buy now
-                    </Button>
-                  )}
-                  {seller && !buyBlocked && (
-                    <MessageSellerButton
-                      listingId={listing._id}
-                      sellerName={seller.name}
-                      label="Message Seller"
-                      showIcon={false}
-                      className={WIDE_ACTION}
-                    />
-                  )}
-                  <FavoriteButton
+                seller &&
+                !buyBlocked && (
+                  <MessageSellerButton
                     listingId={listing._id}
-                    sellerId={listing.sellerId}
-                    withLabel
-                    className="h-10 self-start rounded-[5px] bg-[#141519] shadow-none"
+                    sellerName={seller.name}
+                    label="Message Seller"
+                    showIcon={false}
+                    className={WIDE_ACTION}
                   />
-                  <ReportButton target={{ kind: "listing", id: listing._id }} className="self-start" />
-                </div>
+                )
               )}
             </div>
           </aside>

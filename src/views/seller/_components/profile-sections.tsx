@@ -38,11 +38,11 @@ export function ProfileShopCard({ listing }: { listing: ListingCardData }) {
         {listing.imageUrl && (
           <img src={listing.imageUrl} alt={listing.title} loading="lazy" className="size-full object-cover" />
         )}
-        <span className="absolute -bottom-px left-[14px] flex size-[30px] items-center justify-center overflow-hidden rounded-[5px] bg-[#a8a9ae]">
+        <span className="absolute -bottom-px left-[20px] flex size-[54px] items-center justify-center overflow-hidden rounded-[5px] bg-[#a8a9ae]">
           {listing.sellerAvatarUrl ? (
             <img src={listing.sellerAvatarUrl} alt="" className="size-full object-cover" />
           ) : (
-            <UserRound className="size-6 text-[#2a2a2e]" strokeWidth={1.5} />
+            <UserRound className="size-10 text-[#2a2a2e]" strokeWidth={1.5} />
           )}
         </span>
       </div>
