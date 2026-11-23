@@ -4051,11 +4051,12 @@ function validateListing(input) {
   if (input.subcategory && subcategoryInfo(input.subcategory)?.category !== input.category)
     throw bad4("That type doesn't belong to the chosen category");
 }
-function checkPhotoLimit(count, maxPhotos, alreadyHad = 0) {
-  if (count > Math.max(maxPhotos, alreadyHad))
+var ITEM_PHOTO_MAX = 1;
+function checkPhotoLimit(count, _planMax, alreadyHad = 0) {
+  if (count > Math.max(ITEM_PHOTO_MAX, alreadyHad))
     throw new AppError({
-      code: "FORBIDDEN",
-      message: `Your plan allows up to ${maxPhotos} photos per listing. Upgrade to Pro for more.`
+      code: "BAD_REQUEST",
+      message: "A listing can have 1 photo"
     });
 }
 function cleanListing(input) {
