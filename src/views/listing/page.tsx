@@ -8,7 +8,7 @@ import { useParams } from "next/navigation";
 import { subcategoryInfo } from "@/shared/subcategories.ts";
 import { useMutation, usePaginatedQuery, useQuery } from "@/lib/backend/react.tsx";
 import { formatDistanceToNow } from "date-fns";
-import { CheckCircle2, CircleCheck, Lock, MessageSquareText, Pencil, ShoppingBag, Star, Trash2 } from "lucide-react";
+import { BadgeCheck, CheckCircle2, CircleCheck, Lock, MessageSquareText, Pencil, ShoppingBag, Star, Trash2 } from "lucide-react";
 import MessageSellerButton from "./_components/message-seller-button.tsx";
 import AuctionPanel from "./_components/auction-panel.tsx";
 import RelistAuctionButton from "./_components/relist-auction-button.tsx";
@@ -203,7 +203,10 @@ function SellerCard({ seller }: { seller: Seller }) {
         className="size-[90px] shrink-0 rounded-[5px] bg-[#a8a9ae] text-3xl text-[#2a2a2e]"
       />
       <div className="flex min-w-0 flex-1 flex-col">
-        <span className={cn(SANS, "text-[11px] text-[#7b3aec]")}>{seller.isPro ? "Premium Seller" : "Seller"}</span>
+        <span className={cn(SANS, "flex items-center gap-1 text-[13px] text-[#7b3aec]")}>
+          {seller.isPro && <BadgeCheck className="size-[15px]" strokeWidth={1.75} />}
+          {seller.isPro ? "Premium Seller" : "Seller"}
+        </span>
         <span className={cn(NURMA, "mt-0.5 truncate text-[20px] uppercase leading-tight tracking-[0.03em] text-white group-hover:underline")}>
           {seller.name}
         </span>
@@ -418,7 +421,7 @@ export default function ListingPage() {
       <div className="mx-auto flex max-w-[1170px] flex-col gap-5 px-5 py-8 lg:py-[40px]">
         <div className="grid gap-5 lg:grid-cols-[minmax(0,665fr)_minmax(0,445fr)]">
           {/* Title and picture */}
-          <div className="flex min-w-0 flex-col gap-6 pt-[6px]">
+          <div className="flex min-w-0 flex-col gap-3 pt-[6px]">
             <h1 className={cn(NURMA, "break-words text-[30px] leading-tight text-white")}>{listing.title}</h1>
             <Gallery images={listing.images.slice(0, 1)} title={listing.title} />
           </div>
@@ -431,7 +434,7 @@ export default function ListingPage() {
               {listing.description && (
                 <ExpandableBio
                   text={listing.description}
-                  className="gap-2 text-[14px] leading-6 [&>button]:h-[14px] [&>button]:px-1.5 [&>button]:py-0 [&>button]:text-[7px] [&>button]:uppercase [&>p]:text-white"
+                  className="gap-2 text-[16px] leading-[26px] [&>button]:h-[14px] [&>button]:px-1.5 [&>button]:py-0 [&>button]:text-[7px] [&>button]:uppercase [&>p]:text-white"
                 />
               )}
               <p className={cn(SERIF, "text-[26px] leading-none text-[#7b3aec]")}>${(listing.priceCents / 100).toFixed(2)} USD</p>
