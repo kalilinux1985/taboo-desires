@@ -1,5 +1,6 @@
 "use client";
 
+import CountryFlag from "@/components/country-flag.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { useState } from "react";
 import Link from "next/link";
@@ -100,7 +101,12 @@ export function ProfileHeaderCard({ profile, onReviews }: { profile: Profile; on
           <Star className="size-[18px]" strokeWidth={1.75} />
           {(rating ?? 0).toFixed(1)} ({reviewCount})
         </Button>
-        {country && <span>{country}</span>}
+        {country && (
+          <span className="flex items-center gap-1.5">
+            {country}
+            <CountryFlag country={country} className="inline-flex h-[13px] w-[19px] shrink-0 overflow-hidden rounded-[2px]" />
+          </span>
+        )}
       </p>
       <div className="mt-2 flex flex-wrap items-center gap-[18px]">
         {profile.isMe ? (

@@ -122,7 +122,7 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
               {item.author.name}
             </Link>
             {item.author.country && (
-              <CountryFlag country={item.author.country} className="h-3.5 w-5 rounded-[5px] object-cover" />
+              <CountryFlag country={item.author.country} />
             )}
             {item.author.verified && <VerifiedBadge />}
             {label && <span className="text-[10px] font-bold uppercase tracking-wide text-violet-600">{label}</span>}

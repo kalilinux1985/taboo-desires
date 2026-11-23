@@ -1,4 +1,5 @@
 import { Input } from "@/components/ui/input.tsx";
+import CountryFlag from "@/components/country-flag.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { createContext, useContext, useState } from "react";
 import ReportButton from "@/components/report-button.tsx";
@@ -160,9 +161,12 @@ function CommentItem({
         <div className="flex min-w-0 flex-1 flex-col gap-2.5">
           <div className={cn(PROFILE_BOX, "flex min-h-[72px] flex-col gap-1 px-[13px] py-2")}>
             <div className="flex items-start justify-between gap-3">
-              <Link href={profile} className="cursor-pointer truncate text-[12px] tracking-[0.03em] text-white hover:underline">
-                {comment.author.name}
-              </Link>
+              <span className="flex min-w-0 items-center gap-1.5">
+                <Link href={profile} className="cursor-pointer truncate text-[12px] tracking-[0.03em] text-white hover:underline">
+                  {comment.author.name}
+                </Link>
+                {comment.author.country && <CountryFlag country={comment.author.country} className="inline-flex h-3 w-[18px] shrink-0 overflow-hidden rounded-[2px]" />}
+              </span>
               <span className="flex shrink-0 items-center gap-2 text-[10px] text-white">
                 <span title={new Date(comment._creationTime).toLocaleString()}>{shortAge(comment._creationTime)}</span>
                 {comment.canDelete ? (
@@ -233,9 +237,12 @@ function CommentItem({
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <div className={cn(COMMENT_BOX, "flex min-h-[84px] flex-col gap-1 px-[15px] py-2.5")}>
           <div className="flex items-start justify-between gap-3">
-            <Link href={profile} className="cursor-pointer truncate text-[13px] text-white hover:underline">
-              {comment.author.name}
-            </Link>
+            <span className="flex min-w-0 items-center gap-1.5">
+              <Link href={profile} className="cursor-pointer truncate text-[13px] text-white hover:underline">
+                {comment.author.name}
+              </Link>
+              {comment.author.country && <CountryFlag country={comment.author.country} className="inline-flex h-3 w-[18px] shrink-0 overflow-hidden rounded-[2px]" />}
+            </span>
             <span className="flex shrink-0 items-center gap-2 text-[10px] text-white">
               <span title={new Date(comment._creationTime).toLocaleString()}>{shortAge(comment._creationTime)}</span>
               {comment.canDelete ? (

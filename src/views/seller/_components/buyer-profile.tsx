@@ -1,4 +1,5 @@
 import ProfileMenu from "./profile-menu.tsx";
+import CountryFlag from "@/components/country-flag.tsx";
 import { useState } from "react";
 import ZoomImage from "@/components/zoom-image.tsx";
 import Link from "next/link";
@@ -36,7 +37,12 @@ function Header({ profile }: { profile: Profile }) {
           <Star className="size-[18px]" strokeWidth={1.75} />
           {written.average.toFixed(1)} ({written.count})
         </span>
-        {country && <span>{country}</span>}
+        {country && (
+          <span className="flex items-center gap-1.5">
+            {country}
+            <CountryFlag country={country} className="inline-flex h-[13px] w-[19px] shrink-0 overflow-hidden rounded-[2px]" />
+          </span>
+        )}
       </p>
       <div className="mt-2 flex flex-wrap items-center gap-[18px]">
         {!profile.isMe && (
