@@ -125,7 +125,8 @@ export default function ListingForm({
   const mine = useQuery(api.subscriptions.mine, {});
   const limits = mine?.limits ?? PLAN_LIMITS.free;
   // A seller who downgraded keeps the photos they already had, but can't add more
-  const maxPhotos = Math.max(limits.maxPhotos, isEdit ? defaultPhotos.length : 0);
+  // One photo per item; an older listing with more keeps them but can't add any
+  const maxPhotos = Math.max(1, isEdit ? defaultPhotos.length : 0);
   const saleType = useWatch({ control: form.control, name: "saleType" });
   const isAuction = saleType === "auction";
 
@@ -199,17 +200,9 @@ export default function ListingForm({
         ) : (
           <div className="flex flex-col gap-2">
             <div className="flex items-baseline justify-between gap-2">
-              <p className="text-sm font-medium">Photos</p>
+              <p className="text-sm font-medium">Photo</p>
               <p className="text-xs text-muted-foreground">
                 {photos.length}/{maxPhotos}
-                {mine?.plan !== "pro" && (
-                  <>
-                    {" · "}
-                    <Link href="/pricing" className="cursor-pointer font-semibold text-violet-600 hover:underline">
-                      Pro gets {PLAN_LIMITS.pro.maxPhotos}
-                    </Link>
-                  </>
-                )}
               </p>
             </div>
             <PhotoUploader
@@ -220,7 +213,7 @@ export default function ListingForm({
                 setPhotoError(false);
               }}
             />
-            {photoError && <p className="text-sm text-destructive">Add at least one photo</p>}
+            {photoError && <p className="text-sm text-destructive">Add a photo</p>}
           </div>
         )}
 

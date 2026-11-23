@@ -46,7 +46,7 @@ export default function PhotoUploader({
     const room = Math.max(0, maxPhotos - photos.length);
     const selected = Array.from(files).slice(0, room);
     if (files.length > room)
-      toast.error(`You can add up to ${maxPhotos} photos`);
+      toast.error(maxPhotos === 1 ? "You can add 1 photo" : `You can add up to ${maxPhotos} photos`);
     setUploading(selected.length);
     try {
       const results = await Promise.all(selected.map(upload));

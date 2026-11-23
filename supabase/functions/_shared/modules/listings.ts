@@ -116,12 +116,15 @@ function validateListing(input: ListingInput) {
     throw bad("That type doesn't belong to the chosen category");
 }
 
-/** Free sellers get fewer photos; a downgraded seller can keep (not grow) what they had. */
-function checkPhotoLimit(count: number, maxPhotos: number, alreadyHad = 0) {
-  if (count > Math.max(maxPhotos, alreadyHad))
+/** Regular items have one photo (Instant Content has its own limits). */
+const ITEM_PHOTO_MAX = 1;
+
+/** One photo per item; older listings with more can keep (not grow) what they had. */
+function checkPhotoLimit(count: number, _planMax: number, alreadyHad = 0) {
+  if (count > Math.max(ITEM_PHOTO_MAX, alreadyHad))
     throw new AppError({
-      code: "FORBIDDEN",
-      message: `Your plan allows up to ${maxPhotos} photos per listing. Upgrade to Pro for more.`,
+      code: "BAD_REQUEST",
+      message: "A listing can have 1 photo",
     });
 }
 

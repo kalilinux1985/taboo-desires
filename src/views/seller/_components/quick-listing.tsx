@@ -34,7 +34,7 @@ import { HEADING_FONT, INSET, TEXT_FONT } from "../_lib/theme.ts";
 import { profileFontVars } from "../_lib/fonts.ts";
 
 const MAX_BYTES = 10 * 1024 * 1024;
-const MAX_PHOTOS = 4;
+const MAX_PHOTOS = 1;
 const FIELD = "h-9 rounded-[5px] border-white/[3%] text-sm placeholder:text-white/70";
 
 type Photo = { id: Id<"_storage">; url: string };
