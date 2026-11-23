@@ -82,7 +82,7 @@ export default function ProfileForm({
     </div>
   );
   const saveRow = (
-    <div className="flex justify-end">
+    <div className="flex">
       <Button onClick={save} disabled={saving || avatarUploading} className="cursor-pointer">
         {saving && <Spinner />} Save
       </Button>

@@ -48,7 +48,7 @@ export default function BuyerDetailsForm({ initial }: { initial: BuyerDetails })
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="flex flex-col gap-4">
         {BUYER_DETAIL_FIELDS.map((field) => {
           const id = `buyer-${field.key}`;
           return (
@@ -98,7 +98,7 @@ export default function BuyerDetailsForm({ initial }: { initial: BuyerDetails })
           })}
         </div>
       </div>
-      <div className="flex justify-end">
+      <div className="flex">
         <Button onClick={save} disabled={saving} className="cursor-pointer">
           {saving && <Spinner />} Save details
         </Button>

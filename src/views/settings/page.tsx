@@ -35,7 +35,7 @@ function SettingsInner({ kind }: { kind?: SettingsKind }) {
   const profile = useQuery(api.users.getProfile, me ? { userId: me._id } : "skip");
   if (me === undefined || (me && profile === undefined)) {
     return (
-      <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+      <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
         <Skeleton className="h-96 w-full" />
         <Skeleton className="h-64 w-full" />
       </div>
@@ -80,8 +80,9 @@ function SettingsInner({ kind }: { kind?: SettingsKind }) {
     );
   }
 
+  // Buyers: the same single column as sellers: profile, About you, account, visibility, delete
   return (
-    <div className="grid items-start gap-6 lg:grid-cols-[1fr_360px]">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
       <Card>
         <CardHeader className="border-b border-white/[3%] pb-4">
           <CardTitle className="font-display text-2xl">Profile Information</CardTitle>
@@ -90,7 +91,7 @@ function SettingsInner({ kind }: { kind?: SettingsKind }) {
           <ProfileForm profile={profile} />
         </CardContent>
       </Card>
-      <Card className="lg:col-start-1">
+      <Card>
         <CardHeader>
           <CardTitle className="font-display text-2xl">About you</CardTitle>
           <CardDescription>Optional. Shown on your buyer profile.</CardDescription>
@@ -99,8 +100,6 @@ function SettingsInner({ kind }: { kind?: SettingsKind }) {
           <BuyerDetailsForm initial={profile.buyerDetails} />
         </CardContent>
       </Card>
-      <div className="flex flex-col gap-6 lg:col-start-2 lg:row-span-2 lg:row-start-1">
-      <ProfileVisibility initialPrivate={profile.isPrivate} />
       <Card>
         <CardHeader>
           <CardTitle className="font-display text-2xl">Account</CardTitle>
@@ -111,7 +110,15 @@ function SettingsInner({ kind }: { kind?: SettingsKind }) {
             <Row label="Account type" value={accountLabel} />
           </div>
           <SignInButton size="sm" variant="secondary" signOutText="Log out" />
-          {!me.isAdmin && (
+        </CardContent>
+      </Card>
+      <ProfileVisibility initialPrivate={profile.isPrivate} />
+      {!me.isAdmin && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-display text-2xl">Delete Your Account</CardTitle>
+          </CardHeader>
+          <CardContent>
             <div className="flex flex-col gap-3 rounded-[5px] border border-destructive/40 bg-destructive/5 p-4">
               <div>
                 <p className="text-sm font-semibold text-destructive">Danger zone</p>
@@ -121,10 +128,9 @@ function SettingsInner({ kind }: { kind?: SettingsKind }) {
               </div>
               <DeleteAccount />
             </div>
-          )}
-        </CardContent>
-      </Card>
-      </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
@@ -133,7 +139,7 @@ function SettingsInner({ kind }: { kind?: SettingsKind }) {
 export default function SettingsPage({ kind }: { kind?: SettingsKind }) {
   const eyebrow = kind === "buyer" ? "Buyer account" : kind === "seller" ? "Seller account" : "Your account";
   return (
-    <div className="profile-design settings-design mx-auto flex max-w-6xl flex-col gap-8 px-4 py-10">
+    <div className="profile-design settings-design mx-auto flex max-w-2xl flex-col gap-8 px-4 py-10">
       <header className="flex flex-col gap-2 border-b pb-6">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-600">{eyebrow}</p>
         <h1 className="font-display text-4xl md:text-6xl">Settings</h1>
