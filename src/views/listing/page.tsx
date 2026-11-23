@@ -1,6 +1,7 @@
 "use client";
 
 import ReportButton from "@/components/report-button.tsx";
+import ZoomImage from "@/components/zoom-image.tsx";
 import { useState } from "react";
 import Link from "next/link";
 import { useNavigate } from "@/lib/navigation.ts";
@@ -81,7 +82,12 @@ function Gallery({
   return (
     <div className="flex flex-col gap-3">
       <div className="relative aspect-[8/5] overflow-hidden rounded-[5px] bg-white shadow-[0_6px_14px_rgba(0,0,0,0.35)]">
-        {current && <img src={current.url} alt={title} className="size-full object-cover" />}
+        {/* Click to see the whole picture in a popup */}
+        {current && (
+          <ZoomImage src={current.url} alt={title} className="size-full">
+            <img src={current.url} alt={title} className="size-full object-cover" />
+          </ZoomImage>
+        )}
         {locked && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/30 text-white">
             <span className="flex size-14 items-center justify-center rounded-full text-[#7b3aec] drop-shadow-md">
