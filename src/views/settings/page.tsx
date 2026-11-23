@@ -1,28 +1,18 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "@/lib/navigation.ts";
 import { useQuery } from "@/lib/backend/react.tsx";
 import { api } from "@/lib/backend/api.ts";
 import { settingsKindFor, settingsPathFor, type SettingsKind } from "@/lib/settings.ts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
-import { SignInButton } from "@/components/ui/signin.tsx";
 import RequireAuth from "@/components/require-auth.tsx";
 import ProfileForm from "@/components/profile-form.tsx";
 import SellerSettingsForm from "./_components/seller-settings-form.tsx";
 import BuyerDetailsForm from "./_components/buyer-details-form.tsx";
 import ProfileVisibility from "./_components/profile-visibility.tsx";
 import DeleteAccount from "./_components/delete-account.tsx";
-
-function Row({ label, value }: { label: string; value: ReactNode }) {
-  return (
-    <div className="flex items-center justify-between gap-4 border-b py-3 last:border-0">
-      <span className="text-sm text-muted-foreground">{label}</span>
-      <span className="min-w-0 truncate text-sm font-medium">{value}</span>
-    </div>
-  );
-}
 
 function Redirect({ to }: { to: string }) {
   const navigate = useNavigate();
@@ -47,7 +37,6 @@ function SettingsInner({ kind }: { kind?: SettingsKind }) {
     return <Redirect to={settingsPathFor(me.accountType)} />;
   }
 
-  const accountLabel = me.accountType === "seller" ? "Seller" : me.accountType === "buyer" ? "Buyer" : "Not chosen";
   const isSeller = kind === "seller";
 
   // Sellers: profile, More About You, Login Credentials, Notifications & Visibility, delete
@@ -80,7 +69,7 @@ function SettingsInner({ kind }: { kind?: SettingsKind }) {
     );
   }
 
-  // Buyers: the same single column as sellers: profile, About you, account, visibility, delete
+  // Buyers: the same single column as sellers: profile, About you, visibility, delete
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
       <Card>
@@ -98,18 +87,6 @@ function SettingsInner({ kind }: { kind?: SettingsKind }) {
         </CardHeader>
         <CardContent>
           <BuyerDetailsForm initial={profile.buyerDetails} />
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle className="font-display text-2xl">Account</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <div>
-            <Row label="Email" value={me.email ?? "None"} />
-            <Row label="Account type" value={accountLabel} />
-          </div>
-          <SignInButton size="sm" variant="secondary" signOutText="Log out" />
         </CardContent>
       </Card>
       <ProfileVisibility initialPrivate={profile.isPrivate} />
