@@ -103,8 +103,8 @@ export function ProfileHeaderCard({ profile, onReviews }: { profile: Profile; on
         </Button>
         {country && (
           <span className="flex items-center gap-1.5">
-            {country}
             <CountryFlag country={country} className="inline-flex h-[13px] w-[19px] shrink-0 overflow-hidden rounded-[2px]" />
+            {country}
           </span>
         )}
       </p>
