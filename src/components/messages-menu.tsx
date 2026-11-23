@@ -83,7 +83,7 @@ export default function MessagesMenu({ className, badgeClassName }: { className:
           {!!unread && <span className={badgeClassName}>{unread > 9 ? "9+" : unread}</span>}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" sideOffset={8} className="flex w-[min(22rem,calc(100vw-1.5rem))] flex-col bg-[#09090b]/90 p-0">
+      <PopoverContent align="end" sideOffset={8} className="flex w-[min(22rem,calc(100vw-1.5rem))] flex-col bg-[#09090b] p-0">
         <p className="border-b border-white/[3%] px-4 py-3 text-sm font-bold">Messages</p>
         <HideOnError
           fallback={<p className="px-4 py-8 text-center text-sm text-muted-foreground">Messages aren&apos;t available right now.</p>}

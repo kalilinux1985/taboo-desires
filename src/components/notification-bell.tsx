@@ -179,7 +179,7 @@ export default function NotificationBell({
           </Button>
         )}
       </PopoverTrigger>
-      <PopoverContent align="end" sideOffset={8} className="flex w-[min(24rem,calc(100vw-1.5rem))] flex-col rounded-[5px] border-white/10 bg-[#09090be6] p-0">
+      <PopoverContent align="end" sideOffset={8} className="flex w-[min(24rem,calc(100vw-1.5rem))] flex-col rounded-[5px] border-white/10 bg-[#09090b] p-0">
         <div className="flex items-baseline gap-3 border-b border-white/10 px-4 py-4">
           <p className="font-display text-xl">Notifications</p>
           <HideOnError>

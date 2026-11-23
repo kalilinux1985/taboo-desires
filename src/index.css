@@ -173,6 +173,8 @@
   [data-slot="select-trigger"],
   [role="combobox"] {
     border-color: rgb(51 51 51 / 33%) !important;
+    /* Every text field and picker: #111317 (the header search stays as it is, see field-bare) */
+    background-color: #111317 !important;
   }
 
   /* Sign-in page fields: recessed, with a faint edge and the design's inner shadow */
