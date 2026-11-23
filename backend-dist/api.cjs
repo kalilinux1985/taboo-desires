@@ -6597,6 +6597,18 @@ var getCurrentUser = query({
     return await getCurrentUserDoc(ctx);
   }
 });
+var REQUIRED_BASICS = ["ageRange", "country", "gender"];
+function missingBasics(user) {
+  if (user.role === "admin" || !user.accountType) return [];
+  const details = user.accountType === "seller" ? user.sellerDetails : user.buyerDetails;
+  return REQUIRED_BASICS.filter((k) => !details?.[k]);
+}
+function requireBasics(user, details) {
+  if (user.role === "admin") return;
+  const missing = REQUIRED_BASICS.filter((k) => !details[k]);
+  if (missing.length)
+    throw new AppError({ code: "BAD_REQUEST", message: "Choose your age, country and gender" });
+}
 var menu = query({
   args: {},
   handler: async (ctx) => {
@@ -6609,7 +6621,9 @@ var menu = query({
       accountType: me.accountType ?? null,
       isAdmin: me.role === "admin",
       isPro: await getPlan(ctx, me._id) === "pro",
-      avatarUrl: me.avatarStorageId ? await ctx.storage.getUrl(me.avatarStorageId) : null
+      avatarUrl: me.avatarStorageId ? await ctx.storage.getUrl(me.avatarStorageId) : null,
+      /** Age, country or gender still to choose: the site sends them to Settings until done */
+      missingBasics: missingBasics(me)
     };
   }
 });
@@ -6901,6 +6915,7 @@ var updateSellerDetails = mutation({
     }
     const problem = invalidSellerDetail(details);
     if (problem) throw new AppError({ code: "BAD_REQUEST", message: problem });
+    requireBasics(user, details);
     await ctx.db.patch("users", user._id, { sellerDetails: details });
     return null;
   }
@@ -6955,6 +6970,7 @@ var updateBuyerDetails = mutation({
     }
     const problem = invalidBuyerDetail(details);
     if (problem) throw new AppError({ code: "BAD_REQUEST", message: problem });
+    requireBasics(user, details);
     await ctx.db.patch("users", user._id, { buyerDetails: details });
     return null;
   }
