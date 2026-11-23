@@ -4024,9 +4024,10 @@ var listingFields = {
   description: v.string(),
   category: categoryValidator,
   subcategory: v.optional(v.union(...SUBCATEGORY_VALUES.map((s) => v.literal(s)))),
-  brand: v.string(),
-  size: v.string(),
-  condition: conditionValidator,
+  // The sell form no longer asks for these; older listings keep theirs
+  brand: v.optional(v.string()),
+  size: v.optional(v.string()),
+  condition: v.optional(conditionValidator),
   priceCents: v.number(),
   imageIds: v.array(v.storageId(), 20),
   // Paywalled listing: original files; imageIds then hold their blurred previews
@@ -4042,8 +4043,8 @@ function validateListing(input) {
   if (input.title.trim().length < 3 || input.title.length > 80)
     throw bad4("Title must be 3-80 characters");
   if (input.description.length > 2e3) throw bad4("Description is too long");
-  if (!input.brand.trim()) throw bad4("Brand is required");
-  if (!input.size.trim()) throw bad4("Size is required");
+  if ((input.brand ?? "").length > 40) throw bad4("Brand is too long");
+  if ((input.size ?? "").length > 20) throw bad4("Size is too long");
   if (!Number.isInteger(input.priceCents) || input.priceCents < 100 || input.priceCents > MAX_PRICE_CENTS)
     throw bad4("Price must be between $1 and $100,000");
   if (input.imageIds.length < 1) throw bad4("Add at least one photo");
@@ -4062,8 +4063,8 @@ function cleanListing(input) {
     ...input,
     title: input.title.trim(),
     description: input.description.trim(),
-    brand: input.brand.trim(),
-    size: input.size.trim(),
+    brand: (input.brand ?? "").trim(),
+    size: (input.size ?? "").trim(),
     // Always sent, so changing category can clear an old sub-category
     subcategory: input.subcategory ?? void 0
   };
@@ -4388,6 +4389,8 @@ var create3 = mutation({
       });
     const listingId = await ctx.db.insert("listings", {
       ...cleanListing(fields),
+      // No wear time asked any more: "custom wear" (agreed with the buyer)
+      condition: fields.condition ?? "custom_wear",
       sellerId: user._id,
       status: "active",
       saleType,
@@ -4446,8 +4449,11 @@ var update = mutation({
     const auction = await getAuctionByListing(ctx, listingId);
     const priceCents = await syncAuctionPrice(ctx, auction, fields.priceCents);
     removed.forEach((id) => ctx.storage.delete(id));
+    const { condition, ...rest } = cleanListing(fields);
     await ctx.db.patch("listings", listingId, {
-      ...cleanListing(fields),
+      ...rest,
+      // Keep the wear time an older listing had
+      ...condition ? { condition } : {},
       priceCents,
       ...locked ? { paywall: { media: locked } } : {}
     });
