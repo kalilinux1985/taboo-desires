@@ -100,7 +100,7 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
   const text = item.body || (item.kind !== "status" ? `${verb.lead} ${verb.link}${item.listing ? `: ${item.listing.title}` : ""}` : "");
 
   return (
-    <article className="flex gap-3 rounded-[5px] border border-white/[3%] bg-[#52525214] p-4 shadow-[0_14px_34px_-8px_rgba(0,0,0,0.3)] sm:gap-4">
+    <article className="flex gap-3 rounded-[5px] border border-[#59595b40] bg-[#52525214] p-4 shadow-[0_14px_34px_-8px_rgba(0,0,0,0.3)] sm:gap-4">
       <Link href={profile} className="relative h-fit shrink-0 cursor-pointer">
         <ProfileAvatar
           name={item.author.name}

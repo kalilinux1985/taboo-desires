@@ -184,8 +184,8 @@ function PhotoCard({ photo, isMe, onRemove }: { photo: Photo; isMe: boolean; onR
 
   return (
     // Outer frame around an inner card, as in the design
-    <div className="rounded-[3px] border border-[#3a3b40] bg-[#1d1e23] p-[14px] shadow-[0_4px_12px_rgba(0,0,0,0.35)]">
-      <div className="group relative flex min-w-0 flex-col overflow-hidden rounded-[3px] border border-[#2f3036] bg-[#141519]">
+    <div className="rounded-[3px] border border-[#59595b40] bg-[#1d1e23] p-[14px] shadow-[0_4px_12px_rgba(0,0,0,0.35)]">
+      <div className="group relative flex min-w-0 flex-col overflow-hidden rounded-[3px] border border-[#59595b40] bg-[#141519]">
         <div className="relative aspect-square overflow-hidden bg-white">
           <ZoomImage src={photo.url} className="size-full">
             <img src={photo.url} alt={photo.caption} loading="lazy" className="size-full object-cover" />

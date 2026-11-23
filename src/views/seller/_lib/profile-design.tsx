@@ -14,12 +14,12 @@ export const SERIF = "[font-family:var(--font-profile-buyer),Cambria,Georgia,ser
 export const SANS = "[font-family:Arial,Helvetica,sans-serif]";
 /** Nurma display face: member names and page titles */
 export const NURMA = "[font-family:var(--font-nurma),Arial,sans-serif]";
-export const OUTER = "rounded-[5px] border border-white/[3%] bg-[#202227] shadow-[0_6px_14px_rgba(0,0,0,0.35)]";
+export const OUTER = "rounded-[5px] border border-[#59595b40] bg-[#202227] shadow-[0_6px_14px_rgba(0,0,0,0.35)]";
 export const INNER =
-  "rounded-[5px] border border-[#59595b4f] bg-[#141519] shadow-[0_4px_10px_rgba(0,0,0,0.3)]";
+  "rounded-[5px] border border-[#59595b40] bg-[#141519] shadow-[0_4px_10px_rgba(0,0,0,0.3)]";
 /** A card inside an inner card (listings, posts, tiles) */
 export const CARD =
-  "rounded-[5px] border border-[#2a2c33] bg-[#202227] shadow-[0_4px_10px_rgba(0,0,0,0.3)]";
+  "rounded-[5px] border border-[#59595b40] bg-[#202227] shadow-[0_4px_10px_rgba(0,0,0,0.3)]";
 /** "1 year ago", without date-fns' "about"/"over"/"almost". */
 export const joinedAgo = (date: string | number) =>
   formatDistanceToNow(new Date(date), { addSuffix: true }).replace(/^(about|over|almost) /, "");

@@ -28,8 +28,8 @@ function InstantCard({ listing }: { listing: Item }) {
   const media = mediaLabel(listing);
   const profileHref = listing.sellerUsername ? `/${listing.sellerUsername}` : `/seller/${listing.sellerId}`;
   return (
-    <div className="rounded-[5px] bg-[#202227] p-[10px] shadow-[0_6px_14px_rgba(0,0,0,0.35)]">
-      <div className="relative flex min-w-0 flex-col overflow-hidden rounded-[5px] bg-[#141519] shadow-[0_4px_10px_rgba(0,0,0,0.3)]">
+    <div className="rounded-[5px] border border-[#59595b40] bg-[#202227] p-[10px] shadow-[0_6px_14px_rgba(0,0,0,0.35)]">
+      <div className="relative flex min-w-0 flex-col overflow-hidden rounded-[5px] border border-[#59595b40] bg-[#141519] shadow-[0_4px_10px_rgba(0,0,0,0.3)]">
         <div className="relative aspect-[1.57] bg-white">
           <Link href={`/listing/${listing._id}`} className="absolute inset-0 block cursor-pointer overflow-hidden">
             {listing.imageUrl ? (
