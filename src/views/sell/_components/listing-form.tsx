@@ -41,18 +41,8 @@ const ITEM_SECTIONS = SELL_SECTIONS.filter((s) => ["underwear", "shoes", "clothi
   s.key === "extras" ? { ...s, label: "Used Extras" } : s,
 );
 
-/** A listing title from its description: the first line, up to 80 characters. */
-export function titleFrom(description: string, fallback: string): string {
-  const line = description.trim().split(/\n/)[0].replace(/\s+/g, " ").trim();
-  if (line.length < 3) return fallback;
-  if (line.length <= 80) return line;
-  const cut = line.slice(0, 79);
-  return `${cut.slice(0, cut.lastIndexOf(" ") > 40 ? cut.lastIndexOf(" ") : 79)}…`;
-}
-
 const schema = z.object({
-  // Items: made from the description; Instant Content: typed by the seller
-  title: z.string().trim().max(80),
+  title: z.string().trim().min(3, "At least 3 characters").max(80),
   // Kept for older listings; the form no longer asks for them
   brand: z.string(),
   size: z.string(),
@@ -154,7 +144,7 @@ export default function ListingForm({
       setPhotoError(true);
       return;
     }
-    if (instant && title.trim().length < 3) {
+    if (title.trim().length < 3) {
       form.setError("title", { message: "At least 3 characters" });
       return;
     }
@@ -163,10 +153,9 @@ export default function ListingForm({
       return;
     }
     const video = lockedItems.some((m) => m.kind === "video");
-    const subLabel = sectionItems.find((it) => it.key === itemKey)?.label ?? "Item for sale";
     await onSubmit({
       ...values,
-      title: instant ? title.trim() : titleFrom(values.description, subLabel),
+      title: title.trim(),
       // Instant Content files under Extras as a photo set or a video clip
       ...(instant ? { category: "extras" as Category } : {}),
       subcategory: (instant ? (video ? "video_clips" : "photo_sets") : subcategory || undefined) as Subcategory | undefined,
@@ -235,21 +224,21 @@ export default function ListingForm({
           </div>
         )}
 
-        {instant ? (
-          <FormField
-            control={form.control}
-            name="title"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Title</FormLabel>
-                <FormControl>
-                  <Input placeholder="10 pics in my black lace set" maxLength={80} {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        ) : (
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Title</FormLabel>
+              <FormControl>
+                <Input placeholder={instant ? "10 pics in my black lace set" : "Black lace thong, 2-day wear"} maxLength={80} {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {!instant && (
           <FormField
             control={form.control}
             name="category"
@@ -329,7 +318,6 @@ export default function ListingForm({
                   {...field}
                 />
               </FormControl>
-              {!instant && <p className="text-xs text-muted-foreground">The first line becomes the listing's title.</p>}
               <FormMessage />
             </FormItem>
           )}
