@@ -10,9 +10,9 @@ export default function Copyright() {
     >
       <Section title="Sending a notice">
         <p>
-          Use the <Link href="/report" className="text-[#7b3aec] hover:underline">report form</Link> and choose
+          Use the <Link href="/report" className="text-[#7c3aed] hover:underline">report form</Link> and choose
           "Copyright infringement", or send a written notice
-          {COMPANY.email ? <> to <a href={`mailto:${COMPANY.email}`} className="text-[#7b3aec] hover:underline">{COMPANY.email}</a></> : null}
+          {COMPANY.email ? <> to <a href={`mailto:${COMPANY.email}`} className="text-[#7c3aed] hover:underline">{COMPANY.email}</a></> : null}
           {COMPANY.copyrightAgent ? <> addressed to our designated agent, {COMPANY.copyrightAgent}</> : null}
           {COMPANY.address ? <> ({COMPANY.address})</> : null}. A notice must include:
         </p>

@@ -1,6 +1,6 @@
 // Seller profile design (Sellers_Profile_2): #0f172a page; cards are #030917 at
 // 50% (a card inside a card reads darker); 1px white borders at 25%; violet
-// #7f22fe; drop shadows black at 30%; inner shadows black at 28%.
+// #7c3aed; drop shadows black at 30%; inner shadows black at 28%.
 
 const SHADOW = "shadow-[0_14px_34px_-8px_rgba(0,0,0,0.3)]";
 

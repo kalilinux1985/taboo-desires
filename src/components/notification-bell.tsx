@@ -21,7 +21,7 @@ const DROPDOWN_COUNT = 6;
 
 function NewCount() {
   const count = useQuery(api.notifications.unreadCount, {});
-  return count ? <span className="font-display text-sm text-violet-500">{count} new</span> : null;
+  return count ? <span className="font-display text-sm text-violet-600">{count} new</span> : null;
 }
 
 function CountBadge() {
@@ -49,7 +49,7 @@ function RequestActions({ followerId }: { followerId: Id<"users"> }) {
   if (done) return <span className="mt-2 block text-sm text-muted-foreground">{done === "accepted" ? "Accepted" : "Deleted"}</span>;
   return (
     <span className="mt-2 flex gap-6 font-display text-base">
-      <Button type="button" variant="link" size="xs" onClick={() => void answer(true)} className="h-auto cursor-pointer p-0 font-display text-base text-violet-500">
+      <Button type="button" variant="link" size="xs" onClick={() => void answer(true)} className="h-auto cursor-pointer p-0 font-display text-base text-violet-600">
         Accept
       </Button>
       <Button type="button" variant="link" size="xs" onClick={() => void answer(false)} className="h-auto cursor-pointer p-0 font-display text-base text-red-600">
@@ -101,7 +101,7 @@ function DropdownList({ onPick }: { onPick: () => void }) {
               {rest}
               {isRequest && n.actorId && <RequestActions followerId={n.actorId} />}
             </span>
-            <span className="shrink-0 text-xs text-violet-500">{shortAgo(n.at)}</span>
+            <span className="shrink-0 text-xs text-violet-600">{shortAgo(n.at)}</span>
           </>
         );
         return (
@@ -190,7 +190,7 @@ export default function NotificationBell({
             variant="link"
             size="xs"
             onClick={() => void markSeen({}).catch(() => {})}
-            className="ml-auto h-auto cursor-pointer p-0 font-display text-sm text-violet-500"
+            className="ml-auto h-auto cursor-pointer p-0 font-display text-sm text-violet-600"
           >
             Clear all
           </Button>
@@ -203,7 +203,7 @@ export default function NotificationBell({
         <Button
           asChild
           variant="ghost"
-          className="h-auto cursor-pointer rounded-none border-t border-white/10 py-4 font-display text-xl text-violet-500 hover:text-violet-400"
+          className="h-auto cursor-pointer rounded-none border-t border-white/10 py-4 font-display text-xl text-violet-600 hover:text-violet-600"
         >
           <Link href="/notifications" onClick={() => onOpenChange(false)}>
             View All Notifications

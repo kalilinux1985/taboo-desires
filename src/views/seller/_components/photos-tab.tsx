@@ -215,7 +215,7 @@ function PhotoCard({ photo, isMe, onRemove }: { photo: Photo; isMe: boolean; onR
               aria-expanded={commenting}
               className="flex cursor-pointer items-center gap-0.5"
             >
-              {photo.commentCount} <MessageSquare className="size-[15px] text-[#7b3aec]" strokeWidth={1.75} />
+              {photo.commentCount} <MessageSquare className="size-[15px] text-[#7c3aed]" strokeWidth={1.75} />
             </Button>
             <Button
               variant="plain"
@@ -226,7 +226,7 @@ function PhotoCard({ photo, isMe, onRemove }: { photo: Photo; isMe: boolean; onR
               aria-pressed={photo.likedByMe}
               className="flex cursor-pointer items-center gap-0.5"
             >
-              {photo.likeCount} <Heart className={cn("size-[15px] text-[#7b3aec]", photo.likedByMe && "fill-current")} strokeWidth={1.75} />
+              {photo.likeCount} <Heart className={cn("size-[15px] text-[#7c3aed]", photo.likedByMe && "fill-current")} strokeWidth={1.75} />
             </Button>
             <span className="flex min-w-0 flex-wrap items-center gap-1 text-xs [&>a]:size-5">
               <LikerAvatars likers={photo.likers} total={photo.likeCount} postId={photo.postId ?? undefined} size="sm" />
@@ -300,15 +300,15 @@ export function PhotosTab({
         <div className="flex flex-col gap-1.5">
           <h2 className={cn(SERIF, "flex flex-wrap items-baseline gap-x-3 leading-tight")}>
             <span className="text-[26px] text-white">Photos</span>
-            <span className="text-[26px] text-[#7b3aec]">
+            <span className="text-[26px] text-[#7c3aed]">
               {total} {total === 1 ? "Image" : "Images"}
             </span>
           </h2>
-          <span className="h-0.5 w-[76px] bg-[#7b3aec]" />
+          <span className="h-0.5 w-[76px] bg-[#7c3aed]" />
         </div>
         {isMe && room > 0 && (
-          <Button type="button" variant="outline" onClick={() => setAdding(true)} className="h-[38px] cursor-pointer gap-2 border-2 border-[#7b3aec] text-white hover:bg-[#7b3aec]/20">
-            <ImagePlus className="size-4 text-[#7b3aec]" /> Add photo
+          <Button type="button" variant="outline" onClick={() => setAdding(true)} className="h-[38px] cursor-pointer gap-2 border-2 border-[#7c3aed] text-white hover:bg-[#7c3aed]/20">
+            <ImagePlus className="size-4 text-[#7c3aed]" /> Add photo
             {limit !== undefined && (
               <span className="font-mono text-xs text-white">
                 {ownCount ?? total}/{limit}
@@ -341,7 +341,7 @@ export function PhotosTab({
             className={cn(
               SERIF,
               "h-[32px] shrink-0 cursor-pointer rounded-[3px] border-2 bg-transparent px-[10px] text-[15px]",
-              album === a._id ? "border-[#7b3aec] text-[#7b3aec]" : "border-white text-white hover:border-[#7b3aec]",
+              album === a._id ? "border-[#7c3aed] text-[#7c3aed]" : "border-white text-white hover:border-[#7c3aed]",
             )}
           >
             {a.name} ({a.photos})
@@ -403,24 +403,24 @@ export function PhotosTab({
 /** PREVIOUS / NEXT bar under a paged grid. */
 export function Pager({ page, hasNext, onGo }: { page: number; hasNext: boolean; onGo: (page: number) => void }) {
   return (
-    <div className="mt-[44px] grid grid-cols-2 overflow-hidden border-2 border-[#5e2faf]">
+    <div className="mt-[44px] grid grid-cols-2 overflow-hidden border-2 border-[#7c3aed]">
       <Button
         type="button"
         variant="ghost"
         disabled={page === 0}
         onClick={() => onGo(Math.max(0, page - 1))}
-        className={cn(SANS, "h-[86px] cursor-pointer gap-4 rounded-none border-r-2 border-[#5e2faf] text-[30px] uppercase tracking-[0.02em] text-white hover:bg-[#7b3aec]/20 [&_svg]:size-7")}
+        className={cn(SANS, "h-[86px] cursor-pointer gap-4 rounded-none border-r-2 border-[#7c3aed] text-[30px] uppercase tracking-[0.02em] text-white hover:bg-[#7c3aed]/20 [&_svg]:size-7")}
       >
-        <ChevronLeft className="text-[#7b3aec]" /> Previous
+        <ChevronLeft className="text-[#7c3aed]" /> Previous
       </Button>
       <Button
         type="button"
         variant="ghost"
         disabled={!hasNext}
         onClick={() => onGo(page + 1)}
-        className={cn(SANS, "h-[86px] cursor-pointer gap-4 rounded-none text-[30px] uppercase tracking-[0.02em] text-white hover:bg-[#7b3aec]/20 [&_svg]:size-7")}
+        className={cn(SANS, "h-[86px] cursor-pointer gap-4 rounded-none text-[30px] uppercase tracking-[0.02em] text-white hover:bg-[#7c3aed]/20 [&_svg]:size-7")}
       >
-        Next <ChevronRight className="text-[#7b3aec]" />
+        Next <ChevronRight className="text-[#7c3aed]" />
       </Button>
     </div>
   );

@@ -76,7 +76,7 @@ function Composer({ conversationId, isSeller }: { conversationId: Id<"conversati
             title="Send a contract"
             className="h-11 shrink-0 cursor-pointer gap-1.5 rounded-[5px] border border-violet-600/60 px-3 text-white hover:bg-violet-600/20"
           >
-            <FileSignature className="size-5 text-violet-500" /> <span className="hidden sm:inline">Contract</span>
+            <FileSignature className="size-5 text-violet-600" /> <span className="hidden sm:inline">Contract</span>
           </Button>
           <ContractDialog conversationId={conversationId} open={contractOpen} onOpenChange={setContractOpen} />
         </>
@@ -95,7 +95,7 @@ function Composer({ conversationId, isSeller }: { conversationId: Id<"conversati
         size="icon"
         variant="ghost"
         disabled={!body.trim() || sending}
-        className="size-11 shrink-0 cursor-pointer text-violet-500 hover:bg-transparent hover:text-violet-400"
+        className="size-11 shrink-0 cursor-pointer text-violet-600 hover:bg-transparent hover:text-violet-600"
         aria-label="Send message"
       >
         {sending ? <Spinner /> : <Send className="size-6" />}
@@ -150,7 +150,7 @@ function MessageList({
               {m.body}
             </div>
             {contractCard && m.contractId && <ContractCard contractId={m.contractId} />}
-            <span className="px-1 text-xs text-violet-500">{format(m._creationTime, "h:mm a")}</span>
+            <span className="px-1 text-xs text-violet-600">{format(m._creationTime, "h:mm a")}</span>
           </div>
         );
         return (
@@ -164,7 +164,7 @@ function MessageList({
               </div>
             )}
             {newDay && (
-              <p className="py-2 text-center text-sm text-violet-500">{format(m._creationTime, "MMM d, yyyy h:mm a")}</p>
+              <p className="py-2 text-center text-sm text-violet-600">{format(m._creationTime, "MMM d, yyyy h:mm a")}</p>
             )}
           </div>
         );
@@ -228,7 +228,7 @@ export default function ConversationThread({
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon-sm" aria-label="Conversation options" className="cursor-pointer text-violet-500">
+            <Button variant="ghost" size="icon-sm" aria-label="Conversation options" className="cursor-pointer text-violet-600">
               <EllipsisVertical />
             </Button>
           </DropdownMenuTrigger>

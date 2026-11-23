@@ -27,7 +27,7 @@ export function renderEmail(opts: { heading: string; lines: string[]; button?: {
 <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="max-width:480px;background:#202227;border-radius:5px;padding:28px;">
 <tr><td style="color:#ffffff;font-size:20px;font-weight:bold;padding-bottom:12px;">${esc(opts.heading)}</td></tr>
 ${opts.lines.map((l) => `<tr><td style="color:#ffffff;font-size:14px;line-height:1.6;padding-bottom:10px;">${esc(l)}</td></tr>`).join("")}
-${url ? `<tr><td style="padding:12px 0;"><a href="${esc(url)}" style="background:#7b3aec;color:#ffffff;text-decoration:none;padding:10px 18px;border-radius:5px;font-size:14px;display:inline-block;">${esc(opts.button!.label)}</a></td></tr>` : ""}
+${url ? `<tr><td style="padding:12px 0;"><a href="${esc(url)}" style="background:#7c3aed;color:#ffffff;text-decoration:none;padding:10px 18px;border-radius:5px;font-size:14px;display:inline-block;">${esc(opts.button!.label)}</a></td></tr>` : ""}
 <tr><td style="color:#ffffff;font-size:12px;padding-top:14px;opacity:.7;">${opts.footer ? esc(opts.footer) : `You get this because of your Taboo Desires account. Turn these emails off any time in your settings: ${esc(siteUrl())}/settings`}</td></tr>
 </table></td></tr></table></body></html>`;
   const text = [opts.heading, "", ...opts.lines, ...(url ? ["", `${opts.button!.label}: ${url}`] : []), "", opts.footer ?? `Turn these emails off in your settings: ${siteUrl()}/settings`].join("\n");

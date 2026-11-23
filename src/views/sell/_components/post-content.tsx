@@ -45,7 +45,7 @@ export default function PostContentButton({ className }: { className?: string })
       <Button
         type="button"
         onClick={() => setOpen(true)}
-        className={cn("h-[38px] cursor-pointer gap-2 rounded-[5px] bg-violet-600 px-4 text-white hover:bg-violet-500", className)}
+        className={cn("h-[38px] cursor-pointer gap-2 rounded-[5px] bg-violet-600 px-4 text-white hover:bg-violet-600", className)}
       >
         <Plus className="size-4" /> Post Content
       </Button>
@@ -53,7 +53,7 @@ export default function PostContentButton({ className }: { className?: string })
         <DialogContent className="max-h-[92dvh] overflow-y-auto sm:max-w-xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Lock className="size-5 text-violet-500" /> Post Instant Content
+              <Lock className="size-5 text-violet-600" /> Post Instant Content
             </DialogTitle>
             <DialogDescription>
               Locked photos or a video that buyers unlock instantly. Only the thumbnail is public.
@@ -64,7 +64,7 @@ export default function PostContentButton({ className }: { className?: string })
           ) : (
             <div className="flex flex-col gap-3 py-2 text-sm">
               <p>Instant Content is a Pro feature. Upgrade to post locked photos and videos.</p>
-              <Button asChild className="w-fit cursor-pointer bg-violet-600 text-white hover:bg-violet-500">
+              <Button asChild className="w-fit cursor-pointer bg-violet-600 text-white hover:bg-violet-600">
                 <Link href="/pricing">See Pro</Link>
               </Button>
             </div>

@@ -177,7 +177,7 @@ export default function ListingForm({
           <div className="flex flex-col gap-2">
             <div className="flex items-baseline justify-between gap-2">
               <p className="flex items-center gap-1.5 text-sm font-medium">
-                <Lock className="size-3.5 text-violet-500" /> Photos or video
+                <Lock className="size-3.5 text-violet-600" /> Photos or video
               </p>
               <p className="text-xs text-muted-foreground">
                 {lockedItems.some((m) => m.kind === "video") ? "1 video + thumbnail" : `${lockedItems.length}/${LOCKED_MEDIA_MAX} photos`}

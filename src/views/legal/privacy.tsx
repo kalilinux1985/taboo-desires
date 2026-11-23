@@ -80,7 +80,7 @@ export default function Privacy() {
       <Section title="Changes and contact">
         <p>
           We may update this policy and will post the new date here. Questions about your data:{" "}
-          {COMPANY.email ? <a href={`mailto:${COMPANY.email}`} className="text-[#7b3aec] hover:underline">{COMPANY.email}</a> : <>use the <Link href="/report" className="text-[#7b3aec] hover:underline">report form</Link></>}
+          {COMPANY.email ? <a href={`mailto:${COMPANY.email}`} className="text-[#7c3aed] hover:underline">{COMPANY.email}</a> : <>use the <Link href="/report" className="text-[#7c3aed] hover:underline">report form</Link></>}
           {COMPANY.address ? `, ${COMPANY.address}` : ""}.
         </p>
       </Section>

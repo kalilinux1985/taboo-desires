@@ -38,7 +38,7 @@ export default function Terms() {
 
       <Section title="3. What you must not do">
         <p>
-          Our <Link href="/content-policy" className="text-[#7b3aec] hover:underline">Content Policy</Link> is part of
+          Our <Link href="/content-policy" className="text-[#7c3aed] hover:underline">Content Policy</Link> is part of
           these terms. In short, you must not:
         </p>
         <List
@@ -67,10 +67,10 @@ export default function Terms() {
 
       <Section title="5. Reports and takedowns">
         <p>
-          Anyone can report content at any time using the <Link href="/report" className="text-[#7b3aec] hover:underline">report form</Link>.
+          Anyone can report content at any time using the <Link href="/report" className="text-[#7c3aed] hover:underline">report form</Link>.
           We remove intimate images shared without consent within 48 hours of a valid request, and we review other reports
           promptly. We act on copyright notices as described on the{" "}
-          <Link href="/copyright" className="text-[#7b3aec] hover:underline">Copyright page</Link>.
+          <Link href="/copyright" className="text-[#7c3aed] hover:underline">Copyright page</Link>.
         </p>
       </Section>
 
@@ -113,7 +113,7 @@ export default function Terms() {
         </p>
         <p>
           Questions or legal notices:{" "}
-          {COMPANY.email ? <a href={`mailto:${COMPANY.email}`} className="text-[#7b3aec] hover:underline">{COMPANY.email}</a> : "use the report form"}
+          {COMPANY.email ? <a href={`mailto:${COMPANY.email}`} className="text-[#7c3aed] hover:underline">{COMPANY.email}</a> : "use the report form"}
           {COMPANY.address ? `, ${COMPANY.address}` : ""}.
         </p>
       </Section>

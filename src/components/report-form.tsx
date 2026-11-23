@@ -83,7 +83,7 @@ export default function ReportForm({
     const urgent = type === "nonconsensual_intimate" || type === "underage";
     return (
       <div className="flex flex-col items-center gap-3 py-6 text-center">
-        <CheckCircle2 className="size-10 text-[#7b3aec]" />
+        <CheckCircle2 className="size-10 text-[#7c3aed]" />
         <h3 className="text-xl">Report received</h3>
         <p className="max-w-md text-sm text-muted-foreground">
           {urgent

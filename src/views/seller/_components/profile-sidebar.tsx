@@ -65,7 +65,7 @@ export default function SellerAbout({ profile }: { profile: Profile }) {
         type="button"
         aria-expanded={more}
         onClick={() => setMore((m) => !m)}
-        className="mt-1 cursor-pointer text-[11px] uppercase tracking-[0.06em] text-[#ffffff] hover:text-[#7b3aec]"
+        className="mt-1 cursor-pointer text-[11px] uppercase tracking-[0.06em] text-[#ffffff] hover:text-[#7c3aed]"
       >
         {more ? "Less" : "More"}
       </Button>
@@ -86,11 +86,11 @@ export function ProfileHeaderCard({ profile, onReviews }: { profile: Profile; on
   const { rating, reviewCount } = profile.stats;
   return (
     <Frame className="[grid-area:header]" innerClassName="flex flex-col px-[22px] py-[18px] lg:min-h-[345px]">
-      <p className={cn(SANS, "flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#7b3aec]")}>
+      <p className={cn(SANS, "flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#7c3aed]")}>
         <CircleCheck className="size-3" /> {profile.isPro ? "Premium Seller" : "Seller"}
       </p>
       <h1 className={cn(NURMA, "mt-1 truncate text-[24px] uppercase leading-tight tracking-[0.03em] text-white")}>{profile.name}</h1>
-      <p className={cn(SERIF, "mt-1 flex flex-wrap items-center gap-x-4 text-[17px] text-[#7b3aec]")}>
+      <p className={cn(SERIF, "mt-1 flex flex-wrap items-center gap-x-4 text-[17px] text-[#7c3aed]")}>
         <Button variant="plain" size="none"
           type="button"
           onClick={onReviews}

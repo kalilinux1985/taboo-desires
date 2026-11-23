@@ -63,7 +63,7 @@ export function ContractTerms({ c }: { c: Omit<ContractData, "role" | "comments"
     <div className="flex flex-col">
       <Row label="Item">
         {c.itemUrl ? (
-          <a href={c.listingId ? `/listing/${c.listingId}` : c.itemUrl} target={c.listingId ? undefined : "_blank"} rel="noreferrer" className="inline-flex items-center gap-1 text-violet-400 hover:underline">
+          <a href={c.listingId ? `/listing/${c.listingId}` : c.itemUrl} target={c.listingId ? undefined : "_blank"} rel="noreferrer" className="inline-flex items-center gap-1 text-violet-600 hover:underline">
             <span className="truncate">{c.itemTitle}</span> <ExternalLink className="size-3.5 shrink-0" />
           </a>
         ) : (
@@ -86,7 +86,7 @@ export function ContractTerms({ c }: { c: Omit<ContractData, "role" | "comments"
         </div>
         {c.schedule.map((p, i) => (
           <div key={i} className="grid grid-cols-[2.5rem_1fr_auto] border-t border-white/10 px-3 py-1.5 text-sm text-white">
-            <span className="text-violet-400">{i + 1}</span>
+            <span className="text-violet-600">{i + 1}</span>
             <span>{dateLabel(p.dueDate)}</span>
             <span className="tabular-nums">{usd(p.amountCents)}</span>
           </div>
@@ -146,7 +146,7 @@ export function ContractCardView({
           {c.comments.map((m) => (
             <div key={m._id} className="rounded-[5px] bg-[#202227] px-3 py-2">
               <p className="text-xs">
-                <span className="font-bold text-violet-400">{m.mine ? "You" : m.authorName}</span>{" "}
+                <span className="font-bold text-violet-600">{m.mine ? "You" : m.authorName}</span>{" "}
                 <span className="text-white/60">{format(m._creationTime, "MMM d, h:mm a")}</span>
               </p>
               <p className="mt-0.5 whitespace-pre-wrap break-words text-sm text-white">{m.body}</p>
@@ -171,7 +171,7 @@ export function ContractCardView({
             <Button type="button" variant="ghost" size="sm" className="cursor-pointer" onClick={() => setCommenting(false)}>
               Cancel
             </Button>
-            <Button type="submit" size="sm" disabled={busy || !text.trim()} className="cursor-pointer bg-violet-600 text-white hover:bg-violet-500">
+            <Button type="submit" size="sm" disabled={busy || !text.trim()} className="cursor-pointer bg-violet-600 text-white hover:bg-violet-600">
               <Send /> Post comment
             </Button>
           </div>
@@ -200,7 +200,7 @@ export function ContractCardView({
           </Button>
         )}
         {c.status === "accepted" && (
-          <Link href="/orders" className="ml-auto text-sm text-violet-400 hover:underline">
+          <Link href="/orders" className="ml-auto text-sm text-violet-600 hover:underline">
             View order
           </Link>
         )}
@@ -372,7 +372,7 @@ export function ContractFormFields({
           ) : (
             values.schedule.map((p, i) => (
               <div key={i} className="grid grid-cols-[2.5rem_1fr_8rem] items-center gap-2 border-t border-white/10 px-3 py-1.5">
-                <span className="text-sm text-violet-400">{i + 1}</span>
+                <span className="text-sm text-violet-600">{i + 1}</span>
                 <Input
                   type="date"
                   value={p.dueDate}
@@ -474,7 +474,7 @@ export function ContractDialog({
         <form onSubmit={submit} className="flex flex-col gap-5">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <FileSignature className="size-5 text-violet-500" /> New sales contract
+              <FileSignature className="size-5 text-violet-600" /> New sales contract
             </DialogTitle>
             <DialogDescription>Set the price and payment plan. The buyer can accept, reject or comment on it here in Messages.</DialogDescription>
           </DialogHeader>
@@ -483,7 +483,7 @@ export function ContractDialog({
             <Button type="button" variant="ghost" className="cursor-pointer" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={busy} className="cursor-pointer bg-violet-600 text-white hover:bg-violet-500">
+            <Button type="submit" disabled={busy} className="cursor-pointer bg-violet-600 text-white hover:bg-violet-600">
               {busy ? <Spinner /> : <Send />} Send contract
             </Button>
           </DialogFooter>

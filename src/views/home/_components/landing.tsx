@@ -59,7 +59,7 @@ function Heading({ children, dot }: { children: React.ReactNode; dot: string }) 
   return (
     <h2 className={cn(SANS, "text-[34px] font-bold leading-tight tracking-tight text-white sm:text-[44px]")}>
       {children}
-      <span className="text-[#7b3aec]">{dot}</span>
+      <span className="text-[#7c3aed]">{dot}</span>
     </h2>
   );
 }
@@ -70,9 +70,9 @@ function StepCards({ steps }: { steps: Step[] }) {
       {steps.map((s, i) => (
         <Card key={s.title} data-slot="card" className={cn(CARD, "gap-0 p-[28px]")}>
           <div className="flex items-start justify-between">
-            <span className={cn(SANS, "text-[44px] font-bold leading-none text-[#7b3aec]")}>{String(i + 1).padStart(2, "0")}</span>
-            <span className="flex size-14 items-center justify-center rounded-full bg-[#7b3aec]/20">
-              <s.icon className="size-6 text-[#7b3aec]" strokeWidth={1.75} />
+            <span className={cn(SANS, "text-[44px] font-bold leading-none text-[#7c3aed]")}>{String(i + 1).padStart(2, "0")}</span>
+            <span className="flex size-14 items-center justify-center rounded-full bg-[#7c3aed]/20">
+              <s.icon className="size-6 text-[#7c3aed]" strokeWidth={1.75} />
             </span>
           </div>
           <h3 className={cn(SANS, "mt-3 text-[19px] font-bold text-white")}>{s.title}</h3>
@@ -94,12 +94,12 @@ export default function Landing() {
         <div>
           <img src="/logo.png" alt="Taboo Desires" className="size-[110px] rounded-[5px] object-cover" />
           <h1 className={cn(SERIF, "mt-6 text-[40px] leading-[1.15] text-white sm:text-[48px]")}>
-            <span className="text-[#7b3aec]">Buy <span className="text-[0.55em]">&amp;</span> Sell</span> Used Panties, Worn Socks &amp; More<span className="text-[#7b3aec]">.</span>
+            <span className="text-[#7c3aed]">Buy <span className="text-[0.55em]">&amp;</span> Sell</span> Used Panties, Worn Socks &amp; More<span className="text-[#7c3aed]">.</span>
           </h1>
           <p className={cn(SERIF, "mt-4 text-[17px] leading-[24px] text-white")}>
             Dive into a world where you can sell, swap, and snag your favorite treasures! Join the fun and connect with other savvy sellers and buyers.
           </p>
-          <Button asChild className={cn(SERIF, "mt-8 h-[76px] w-full cursor-pointer rounded-[5px] bg-[#7b3aec] text-[28px] text-white hover:bg-[#8a4ff0]")}>
+          <Button asChild className={cn(SERIF, "mt-8 h-[76px] w-full cursor-pointer rounded-[5px] bg-[#7c3aed] text-[28px] text-white hover:bg-[#7c3aed]")}>
             <Link href="/signin">Get Started</Link>
           </Button>
         </div>
@@ -140,7 +140,7 @@ export default function Landing() {
                 className={cn(
                   SANS,
                   "h-[54px] cursor-pointer rounded-[5px] border-0 bg-[#202227] text-[16px] font-bold text-white shadow-none",
-                  "data-[state=active]:bg-[#7b3aec] data-[state=active]:text-white",
+                  "data-[state=active]:bg-[#7c3aed] data-[state=active]:text-white",
                 )}
               >
                 {v === "sellers" ? "For Sellers" : "For Buyers"}
@@ -150,7 +150,7 @@ export default function Landing() {
           <TabsContent value="sellers">
             <StepCards steps={SELLER_STEPS} />
             <div className="mt-6 text-center">
-              <Button asChild className={cn(SANS, "h-[50px] cursor-pointer rounded-[5px] bg-[#7b3aec] px-12 text-[16px] font-bold text-white hover:bg-[#8a4ff0]")}>
+              <Button asChild className={cn(SANS, "h-[50px] cursor-pointer rounded-[5px] bg-[#7c3aed] px-12 text-[16px] font-bold text-white hover:bg-[#7c3aed]")}>
                 <Link href="/sell">Start Selling Today</Link>
               </Button>
             </div>
@@ -158,7 +158,7 @@ export default function Landing() {
           <TabsContent value="buyers">
             <StepCards steps={BUYER_STEPS} />
             <div className="mt-6 text-center">
-              <Button asChild className={cn(SANS, "h-[50px] cursor-pointer rounded-[5px] bg-[#7b3aec] px-12 text-[16px] font-bold text-white hover:bg-[#8a4ff0]")}>
+              <Button asChild className={cn(SANS, "h-[50px] cursor-pointer rounded-[5px] bg-[#7c3aed] px-12 text-[16px] font-bold text-white hover:bg-[#7c3aed]")}>
                 <Link href="/browse">Start Shopping Today</Link>
               </Button>
             </div>
@@ -177,15 +177,15 @@ export default function Landing() {
             const n = counts?.[c.key] ?? 0;
             return (
               <Card key={c.key} data-slot="card" className={cn(CARD, "items-center gap-0 px-6 pb-6 pt-7 text-center")}>
-                <c.icon className="size-7 text-[#7b3aec]" strokeWidth={1.75} />
+                <c.icon className="size-7 text-[#7c3aed]" strokeWidth={1.75} />
                 <h3 className={cn(SANS, "mt-3 text-[19px] font-bold text-white")}>
                   {c.title}
                   {n > 0 && (
-                    <span className="text-[16px] font-bold text-[#7b3aec]"> - {n.toLocaleString("en-US")} {n === 1 ? "item" : "items"}</span>
+                    <span className="text-[16px] font-bold text-[#7c3aed]"> - {n.toLocaleString("en-US")} {n === 1 ? "item" : "items"}</span>
                   )}
                 </h3>
                 <p className={cn(SANS, "mb-5 mt-2 flex-1 text-[15px] leading-6 text-white")}>{c.text}</p>
-                <Button asChild className={cn(SANS, "h-[56px] w-full cursor-pointer gap-2 rounded-[5px] bg-[#7b3aec] text-[18px] font-bold text-white hover:bg-[#8a4ff0]")}>
+                <Button asChild className={cn(SANS, "h-[56px] w-full cursor-pointer gap-2 rounded-[5px] bg-[#7c3aed] text-[18px] font-bold text-white hover:bg-[#7c3aed]")}>
                   <Link href={c.href}>
                     {c.title} <ArrowRight className="size-5" />
                   </Link>

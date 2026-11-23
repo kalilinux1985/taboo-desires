@@ -44,12 +44,12 @@ export function ShopHeader({
         <h1 className={cn(SERIF, "truncate text-[22px] leading-tight text-white")}>{name}</h1>
         <p className={cn(SERIF, "mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-white")}>
           <Button variant="plain" size="none" type="button" onClick={onReviews} className="flex cursor-pointer items-center gap-1.5 hover:underline">
-            <Star className="size-3.5 text-[#7b3aec]" strokeWidth={1.75} />
+            <Star className="size-3.5 text-[#7c3aed]" strokeWidth={1.75} />
             {(rating ?? 0).toFixed(1)} ({reviewCount})
           </Button>
           {verified && (
             <span className="flex items-center gap-1.5">
-              <ShieldCheck className="size-3.5 text-[#7b3aec]" strokeWidth={1.75} /> ID Verified
+              <ShieldCheck className="size-3.5 text-[#7c3aed]" strokeWidth={1.75} /> ID Verified
             </span>
           )}
         </p>
@@ -80,10 +80,10 @@ function ShopCard({ listing }: { listing: ListingCardData }) {
           </span>
         </div>
         <div className={cn(SERIF, "flex min-h-[148px] flex-1 flex-col px-[14px] pb-[14px] pt-[15px]")}>
-          <span className="truncate text-[12px] text-[#7b3aec]">{listing.sellerName}</span>
+          <span className="truncate text-[12px] text-[#7c3aed]">{listing.sellerName}</span>
           <h3 className="mt-[9px] truncate text-[14px] text-white group-hover:underline">{listing.title}</h3>
           <p className="mt-[9px] line-clamp-2 text-[12px] leading-[17px] text-white">{listing.description}</p>
-          <span className="mt-auto pt-3 text-[19px] text-[#7b3aec] tabular-nums">
+          <span className="mt-auto pt-3 text-[19px] text-[#7c3aed] tabular-nums">
             ${(listing.priceCents / 100).toFixed(2)} <span className="text-[12px]">USD</span>
           </span>
         </div>
@@ -92,7 +92,7 @@ function ShopCard({ listing }: { listing: ListingCardData }) {
         listingId={listing._id}
         sellerId={listing.sellerId}
         variant="bookmark"
-        className="absolute bottom-[14px] right-[14px] text-[#7b3aec] [&_svg]:size-[17px]"
+        className="absolute bottom-[14px] right-[14px] text-[#7c3aed] [&_svg]:size-[17px]"
       />
     </div>
   );
@@ -125,16 +125,16 @@ export function ShopTab({ sellerId, total: allCount, isMe }: { sellerId: Id<"use
         <div className="flex flex-col gap-1">
           <h2 className={cn(SANS, "flex flex-wrap items-baseline gap-x-2.5 leading-tight")}>
             <span className="text-[22px] text-white">Shop</span>
-            <span className="text-[20px] tracking-[0.02em] text-[#7b3aec]">
+            <span className="text-[20px] tracking-[0.02em] text-[#7c3aed]">
               {allCount} {allCount === 1 ? "Listing" : "Listings"}
             </span>
           </h2>
-          <span className="h-0.5 w-[60px] bg-[#7b3aec]" />
+          <span className="h-0.5 w-[60px] bg-[#7c3aed]" />
         </div>
         <Select value={category} onValueChange={(v) => setCategory(v as Category | "all")}>
           <SelectTrigger
             aria-label="Filter by category"
-            className={cn(SERIF, "h-[38px] w-full cursor-pointer rounded-[5px] border-2 border-[#7b3aec] bg-[#111317] px-3 text-[15px] text-white sm:w-[445px] lg:w-[445px]")}
+            className={cn(SERIF, "h-[38px] w-full cursor-pointer rounded-[5px] border-2 border-[#7c3aed] bg-[#111317] px-3 text-[15px] text-white sm:w-[445px] lg:w-[445px]")}
           >
             <SelectValue placeholder="Filter By Category" />
           </SelectTrigger>
@@ -182,24 +182,24 @@ export function ShopTab({ sellerId, total: allCount, isMe }: { sellerId: Id<"use
         )}
       </div>
 
-      <div className="mt-[27px] grid grid-cols-2 overflow-hidden rounded-[5px] border-2 border-[#5e2faf]">
+      <div className="mt-[27px] grid grid-cols-2 overflow-hidden rounded-[5px] border-2 border-[#7c3aed]">
         <Button
           type="button"
           variant="ghost"
           disabled={page === 0}
           onClick={() => go(Math.max(0, page - 1))}
-          className={cn(SANS, "h-[58px] cursor-pointer gap-3 rounded-none border-r-2 border-[#5e2faf] text-[19px] uppercase tracking-[0.02em] text-white hover:bg-[#7b3aec]/20")}
+          className={cn(SANS, "h-[58px] cursor-pointer gap-3 rounded-none border-r-2 border-[#7c3aed] text-[19px] uppercase tracking-[0.02em] text-white hover:bg-[#7c3aed]/20")}
         >
-          <ChevronLeft className="size-5 text-[#7b3aec]" /> Previous
+          <ChevronLeft className="size-5 text-[#7c3aed]" /> Previous
         </Button>
         <Button
           type="button"
           variant="ghost"
           disabled={(page + 1) * pageSize >= total}
           onClick={() => go(page + 1)}
-          className={cn(SANS, "h-[58px] cursor-pointer gap-3 rounded-none text-[19px] uppercase tracking-[0.02em] text-white hover:bg-[#7b3aec]/20")}
+          className={cn(SANS, "h-[58px] cursor-pointer gap-3 rounded-none text-[19px] uppercase tracking-[0.02em] text-white hover:bg-[#7c3aed]/20")}
         >
-          Next <ChevronRight className="size-5 text-[#7b3aec]" />
+          Next <ChevronRight className="size-5 text-[#7c3aed]" />
         </Button>
       </div>
     </div>

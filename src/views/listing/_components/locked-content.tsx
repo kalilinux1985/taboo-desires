@@ -200,14 +200,14 @@ export function UnlockBox({
   };
 
   return (
-    <div className={cn(SERIF, "flex flex-col gap-3 rounded-[5px] border border-[#5e2faf] bg-[#202227] px-[18px] pb-4 pt-3 shadow-[0_6px_14px_rgba(0,0,0,0.35)]")}>
-      <p className="text-center text-[32px] leading-none text-[#7b3aec]">
+    <div className={cn(SERIF, "flex flex-col gap-3 rounded-[5px] border border-[#7c3aed] bg-[#202227] px-[18px] pb-4 pt-3 shadow-[0_6px_14px_rgba(0,0,0,0.35)]")}>
+      <p className="text-center text-[32px] leading-none text-[#7c3aed]">
         ${dollars}.{cents}
         <span className="ml-0.5 text-[20px]">USD</span>
       </p>
       {status === "pending" ? (
         <p className="flex items-start justify-center gap-2 text-center text-[14px] text-white">
-          <Clock className="mt-0.5 size-4 shrink-0 text-[#7b3aec]" />
+          <Clock className="mt-0.5 size-4 shrink-0 text-[#7c3aed]" />
           Waiting for {sellerName} to confirm your payment. Message them to arrange it.
         </p>
       ) : (
@@ -218,7 +218,7 @@ export function UnlockBox({
             type="button"
             onClick={unlock}
             disabled={!isActive}
-            className="flex h-[50px] w-full cursor-pointer items-center justify-center gap-2 rounded-[5px] bg-[#7b3aec] text-[26px] text-white transition-colors hover:bg-[#8a4ff0] disabled:cursor-default disabled:opacity-60"
+            className="flex h-[50px] w-full cursor-pointer items-center justify-center gap-2 rounded-[5px] bg-[#7c3aed] text-[26px] text-white transition-colors hover:bg-[#7c3aed] disabled:cursor-default disabled:opacity-60"
           >
             <Unlock className="size-6" /> Unlock Now
           </Button>
@@ -226,10 +226,10 @@ export function UnlockBox({
       )}
       <p className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-[13px] text-white">
         <span className="flex items-center gap-1.5">
-          <Zap className="size-[18px] text-[#7b3aec]" strokeWidth={1.5} /> Instant access
+          <Zap className="size-[18px] text-[#7c3aed]" strokeWidth={1.5} /> Instant access
         </span>
         <span className="flex items-center gap-1.5">
-          <Clock className="size-[18px] text-[#7b3aec]" strokeWidth={1.5} /> 24-hour access
+          <Clock className="size-[18px] text-[#7c3aed]" strokeWidth={1.5} /> 24-hour access
         </span>
       </p>
     </div>
@@ -241,8 +241,8 @@ const TILE = "flex aspect-square items-center justify-center overflow-hidden rou
 /** Instant Content: shown to a buyer while their 24 hours are running. */
 export function AccessNotice({ expiresAt }: { expiresAt: number | null }) {
   return (
-    <p className={cn(SERIF, "flex items-center justify-center gap-2 rounded-[5px] border border-[#5e2faf] bg-[#202227] px-4 py-3 text-[15px] text-white shadow-[0_6px_14px_rgba(0,0,0,0.35)]")}>
-      <Unlock className="size-5 text-[#7b3aec]" />
+    <p className={cn(SERIF, "flex items-center justify-center gap-2 rounded-[5px] border border-[#7c3aed] bg-[#202227] px-4 py-3 text-[15px] text-white shadow-[0_6px_14px_rgba(0,0,0,0.35)]")}>
+      <Unlock className="size-5 text-[#7c3aed]" />
       {expiresAt ? `Unlocked. Your access ends in ${formatDistanceToNow(expiresAt)}.` : "Unlocked."}
     </p>
   );
@@ -255,7 +255,7 @@ export function IncludedContent({ locked }: { locked: Locked }) {
     <section className="flex flex-col gap-[26px]">
       <div className="flex flex-col gap-2">
         <h2 className={cn(NURMA, "text-[28px] leading-tight text-white")}>Included Content</h2>
-        <span className="h-0.5 w-[60px] bg-[#7b3aec]/55" />
+        <span className="h-0.5 w-[60px] bg-[#7c3aed]/55" />
       </div>
       {total === 0 ? (
         <p className={cn(SERIF, "text-[14px] text-white")}>No content has been added yet.</p>
@@ -276,12 +276,12 @@ export function IncludedContent({ locked }: { locked: Locked }) {
             : [
                 ...Array.from({ length: locked.photoCount }, (_, i) => (
                   <div key={`p${i}`} className={TILE} title="Photo (locked)">
-                    <CameraOff className="size-[64px] text-[#7b3aec]" strokeWidth={1.5} />
+                    <CameraOff className="size-[64px] text-[#7c3aed]" strokeWidth={1.5} />
                   </div>
                 )),
                 ...Array.from({ length: locked.videoCount }, (_, i) => (
                   <div key={`v${i}`} className={TILE} title="Video (locked)">
-                    <VideoOff className="size-[64px] text-[#7b3aec]" strokeWidth={1.5} />
+                    <VideoOff className="size-[64px] text-[#7c3aed]" strokeWidth={1.5} />
                   </div>
                 )),
               ]}

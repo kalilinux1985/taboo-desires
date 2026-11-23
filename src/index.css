@@ -5,15 +5,15 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Violet: #6d28d9 for violet fills and text, #8200db for violet outlines and
-   hover fills. Kept as variables (not inline) so the profile pages can swap them. */
+/* Violet: every violet on the site is #7C3AED (fills, text, outlines, hovers).
+   Don't introduce other violet or purple shades. */
 @theme {
-  --color-violet-600: #6d28d9;
+  --color-violet-600: #7c3aed;
   /* Plain hex, without the lab() versions */
   --color-sky-400: #00bcfe;
   --color-rose-400: #ff667f;
   --color-rose-500: #ff2357;
-  --color-violet-bright: #8200db;
+  --color-violet-bright: #7c3aed;
 }
 
 @theme inline {
@@ -73,7 +73,7 @@
 /* Navy dark theme of the seller-profile design:
    #0f172a page, comments and text fields; cards #030917 at 50% (a card in a card reads darker);
    1px white borders at 25%; drop shadows black at 30%, inner shadows black at 28%;
-   #0a0f22 header, #1f2235 secondary surfaces, #7f22fe violet accents */
+   #0a0f22 header, #1f2235 secondary surfaces, #7c3aed violet accents */
 :root {
   --radius: 5px; /* every corner is 5px (circles stay round) */
   --background: #191a1f;
@@ -82,7 +82,7 @@
   --card-foreground: #ffffff;
   --popover: #091021; /* #030917 at 50% over the page, solid for menus */
   --popover-foreground: #ffffff;
-  --primary: #7f22fe;
+  --primary: #7c3aed;
   --primary-foreground: #ffffff;
   --secondary: #1f2235;
   --secondary-foreground: #ffffff;
@@ -93,15 +93,15 @@
   --destructive: oklch(0.66 0.22 18);
   --border: rgb(255 255 255 / 25%); /* white at 25% */
   --input: rgb(255 255 255 / 25%); /* white at 25% */
-  --ring: #6d28d9;
-  --chart-1: #7f22fe;
-  --chart-2: #8b5cf6;
-  --chart-3: #6d28d9;
-  --chart-4: #a78bfa;
-  --chart-5: #5b21b6;
+  --ring: #7c3aed;
+  --chart-1: #7c3aed;
+  --chart-2: #7c3aed;
+  --chart-3: #7c3aed;
+  --chart-4: #7c3aed;
+  --chart-5: #7c3aed;
   --sidebar: #0a0f22;
   --sidebar-foreground: #ffffff;
-  --sidebar-primary: #7f22fe;
+  --sidebar-primary: #7c3aed;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #1f2235;
   --sidebar-accent-foreground: #ffffff;
@@ -184,7 +184,7 @@
   }
   input.signin-field:focus,
   select.signin-field:focus {
-    border-color: #4c1d95 !important;
+    border-color: #7c3aed !important;
   }
 
   /* No focus ring or outline when clicking into a text field */
@@ -246,9 +246,9 @@
   }
 }
 
-/* Buyer and seller profiles: violet outlines #7b3aec */
+/* Buyer and seller profiles: violet outlines #7c3aed */
 .profile-design {
-  --color-violet-bright: #7b3aec;
+  --color-violet-bright: #7c3aed;
 }
 
 /* Overrides matching the supplied stylesheet */

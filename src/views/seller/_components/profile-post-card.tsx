@@ -71,7 +71,7 @@ export default function ProfilePostCard({
         </Link>
         <div className="flex min-w-0 flex-1 flex-col">
           {label && (
-            <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-[#7b3aec]">{label}</span>
+            <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-[#7c3aed]">{label}</span>
           )}
           <p className="flex min-w-0 items-baseline gap-2 text-white">
             <Link href={profile} className="cursor-pointer truncate text-[15px] tracking-[0.03em] hover:underline">

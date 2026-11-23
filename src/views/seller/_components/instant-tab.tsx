@@ -54,22 +54,22 @@ function InstantCard({ listing }: { listing: Item }) {
           </Link>
         </div>
         <div className="flex min-h-[186px] flex-1 flex-col px-[11px] pb-[12px] pt-[16px]">
-          <Link href={profileHref} className={cn(NURMA, "truncate text-[18px] leading-tight text-[#7b3aec] hover:underline")}>
+          <Link href={profileHref} className={cn(NURMA, "truncate text-[18px] leading-tight text-[#7c3aed] hover:underline")}>
             {listing.sellerName}
           </Link>
-          <Link href={`/listing/${listing._id}`} className={cn(SERIF, "mt-0.5 truncate text-[17px] font-bold text-[#7b3aec] hover:underline")}>
+          <Link href={`/listing/${listing._id}`} className={cn(SERIF, "mt-0.5 truncate text-[17px] font-bold text-[#7c3aed] hover:underline")}>
             {listing.title}
           </Link>
           <p className={cn(SERIF, "mt-2.5 flex items-center gap-1.5 pl-[18px] text-[14px] text-white")}>
             {media.video ? (
-              <Video className="size-[18px] text-[#7b3aec]" strokeWidth={1.75} />
+              <Video className="size-[18px] text-[#7c3aed]" strokeWidth={1.75} />
             ) : (
-              <Images className="size-[16px] text-[#7b3aec]" strokeWidth={1.75} />
+              <Images className="size-[16px] text-[#7c3aed]" strokeWidth={1.75} />
             )}
-            <span className="text-[#7b3aec]">{media.text}</span> ready to be unlocked!
+            <span className="text-[#7c3aed]">{media.text}</span> ready to be unlocked!
           </p>
           <p className={cn(SERIF, "mt-3 line-clamp-2 text-[15px] leading-[20px] text-white")}>{listing.description}</p>
-          <span className={cn(SERIF, "mt-auto pt-3 text-[21px] text-[#7b3aec] tabular-nums")}>
+          <span className={cn(SERIF, "mt-auto pt-3 text-[21px] text-[#7c3aed] tabular-nums")}>
             ${(listing.priceCents / 100).toFixed(2)} <span className="text-[13px]">USD</span>
           </span>
         </div>
@@ -77,7 +77,7 @@ function InstantCard({ listing }: { listing: Item }) {
           listingId={listing._id}
           sellerId={listing.sellerId}
           variant="bookmark"
-          className="absolute bottom-[14px] right-[12px] text-[#7b3aec] [&_svg]:size-[17px]"
+          className="absolute bottom-[14px] right-[12px] text-[#7c3aed] [&_svg]:size-[17px]"
         />
       </div>
     </div>
@@ -104,11 +104,11 @@ export function InstantTab({ sellerId, total: allCount, isMe }: { sellerId: Id<"
       <div className="flex flex-col gap-1.5">
         <h2 className={cn(NURMA, "flex flex-wrap items-baseline gap-x-1.5 leading-tight")}>
           <span className="text-[27px] text-white">Instant Content</span>
-          <span className="text-[25px] text-[#7b3aec]">
+          <span className="text-[25px] text-[#7c3aed]">
             {allCount} {allCount === 1 ? "Item" : "Items"}
           </span>
         </h2>
-        <span className="h-[3px] w-[62px] rounded-full bg-[#7b3aec]" />
+        <span className="h-[3px] w-[62px] rounded-full bg-[#7c3aed]" />
       </div>
         {isMe && <PostContentButton />}
       </div>

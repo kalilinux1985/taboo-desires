@@ -224,7 +224,7 @@ export default function OrderCard({ order: o }: { order: OrderRow }) {
           </summary>
           <div className="mt-2">
             <ContractTerms c={o.contract} />
-            <Link href={`/messages/${o.contract.conversationId}`} className="mt-2 inline-block text-sm text-violet-400 hover:underline">
+            <Link href={`/messages/${o.contract.conversationId}`} className="mt-2 inline-block text-sm text-violet-600 hover:underline">
               Open the conversation
             </Link>
           </div>

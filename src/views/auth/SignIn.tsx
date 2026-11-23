@@ -18,7 +18,7 @@ import { callbackUrl, resolveReturnTo } from "./return-to.ts";
 
 // The sign-in design: logo and wordmark over a framed card on the left, the
 // tiled portrait filling the right half. Sign-up and the email link use the
-// same card. Page #0c0f15, frame #1f2126, card #141519, violet #4c1d95.
+// same card. Page #0c0f15, frame #1f2126, card #141519, violet #7c3aed.
 
 type Mode = "signin" | "signup" | "link";
 
@@ -35,11 +35,11 @@ const SERIF = "[font-family:var(--font-signin-serif),Cambria,Georgia,serif]";
 
 const FIELD = cn(
   SERIF,
-  "signin-field h-[42px] w-full rounded-[5px] border px-4 text-[17px] tracking-[0.02em] text-white outline-none placeholder:text-white/70 focus:border-[#4c1d95]",
+  "signin-field h-[42px] w-full rounded-[5px] border px-4 text-[17px] tracking-[0.02em] text-white outline-none placeholder:text-white/70 focus:border-[#7c3aed]",
 );
 const SUBMIT = cn(
   ROUNDED,
-  "flex h-[38px] w-full cursor-pointer items-center justify-center gap-2 rounded-[5px] bg-[#4c1d95] text-[16px] font-bold text-white transition-colors hover:bg-[#5b24b3] disabled:cursor-default disabled:opacity-60",
+  "flex h-[38px] w-full cursor-pointer items-center justify-center gap-2 rounded-[5px] bg-[#7c3aed] text-[16px] font-bold text-white transition-colors hover:bg-[#5b24b3] disabled:cursor-default disabled:opacity-60",
 );
 const FOOTNOTE = cn(ROUNDED, "text-center text-[12px] text-white");
 const FOOT_LINK = "cursor-pointer text-[#7c3aed] underline underline-offset-2 hover:text-[#9d5cff]";
@@ -197,7 +197,7 @@ export default function SignInPage() {
     return (
       <Shell>
         <div className="flex flex-col items-center gap-4 text-center">
-          <div className="flex size-12 items-center justify-center rounded-full bg-[#4c1d95]/20 text-[#7c3aed]">
+          <div className="flex size-12 items-center justify-center rounded-full bg-[#7c3aed]/20 text-[#7c3aed]">
             <Mail className="size-6" />
           </div>
           <Heading title="Check your email" sub="Open the link on this device to finish signing in" />
@@ -347,8 +347,8 @@ export default function SignInPage() {
                     ROUNDED,
                     "h-[42px] cursor-pointer rounded-[5px] border text-[15px] font-bold capitalize transition-colors",
                     accountType === t
-                      ? "border-[#4c1d95] bg-[#4c1d95]/30 text-white"
-                      : "border-[#33333355] text-white hover:border-[#4c1d95]",
+                      ? "border-[#7c3aed] bg-[#7c3aed]/30 text-white"
+                      : "border-[#33333355] text-white hover:border-[#7c3aed]",
                   )}
                 >
                   {t}

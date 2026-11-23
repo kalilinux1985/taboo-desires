@@ -313,7 +313,7 @@ export default function MobileNav() {
                 close();
                 void signout();
               }}
-              className="flex cursor-pointer items-center gap-3 text-lg font-semibold uppercase text-white transition-colors hover:text-violet-400"
+              className="flex cursor-pointer items-center gap-3 text-lg font-semibold uppercase text-white transition-colors hover:text-violet-600"
             >
               <LogOut className="size-5 text-red-500" /> Logout
             </Button>
@@ -321,7 +321,7 @@ export default function MobileNav() {
             <Link
               href="/signin"
               onClick={close}
-              className="flex items-center gap-3 text-lg font-semibold uppercase text-white transition-colors hover:text-violet-400"
+              className="flex items-center gap-3 text-lg font-semibold uppercase text-white transition-colors hover:text-violet-600"
             >
               <LogIn className="size-5 text-violet-600" /> Sign in
             </Link>

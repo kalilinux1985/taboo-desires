@@ -58,12 +58,12 @@ import { Detail, INNER, NURMA, OUTER, SANS, SERIF, SectionTitle, joinedAgo } fro
 /** Full-width violet action (Message Seller / Buy now) */
 const WIDE_ACTION = cn(
   SERIF,
-  "flex h-[50px] w-full cursor-pointer items-center justify-center rounded-[5px] bg-[#7b3aec] text-[13px] uppercase tracking-[0.08em] text-white transition-colors hover:bg-[#8a4ff0] disabled:cursor-default disabled:opacity-60",
+  "flex h-[50px] w-full cursor-pointer items-center justify-center rounded-[5px] bg-[#7c3aed] text-[13px] uppercase tracking-[0.08em] text-white transition-colors hover:bg-[#7c3aed] disabled:cursor-default disabled:opacity-60",
 );
 /** Outlined violet action (View ALL Items) */
 const WIDE_OUTLINED = cn(
   SERIF,
-  "inline-flex h-[41px] cursor-pointer items-center justify-center rounded-[5px] border-2 border-[#5e2faf] px-6 text-[13px] tracking-[0.06em] text-[#7b3aec] transition-colors hover:bg-[#7b3aec] hover:text-white",
+  "inline-flex h-[41px] cursor-pointer items-center justify-center rounded-[5px] border-2 border-[#7c3aed] px-6 text-[13px] tracking-[0.06em] text-[#7c3aed] transition-colors hover:bg-[#7c3aed] hover:text-white",
 );
 /** "Payment Methods" style sub-heading inside the seller card */
 const SUBHEAD = cn(SERIF, "text-[20px] leading-tight text-white");
@@ -90,7 +90,7 @@ function Gallery({
         )}
         {locked && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/30 text-white">
-            <span className="flex size-14 items-center justify-center rounded-full text-[#7b3aec] drop-shadow-md">
+            <span className="flex size-14 items-center justify-center rounded-full text-[#7c3aed] drop-shadow-md">
               <Lock className="size-6" />
             </span>
             <span className={cn(SERIF, "text-2xl")}>Locked content</span>
@@ -106,7 +106,7 @@ function Gallery({
               onClick={() => setActive(i)}
               className={cn(
                 "aspect-square cursor-pointer overflow-hidden rounded-[5px] border-2",
-                i === active ? "border-[#7b3aec]" : "border-transparent opacity-70 hover:opacity-100",
+                i === active ? "border-[#7c3aed]" : "border-transparent opacity-70 hover:opacity-100",
               )}
             >
               <img src={img.url} alt="" className="size-full object-cover" />
@@ -209,7 +209,7 @@ function SellerCard({ seller }: { seller: Seller }) {
         className="size-[90px] shrink-0 rounded-[5px] bg-[#a8a9ae] text-3xl text-[#2a2a2e]"
       />
       <div className="flex min-w-0 flex-1 flex-col">
-        <span className={cn(SANS, "flex items-center gap-1 text-[13px] text-[#7b3aec]")}>
+        <span className={cn(SANS, "flex items-center gap-1 text-[13px] text-[#7c3aed]")}>
           {seller.isPro && <BadgeCheck className="size-[15px]" strokeWidth={1.75} />}
           {seller.isPro ? "Premium Seller" : "Seller"}
         </span>
@@ -218,12 +218,12 @@ function SellerCard({ seller }: { seller: Seller }) {
         </span>
         <span className={cn(SANS, "mt-1.5 flex flex-wrap items-center gap-x-8 gap-y-1 text-[13px] text-white")}>
           <span className="flex items-center gap-1" title={`${reviewCount} review${reviewCount === 1 ? "" : "s"}`}>
-            <Star className="size-[14px] text-[#7b3aec]" strokeWidth={1.75} />
+            <Star className="size-[14px] text-[#7c3aed]" strokeWidth={1.75} />
             {(rating ?? 0).toFixed(1)} ({reviewCount})
           </span>
           {seller.verified && (
             <span className="flex items-center gap-1">
-              <CircleCheck className="size-[14px] text-[#7b3aec]" strokeWidth={1.75} /> ID Verified
+              <CircleCheck className="size-[14px] text-[#7c3aed]" strokeWidth={1.75} /> ID Verified
             </span>
           )}
         </span>
@@ -264,10 +264,10 @@ function MoreFromSeller({ seller, currentId }: { seller: Seller; currentId: Id<"
           {seller.name}
         </Link>{" "}
         currently has{" "}
-        <span className="text-[#7b3aec]">
+        <span className="text-[#7c3aed]">
           {seller.activeListings} {seller.activeListings === 1 ? "item" : "items"} available
         </span>{" "}
-        &amp; joined Taboo Desires <span className="text-[#7b3aec]">{joinedAgo(seller.memberSince)}</span>
+        &amp; joined Taboo Desires <span className="text-[#7c3aed]">{joinedAgo(seller.memberSince)}</span>
       </p>
       <Link href={profile} className={cn(WIDE_OUTLINED, "self-start")}>
         View ALL Items from {seller.name}
@@ -334,11 +334,11 @@ function InstantContentView({
               ) : (
                 <p className="text-[14px] text-[#ffffff]">No description.</p>
               )}
-              <p className={cn(SERIF, "text-[26px] leading-none text-[#7b3aec]")}>${(listing.priceCents / 100).toFixed(2)} USD</p>
+              <p className={cn(SERIF, "text-[26px] leading-none text-[#7c3aed]")}>${(listing.priceCents / 100).toFixed(2)} USD</p>
               {/* Placeholder from the design; payment methods aren't wired up yet */}
               <h2 className={SUBHEAD}>Payment Methods</h2>
             </div>
-            <div className="mt-[22px] border-t border-[#3b2a5e] pt-[22px]">
+            <div className="mt-[22px] border-t border-[#7c3aed] pt-[22px]">
               {listing.isOwner ? (
                 <OwnerActions listingId={listing._id} status={listing.status} isAuction={false} canDelete />
               ) : (
@@ -443,12 +443,12 @@ export default function ListingPage() {
                   className="gap-2 text-[16px] leading-[26px] [&>button]:h-[14px] [&>button]:px-1.5 [&>button]:py-0 [&>button]:text-[7px] [&>button]:uppercase [&>p]:text-white"
                 />
               )}
-              <p className={cn(SERIF, "text-[26px] leading-none text-[#7b3aec]")}>${(listing.priceCents / 100).toFixed(2)} USD</p>
+              <p className={cn(SERIF, "text-[26px] leading-none text-[#7c3aed]")}>${(listing.priceCents / 100).toFixed(2)} USD</p>
               {/* From the design; payment methods aren't wired up yet */}
               <h2 className={cn(SUBHEAD, "pb-8")}>Payment Methods</h2>
             </div>
 
-            <div className="mt-[22px] border-t border-[#3b2a5e] px-[10px] pt-[18px]">
+            <div className="mt-[22px] border-t border-[#7c3aed] px-[10px] pt-[18px]">
               {listing.isOwner ? (
                 // Only the seller sees these: they can't message themselves
                 <OwnerActions

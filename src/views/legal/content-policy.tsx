@@ -55,7 +55,7 @@ export default function ContentPolicy() {
 
       <Section title="Report something">
         <p>
-          Use the <Link href="/report" className="text-[#7b3aec] hover:underline">report form</Link>, or the Report
+          Use the <Link href="/report" className="text-[#7c3aed] hover:underline">report form</Link>, or the Report
           button on a listing, post or profile. You don't need an account. If you are shown in an intimate image that
           was shared without your consent, we remove it within 48 hours of a valid request.
         </p>

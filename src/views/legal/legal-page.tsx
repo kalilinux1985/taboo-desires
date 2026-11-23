@@ -23,11 +23,11 @@ export default function LegalPage({
           {intro && <p className={cn(SANS, "mt-5 text-[15px] leading-7 text-white")}>{intro}</p>}
           <div className={cn(SANS, "mt-6 flex flex-col gap-6 text-[15px] leading-7 text-white")}>{children}</div>
           <nav className="mt-10 flex flex-wrap gap-x-5 gap-y-2 border-t border-white/10 pt-5 text-sm">
-            <Link href="/terms" className="text-[#7b3aec] hover:underline">Terms</Link>
-            <Link href="/privacy" className="text-[#7b3aec] hover:underline">Privacy</Link>
-            <Link href="/content-policy" className="text-[#7b3aec] hover:underline">Content policy</Link>
-            <Link href="/copyright" className="text-[#7b3aec] hover:underline">Copyright</Link>
-            <Link href="/report" className="text-[#7b3aec] hover:underline">Report content</Link>
+            <Link href="/terms" className="text-[#7c3aed] hover:underline">Terms</Link>
+            <Link href="/privacy" className="text-[#7c3aed] hover:underline">Privacy</Link>
+            <Link href="/content-policy" className="text-[#7c3aed] hover:underline">Content policy</Link>
+            <Link href="/copyright" className="text-[#7c3aed] hover:underline">Copyright</Link>
+            <Link href="/report" className="text-[#7c3aed] hover:underline">Report content</Link>
           </nav>
         </div>
       </div>
@@ -46,7 +46,7 @@ export function Section({ title, children }: { title: string; children: ReactNod
 
 export function List({ items }: { items: ReactNode[] }) {
   return (
-    <ul className="list-disc space-y-1.5 pl-5 marker:text-[#7b3aec]">
+    <ul className="list-disc space-y-1.5 pl-5 marker:text-[#7c3aed]">
       {items.map((item, i) => (
         <li key={i}>{item}</li>
       ))}

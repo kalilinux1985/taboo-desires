@@ -77,7 +77,7 @@ function InboxList({ activeId, search }: { activeId?: string; search: string }) 
                 {c.lastMessagePreview}
               </p>
             </div>
-            {c.unread && <span className="size-2.5 shrink-0 rounded-full bg-violet-500" />}
+            {c.unread && <span className="size-2.5 shrink-0 rounded-full bg-violet-600" />}
           </Link>
         </li>
       ))}
@@ -108,7 +108,7 @@ function Inbox() {
               href="/browse"
               aria-label="Start a chat: find a listing to ask about"
               title="Start a chat from a listing"
-              className="ml-auto cursor-pointer text-violet-500 hover:text-violet-400"
+              className="ml-auto cursor-pointer text-violet-600 hover:text-violet-600"
             >
               <MessageSquarePlus className="size-6" />
             </Link>

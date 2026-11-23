@@ -47,10 +47,10 @@ export function ProfileShopCard({ listing }: { listing: ListingCardData }) {
         </span>
       </div>
       <div className="flex min-h-[156px] flex-col px-[15px] pb-4 pt-[18px]">
-        <span className="truncate text-[11px] text-[#7b3aec]">{listing.sellerName}</span>
+        <span className="truncate text-[11px] text-[#7c3aed]">{listing.sellerName}</span>
         <h3 className={cn(SERIF, "mt-2.5 truncate text-[15px] text-white group-hover:underline")}>{listing.title}</h3>
         <p className="mt-2 line-clamp-2 text-[13px] leading-[18px] text-[#ffffff]">{listing.description}</p>
-        <span className="mt-auto pt-4 text-[13px] text-[#7b3aec]">${(listing.priceCents / 100).toFixed(2)} USD</span>
+        <span className="mt-auto pt-4 text-[13px] text-[#7c3aed]">${(listing.priceCents / 100).toFixed(2)} USD</span>
       </div>
     </Link>
   );
@@ -90,7 +90,7 @@ function ContentTile({ href, title, icon: Icon, imageUrl }: { href: string; titl
     <Link
       href={href}
       title={title}
-      className={cn(CARD, "group flex size-[110px] shrink-0 cursor-pointer items-center justify-center overflow-hidden text-[#7b3aec]")}
+      className={cn(CARD, "group flex size-[110px] shrink-0 cursor-pointer items-center justify-center overflow-hidden text-[#7c3aed]")}
     >
       {imageUrl ? (
         <img src={imageUrl} alt="" loading="lazy" className="size-full object-cover transition-transform duration-300 group-hover:scale-105" />
@@ -201,7 +201,7 @@ export function ActivitySection({ authorId }: { authorId: Id<"users"> }) {
               variant="ghost"
               onClick={() => loadMore(3)}
               disabled={status === "LoadingMore"}
-              className={cn(SERIF, "cursor-pointer self-center text-[#7b3aec]")}
+              className={cn(SERIF, "cursor-pointer self-center text-[#7c3aed]")}
             >
               {status === "LoadingMore" && <Spinner />} Show more activity
             </Button>

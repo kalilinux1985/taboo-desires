@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button.tsx";
 import { Card } from "@/components/ui/card.tsx";
 
 // Profile design shared by buyer and seller profiles: #191a1f page, #212227
-// outer cards, #141519 inner cards with a faint edge, violet #7b3aec, grey
-// #a4a4a4 labels. Inside `.profile-design` the site's violet classes turn #7b3aec.
+// outer cards, #141519 inner cards with a faint edge, violet #7c3aed, grey
+// #a4a4a4 labels. Inside `.profile-design` the site's violet classes turn #7c3aed.
 
 export const SERIF = "[font-family:var(--font-profile-buyer),Cambria,Georgia,serif]";
 export const SANS = "[font-family:Arial,Helvetica,sans-serif]";
@@ -28,11 +28,11 @@ export const imagesLabel = (n: number) => `${n} ${n === 1 ? "Image" : "Images"}`
 /** Filled violet action (Message Buyer / Message Seller) */
 export const FILLED_ACTION = cn(
   SANS,
-  "inline-flex h-[29px] w-[168px] cursor-pointer items-center justify-center rounded-[5px] bg-[#7b3aec] text-[10px] font-bold uppercase tracking-[0.02em] text-[#020516] transition-colors hover:bg-[#8a4ff0]",
+  "inline-flex h-[29px] w-[168px] cursor-pointer items-center justify-center rounded-[5px] bg-[#7c3aed] text-[10px] font-bold uppercase tracking-[0.02em] text-[#020516] transition-colors hover:bg-[#7c3aed]",
 );
 /** Outlined violet action (Edit Profile, the ⋮ menu) */
 export const OUTLINED_ACTION =
-  "inline-flex h-[29px] cursor-pointer items-center justify-center rounded-[5px] border-2 border-[#5e2faf] text-[#7b3aec] transition-colors hover:bg-[#7b3aec] hover:text-white";
+  "inline-flex h-[29px] cursor-pointer items-center justify-center rounded-[5px] border-2 border-[#7c3aed] text-[#7c3aed] transition-colors hover:bg-[#7c3aed] hover:text-white";
 
 /** Page background and the two-column grid: picture | header, picture | tabs, about | content. */
 export function ProfilePage({ children }: { children: ReactNode }) {
@@ -91,14 +91,14 @@ export function SectionTitle({ title, count, onCount }: { title: string; count?:
         <span className="text-[22px] text-white">{title}</span>
         {count &&
           (onCount ? (
-            <Button variant="plain" size="none" type="button" onClick={onCount} className="cursor-pointer text-[16px] text-[#7b3aec] hover:underline">
+            <Button variant="plain" size="none" type="button" onClick={onCount} className="cursor-pointer text-[16px] text-[#7c3aed] hover:underline">
               {count}
             </Button>
           ) : (
-            <span className="text-[16px] text-[#7b3aec]">{count}</span>
+            <span className="text-[16px] text-[#7c3aed]">{count}</span>
           ))}
       </h2>
-      <span className="h-0.5 w-[60px] bg-[#7b3aec]/55" />
+      <span className="h-0.5 w-[60px] bg-[#7c3aed]/55" />
     </div>
   );
 }
@@ -128,8 +128,8 @@ export function ProfileTabBar<T extends string>({
             onClick={() => onChange(t.value)}
             className={cn(
               SERIF,
-              "h-[30px] cursor-pointer rounded-[5px] bg-[#141519] px-[14px] text-[17px] font-normal transition-colors hover:bg-[#141519] hover:text-[#7b3aec]",
-              value === t.value ? "text-[#7b3aec]" : "text-white",
+              "h-[30px] cursor-pointer rounded-[5px] bg-[#141519] px-[14px] text-[17px] font-normal transition-colors hover:bg-[#141519] hover:text-[#7c3aed]",
+              value === t.value ? "text-[#7c3aed]" : "text-white",
             )}
           >
             {t.label}

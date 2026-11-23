@@ -28,7 +28,7 @@ function Header({ profile }: { profile: Profile }) {
   return (
     <Frame className="[grid-area:header]" innerClassName="flex flex-col px-[22px] py-[18px] lg:min-h-[345px]">
       <h1 className={cn(NURMA, "truncate text-[24px] uppercase leading-tight tracking-[0.03em] text-white")}>{profile.name}</h1>
-      <p className={cn(SERIF, "mt-1 flex flex-wrap items-center gap-x-4 text-[17px] text-[#7b3aec]")}>
+      <p className={cn(SERIF, "mt-1 flex flex-wrap items-center gap-x-4 text-[17px] text-[#7c3aed]")}>
         <span
           className="flex items-center gap-1"
           title={`Average rating this buyer gives sellers, from ${written.count} review${written.count === 1 ? "" : "s"}`}
