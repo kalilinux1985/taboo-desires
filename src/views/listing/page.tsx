@@ -196,7 +196,7 @@ type Seller = NonNullable<Listing["seller"]>;
 function SellerCard({ seller }: { seller: Seller }) {
   const { rating, reviewCount } = seller;
   return (
-    <Link href={`/seller/${seller._id}`} className={cn(INNER, "group flex cursor-pointer items-center gap-[13px] p-[9px]")}>
+    <Link href={`/seller/${seller._id}`} className={cn(INNER, "group flex cursor-pointer items-start gap-[13px] p-[9px]")}>
       <ProfileAvatar
         name={seller.name}
         url={seller.avatarUrl}
