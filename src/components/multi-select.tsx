@@ -36,7 +36,7 @@ export default function MultiSelect({
           <ChevronDown className="size-4 shrink-0 opacity-60" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="settings-menu max-h-72 w-(--radix-popover-trigger-width) overflow-y-auto bg-[#111317] p-1 shadow-none">
+      <PopoverContent align="start" className="settings-menu text-sm max-h-72 w-(--radix-popover-trigger-width) overflow-y-auto bg-[#111317] p-1 shadow-none">
         {options.map((option) => {
           const on = value.includes(option);
           return (
@@ -46,7 +46,7 @@ export default function MultiSelect({
               role="menuitemcheckbox"
               aria-checked={on}
               onClick={() => toggle(option)}
-              className="flex w-full cursor-pointer items-center gap-2 rounded-[5px] px-2 py-1.5 text-left text-sm hover:bg-accent"
+              className="flex w-full cursor-pointer items-center justify-start gap-2 rounded-[5px] px-2 py-1.5 text-left !text-sm font-normal hover:bg-accent"
             >
               <span className={cn("flex size-4 items-center justify-center rounded-[5px] border", on && "border-primary bg-primary text-primary-foreground")}>
                 {on && <Check className="size-3" />}
