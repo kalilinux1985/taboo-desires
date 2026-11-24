@@ -128,7 +128,9 @@ export default function OrderCard({ order: o }: { order: OrderRow }) {
   const confirmReceived = useMutation(api.orders.confirmReceived);
   const seller = o.role === "seller";
   const step = nextStep(o);
-  const canCancel = o.status === "awaiting_address" || o.status === "ready_to_ship";
+  // Shipped items can't be cancelled once on their way; Instant Content never can
+  const notShipped = o.status === "awaiting_address" || o.status === "ready_to_ship";
+  const canCancel = !o.isInstant && notShipped;
 
   return (
     <Card className="gap-4 p-5">
@@ -239,9 +241,9 @@ export default function OrderCard({ order: o }: { order: OrderRow }) {
       {step && <p className="text-sm text-muted-foreground">{step}</p>}
 
       <div className="flex flex-wrap gap-2">
-        {!seller && canCancel && <AddressDialog order={o} />}
+        {!seller && notShipped && !o.isInstant && <AddressDialog order={o} />}
         {seller && o.status === "ready_to_ship" && <LabelDialog orderId={o._id} shipsTo={o.shipsTo} />}
-        {seller && canCancel && <TrackingDialog orderId={o._id} />}
+        {seller && notShipped && !o.isInstant && <TrackingDialog orderId={o._id} />}
         {seller && o.status === "shipped" && !o.hasLabel && (
           <TrackingDialog orderId={o._id} current={{ carrier: o.carrier, code: o.trackingCode }} />
         )}

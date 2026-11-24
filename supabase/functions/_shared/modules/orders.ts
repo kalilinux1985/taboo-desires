@@ -200,6 +200,8 @@ async function toView(ctx: QueryCtx, o: Doc<"orders">, role: "buyer" | "seller")
     createdAt: o._creationTime,
     updatedAt: o.updatedAt,
     listingId: o.listingId ?? null,
+    /** Instant Content (digital, nothing to ship): can't be cancelled */
+    isInstant: !!listing?.paywall,
     customRequestId: o.customRequestId ?? null,
     imageUrl: imageId ? await ctx.storage.getUrl(imageId) : null,
     other: other
@@ -395,6 +397,10 @@ export const cancel = mutation({
     const order = await ctx.db.get("orders", orderId);
     if (!order || (order.buyerId !== me._id && order.sellerId !== me._id))
       throw new AppError({ code: "NOT_FOUND", message: "Order not found" });
+    // Only items that ship can be cancelled; Instant Content is delivered the moment it's paid for
+    const listing = order.listingId ? await ctx.db.get("listings", order.listingId) : null;
+    if (listing?.paywall)
+      throw new AppError({ code: "BAD_REQUEST", message: "Instant Content purchases can't be cancelled" });
     if (!OPEN.has(order.status))
       throw new AppError({
         code: "CONFLICT",
