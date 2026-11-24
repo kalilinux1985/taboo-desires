@@ -78,7 +78,7 @@ export function CoinPay({
           {formatCoins(cost)}
           {isAuthenticated && <span className="text-white/70"> · you have {formatCoins(balance)}</span>}
         </p>
-        <p className="mt-0.5 text-[12px] text-white/70">Instant, private, and bigger packs come with bonus coins.</p>
+        <p className="mt-0.5 text-[12px] text-white/70">Instant and private. 1 coin = $0.10.</p>
         <Button
           type="button"
           disabled={disabled || busy}

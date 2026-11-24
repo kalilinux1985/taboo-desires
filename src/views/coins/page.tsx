@@ -1,12 +1,12 @@
 "use client";
 
 import { format } from "date-fns";
-import { Coins, Sparkles } from "lucide-react";
+import { Coins } from "lucide-react";
 import { toast } from "sonner";
 import { useBackendAuth, useQuery } from "@/lib/backend/react.tsx";
 import { api } from "@/lib/backend/api.ts";
 import { useAuth } from "@/components/providers/auth.tsx";
-import { COIN_PACKS, formatCoins } from "@/shared/coins.ts";
+import { COIN_PACKS, COIN_VALUE_CENTS, formatCoins } from "@/shared/coins.ts";
 import { cn } from "@/lib/utils.ts";
 import { Button } from "@/components/ui/button.tsx";
 import { Card } from "@/components/ui/card.tsx";
@@ -28,7 +28,6 @@ export default function CoinsPage() {
   const { isAuthenticated } = useBackendAuth();
   const { signin } = useAuth();
   const data = useQuery(api.coins.mine, isAuthenticated ? {} : "skip");
-  const best = 2500;
 
   return (
     <div className="min-h-[calc(100dvh-3.5rem)] bg-[#0C0F15] text-white">
@@ -38,7 +37,7 @@ export default function CoinsPage() {
             <Coins className="size-9 text-[#7c3aed]" /> Taboo Coins
           </h1>
           <p className="max-w-2xl text-white/80">
-            The fastest and most private way to pay on Taboo Desires. 1 coin = $0.01, so a $40 item costs 4,000 coins. Bigger packs come with bonus coins.
+            The fastest and most private way to pay on Taboo Desires. 1 coin = $0.10, so a $50 item costs 500 coins.
           </p>
         </header>
 
@@ -52,7 +51,7 @@ export default function CoinsPage() {
               </p>
             </div>
             <p className="text-right text-sm text-white/70">
-              Worth ${(((data?.balance ?? 0) / 100) || 0).toFixed(2)} on the site
+              Worth ${(((data?.balance ?? 0) * COIN_VALUE_CENTS) / 100).toFixed(2)} on the site
             </p>
           </Card>
         )}
@@ -64,23 +63,12 @@ export default function CoinsPage() {
               <Card
                 key={p.coins}
                 data-slot="card"
-                className={cn(
-                  "relative gap-3 rounded-[5px] border-[#59595b40] bg-[#202227] p-5",
-                  p.coins === best && "border-[#7c3aed]",
-                )}
+                className="relative gap-3 rounded-[5px] border-[#59595b40] bg-[#202227] p-5"
               >
-                {p.coins === best && (
-                  <span className="absolute -top-2.5 left-4 flex items-center gap-1 rounded-[5px] bg-[#7c3aed] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide">
-                    <Sparkles className="size-3" /> Best value
-                  </span>
-                )}
                 <p className="flex items-center gap-2 text-2xl font-bold">
                   <Coins className="size-6 text-[#7c3aed]" /> {p.coins.toLocaleString("en-US")}
                 </p>
-                <p className="text-sm text-white/70">
-                  Spends like ${(p.coins / 100).toFixed(2)}
-                  {p.bonusPercent > 0 && <span className="font-semibold text-[#7c3aed]"> · {p.bonusPercent}% bonus</span>}
-                </p>
+                <p className="text-sm text-white/70">Spends like ${((p.coins * COIN_VALUE_CENTS) / 100).toFixed(2)}</p>
                 <Button
                   type="button"
                   onClick={() => (isAuthenticated ? toast("Buying coins is coming soon") : signin())}

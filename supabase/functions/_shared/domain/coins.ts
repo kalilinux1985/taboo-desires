@@ -1,25 +1,23 @@
-// Taboo Coins: the site's own currency. 1 coin pays for $0.01 of an item or
-// Instant Content, so a $40.00 item costs 4,000 coins. Bigger packs come
-// with bonus coins, which is how the site nudges members to pay with coins.
+// Taboo Coins: the site's own currency. 1 coin pays for $0.10 of an item or
+// Instant Content, so a $50.00 item costs 500 coins. Coin packs have no
+// bonus coins or discounts.
 
-export type CoinPack = {
-  coins: number;
-  priceCents: number;
-  /** Extra value over paying 1 cent per coin, as a whole percent (0 for none) */
-  bonusPercent: number;
-};
+export type CoinPack = { coins: number; priceCents: number };
 
 export const COIN_PACKS: readonly CoinPack[] = [
-  { coins: 250, priceCents: 299, bonusPercent: 0 },
-  { coins: 500, priceCents: 549, bonusPercent: 10 },
-  { coins: 1000, priceCents: 999, bonusPercent: 15 },
-  { coins: 1500, priceCents: 1449, bonusPercent: 20 },
-  { coins: 2000, priceCents: 1899, bonusPercent: 25 },
-  { coins: 2500, priceCents: 2299, bonusPercent: 30 },
+  { coins: 100, priceCents: 1149 },
+  { coins: 250, priceCents: 2899 },
+  { coins: 500, priceCents: 5749 },
+  { coins: 1000, priceCents: 11499 },
+  { coins: 2000, priceCents: 22999 },
+  { coins: 4000, priceCents: 45999 },
 ];
 
-/** Coins needed to pay a price in cents (1 coin = 1 cent). */
-export const coinsFor = (priceCents: number) => Math.max(1, Math.round(priceCents));
+/** What one coin pays for, in cents. */
+export const COIN_VALUE_CENTS = 10;
+
+/** Coins needed to pay a price in cents (1 coin = $0.10, rounded up to a whole coin). */
+export const coinsFor = (priceCents: number) => Math.max(1, Math.ceil(Math.round(priceCents) / COIN_VALUE_CENTS));
 
 /** Most coins an admin can grant in one go. */
 export const GRANT_MAX = 100_000;
