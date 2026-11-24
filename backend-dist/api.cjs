@@ -3475,14 +3475,15 @@ __export(coins_exports, {
 
 // supabase/functions/_shared/domain/coins.ts
 var COIN_PACKS = [
-  { coins: 250, priceCents: 299, bonusPercent: 0 },
-  { coins: 500, priceCents: 549, bonusPercent: 10 },
-  { coins: 1e3, priceCents: 999, bonusPercent: 15 },
-  { coins: 1500, priceCents: 1449, bonusPercent: 20 },
-  { coins: 2e3, priceCents: 1899, bonusPercent: 25 },
-  { coins: 2500, priceCents: 2299, bonusPercent: 30 }
+  { coins: 100, priceCents: 1149 },
+  { coins: 250, priceCents: 2899 },
+  { coins: 500, priceCents: 5749 },
+  { coins: 1e3, priceCents: 11499 },
+  { coins: 2e3, priceCents: 22999 },
+  { coins: 4e3, priceCents: 45999 }
 ];
-var coinsFor = (priceCents) => Math.max(1, Math.round(priceCents));
+var COIN_VALUE_CENTS = 10;
+var coinsFor = (priceCents) => Math.max(1, Math.ceil(Math.round(priceCents) / COIN_VALUE_CENTS));
 var GRANT_MAX = 1e5;
 var formatCoins = (n) => `${n.toLocaleString("en-US")} ${n === 1 ? "coin" : "coins"}`;
 
