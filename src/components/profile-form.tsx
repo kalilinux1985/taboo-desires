@@ -91,8 +91,9 @@ export default function ProfileForm({
 
   return (
       <div className="flex flex-col gap-6">
+        <h2 className="[font-family:var(--font-nurma),Arial,sans-serif] text-2xl font-normal text-white">Profile Information</h2>
         <div className="grid gap-2">
-          <Label htmlFor={usernameField.key} className="text-base font-semibold">
+          <Label htmlFor={usernameField.key} className="[font-family:var(--font-nurma),Arial,sans-serif] text-base font-normal">
             {usernameField.label}
           </Label>
           <Input
@@ -106,7 +107,7 @@ export default function ProfileForm({
           <p className="text-xs text-muted-foreground">{usernameField.hint}</p>
         </div>
         <div className="grid gap-2">
-          <Label className="text-base font-semibold">Profile image</Label>
+          <Label className="[font-family:var(--font-nurma),Arial,sans-serif] text-base font-normal">Profile Image</Label>
           <AvatarDropzone {...pickerProps} />
           <p className="text-xs text-muted-foreground">No nudity. Images will be removed.</p>
         </div>
