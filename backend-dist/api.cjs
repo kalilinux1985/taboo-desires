@@ -2936,6 +2936,8 @@ async function toView(ctx, o, role) {
     createdAt: o._creationTime,
     updatedAt: o.updatedAt,
     listingId: o.listingId ?? null,
+    /** Instant Content (digital, nothing to ship): can't be cancelled */
+    isInstant: !!listing?.paywall,
     customRequestId: o.customRequestId ?? null,
     imageUrl: imageId ? await ctx.storage.getUrl(imageId) : null,
     other: other ? {
@@ -3087,6 +3089,9 @@ var cancel = mutation({
     const order = await ctx.db.get("orders", orderId);
     if (!order || order.buyerId !== me._id && order.sellerId !== me._id)
       throw new AppError({ code: "NOT_FOUND", message: "Order not found" });
+    const listing = order.listingId ? await ctx.db.get("listings", order.listingId) : null;
+    if (listing?.paywall)
+      throw new AppError({ code: "BAD_REQUEST", message: "Instant Content purchases can't be cancelled" });
     if (!OPEN.has(order.status))
       throw new AppError({
         code: "CONFLICT",
@@ -3100,8 +3105,8 @@ var cancel = mutation({
         actorId: me._id
       });
       if (order.listingId) {
-        const listing = await ctx.db.get("listings", order.listingId);
-        if (listing?.status === "sold") await ctx.db.patch("listings", listing._id, { status: "active" });
+        const listing2 = await ctx.db.get("listings", order.listingId);
+        if (listing2?.status === "sold") await ctx.db.patch("listings", listing2._id, { status: "active" });
       }
     }
     return null;
