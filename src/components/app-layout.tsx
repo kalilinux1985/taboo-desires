@@ -143,7 +143,7 @@ function HeaderSearch() {
     setOpen(false);
   };
   const field = (autoFocus: boolean) => (
-    <form onSubmit={submit} role="search" className="flex h-[41px] w-full items-center gap-2.5 rounded-[5px] bg-background px-3 shadow-[inset_0_3px_8px_rgba(0,0,0,0.28),inset_0_0_3px_rgba(0,0,0,0.28)]">
+    <form onSubmit={submit} role="search" className="flex h-[41px] w-full items-center gap-2.5 rounded-[5px] bg-[#09090b] px-3 shadow-[inset_0_3px_8px_rgba(0,0,0,0.28),inset_0_0_3px_rgba(0,0,0,0.28)]">
       <Search className="size-5 shrink-0 text-white" strokeWidth={1.5} />
       <Input
         value={text}
@@ -172,7 +172,7 @@ function HeaderSearch() {
 
 function Header() {
   return (
-    <header className="sticky top-0 z-40 bg-[#09090b]/90">
+    <header className="sticky top-0 z-40 bg-[#09090b]/98">
       <div className="mx-auto flex h-[60px] max-w-[1205px] items-center justify-between gap-4 px-4 md:justify-center xl:px-0">
         {/* Phones: menu button and logo on the left, actions on the right.
             Wider screens: logo and search, shop menus and actions centred as one group. */}
