@@ -334,8 +334,8 @@ export function FilterGroups({
       {groups.map((group) => {
         const chosen = selection[group.key] ?? [];
         return (
-          <AccordionItem key={group.key} value={group.key} className="border-b-0">
-            <AccordionTrigger className="cursor-pointer items-center border-b border-white/10 py-2 text-[15px] font-bold hover:no-underline [&>svg]:translate-y-0 [&>svg]:text-violet-600">
+          <AccordionItem key={group.key} value={group.key} className="border-b border-white/10">
+            <AccordionTrigger className="cursor-pointer items-center py-2 text-[15px] font-bold hover:no-underline [&>svg]:translate-y-0 [&>svg]:text-violet-600">
               <span>
                 {group.label}
                 {chosen.length > 0 && (
@@ -345,7 +345,7 @@ export function FilterGroups({
                 )}
               </span>
             </AccordionTrigger>
-            <AccordionContent className="flex flex-col gap-0.5 pt-2 pb-5">
+            <AccordionContent className="flex flex-col gap-0.5 pt-0 pb-3">
               {group.options.map((o) => {
                 const Icon = o.icon;
                 return (
