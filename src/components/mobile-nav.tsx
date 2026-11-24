@@ -1,5 +1,6 @@
 "use client";
 
+import CoinIcon from "@/components/coin-icon.tsx";
 import { useEffect, useState, type ComponentType } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -20,7 +21,7 @@ import {
   Save,
   SquareX,
   UserCog,
-  UserSearch, Coins } from "lucide-react";
+  UserSearch } from "lucide-react";
 import { useBackendAuth, useQuery } from "@/lib/backend/react.tsx";
 import { api } from "@/lib/backend/api.ts";
 import { settingsPathFor } from "@/lib/settings.ts";
@@ -168,7 +169,7 @@ function AccountLinks({ onNavigate }: { onNavigate: () => void }) {
         onNavigate={onNavigate}
       />
       <NavLink href="/orders" icon={Package} label="Orders" onNavigate={onNavigate} />
-      <NavLink href="/coins" icon={Coins} label="Taboo Coins" onNavigate={onNavigate} />
+      <NavLink href="/coins" icon={CoinIcon} label="Taboo Coins" onNavigate={onNavigate} />
       <NavLink
         href={settingsPathFor(me.accountType)}
         icon={UserCog}

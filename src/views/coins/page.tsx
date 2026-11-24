@@ -1,7 +1,7 @@
 "use client";
 
+import CoinIcon from "@/components/coin-icon.tsx";
 import { format } from "date-fns";
-import { Coins } from "lucide-react";
 import { toast } from "sonner";
 import { useBackendAuth, useQuery } from "@/lib/backend/react.tsx";
 import { api } from "@/lib/backend/api.ts";
@@ -34,7 +34,7 @@ export default function CoinsPage() {
       <div className="mx-auto flex max-w-[1000px] flex-col gap-8 px-5 py-10">
         <header className="flex flex-col gap-2">
           <h1 className="flex items-center gap-3 font-display text-4xl">
-            <Coins className="size-9 text-[#7c3aed]" /> Taboo Coins
+            <CoinIcon className="size-9" /> Taboo Coins
           </h1>
           <p className="max-w-2xl text-white/80">
             The fastest and most private way to pay on Taboo Desires. 1 coin = $0.10, so a $50 item costs 500 coins.
@@ -46,7 +46,7 @@ export default function CoinsPage() {
             <div>
               <p className="text-sm text-white/70">Your balance</p>
               <p className="mt-1 flex items-center gap-2 text-3xl font-bold tabular-nums">
-                <Coins className="size-7 text-[#7c3aed]" />
+                <CoinIcon className="size-7" />
                 {data === undefined ? <Skeleton className="h-8 w-24" /> : (data?.balance ?? 0).toLocaleString("en-US")}
               </p>
             </div>
@@ -66,7 +66,7 @@ export default function CoinsPage() {
                 className="relative gap-3 rounded-[5px] border-[#59595b40] bg-[#202227] p-5"
               >
                 <p className="flex items-center gap-2 text-2xl font-bold">
-                  <Coins className="size-6 text-[#7c3aed]" /> {p.coins.toLocaleString("en-US")}
+                  <CoinIcon className="size-6" /> {p.coins.toLocaleString("en-US")}
                 </p>
                 <p className="text-sm text-white/70">Spends like ${((p.coins * COIN_VALUE_CENTS) / 100).toFixed(2)}</p>
                 <Button

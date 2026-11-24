@@ -1,8 +1,9 @@
 "use client";
 
+import CoinIcon from "@/components/coin-icon.tsx";
 import { useState } from "react";
 import Link from "next/link";
-import { Coins, CreditCard, Sparkles, Wallet } from "lucide-react";
+import { CreditCard, Sparkles, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { useBackendAuth, useMutation, useQuery } from "@/lib/backend/react.tsx";
 import { api } from "@/lib/backend/api.ts";
@@ -68,7 +69,7 @@ export function CoinPay({
       <div className="rounded-[5px] border border-[#7c3aed] bg-[#7c3aed]/10 p-3">
         <div className="flex items-center justify-between gap-2">
           <span className="flex items-center gap-2 text-[15px] font-semibold text-white">
-            <Coins className="size-5 text-[#7c3aed]" /> Taboo Coins
+            <CoinIcon className="size-5" /> Taboo Coins
           </span>
           <span className="flex items-center gap-1 rounded-[5px] bg-[#7c3aed] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
             <Sparkles className="size-3" /> Best way to pay
@@ -125,7 +126,7 @@ export function CoinChip({ className }: { className?: string }) {
   if (!me) return null;
   return (
     <Link href="/coins" title="Taboo Coins" className={cn("flex h-8 items-center gap-1.5 rounded-[5px] border border-[#7c3aed]/60 px-2 text-[13px] text-white hover:bg-[#7c3aed]/20", className)}>
-      <Coins className="size-4 text-[#7c3aed]" />
+      <CoinIcon className="size-4" />
       <span className="tabular-nums">{(me.coinBalance ?? 0).toLocaleString("en-US")}</span>
     </Link>
   );

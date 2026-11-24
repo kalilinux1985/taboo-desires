@@ -1,7 +1,7 @@
 "use client";
 
+import CoinIcon from "@/components/coin-icon.tsx";
 import { useState, type FormEvent } from "react";
-import { Coins } from "lucide-react";
 import { toast } from "sonner";
 import { useMutation } from "@/lib/backend/react.tsx";
 import { api } from "@/lib/backend/api.ts";
@@ -39,7 +39,7 @@ export default function CoinGrant() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Coins className="size-5 text-[#7c3aed]" /> Grant Taboo Coins
+          <CoinIcon className="size-5" /> Grant Taboo Coins
         </CardTitle>
         <CardDescription>Add coins to a member's account. Use a negative number to take coins away. Every change is recorded in their coin history.</CardDescription>
       </CardHeader>

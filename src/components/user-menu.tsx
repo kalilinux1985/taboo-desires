@@ -1,4 +1,5 @@
 import Link from "next/link";
+import CoinIcon from "@/components/coin-icon.tsx";
 import { useQuery } from "@/lib/backend/react.tsx";
 import {
   Gavel,
@@ -13,7 +14,7 @@ import {
   ShieldCheck,
   Sparkles,
   User,
-  Users, Coins } from "lucide-react";
+  Users } from "lucide-react";
 import { api } from "@/lib/backend/api.ts";
 import { settingsPathFor } from "@/lib/settings.ts";
 import { useAuth } from "@/hooks/use-auth.ts";
@@ -43,7 +44,7 @@ export default function UserMenu() {
     { to: "/sell", label: "Sell an item", icon: Plus, show: isSeller },
     { to: "/my-listings", label: "My listings", icon: List, show: isSeller },
     { to: "/orders", label: "Orders", icon: Package, show: true, count: ordersToDo },
-    { to: "/coins", label: "Taboo Coins", icon: Coins, show: true },
+    { to: "/coins", label: "Taboo Coins", icon: CoinIcon, show: true },
     { to: "/customs", label: "Custom requests", icon: Sparkles, show: true },
     { to: settingsPathFor(me.accountType), label: "Settings", icon: Settings, show: true },
     { to: "/admin", label: "Admin", icon: ShieldCheck, show: me.isAdmin },
