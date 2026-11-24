@@ -35,7 +35,7 @@ export function ProfileShopCard({ listing }: { listing: ListingCardData }) {
   return (
     <Link href={`/listing/${listing._id}`} className={cn(CARD, SANS, "group flex min-w-0 cursor-pointer flex-col")}>
       <div className="relative aspect-[3/2]">
-        <div className="size-full overflow-hidden bg-[#f4f4f5]">
+        <div className="absolute inset-0 overflow-hidden bg-[#f4f4f5]">
           {listing.imageUrl && (
             <img src={listing.imageUrl} alt={listing.title} loading="lazy" className="size-full object-cover" />
           )}
