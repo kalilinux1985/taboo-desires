@@ -126,6 +126,7 @@ var TABLES = {
       tokenIdentifier: c("token_identifier"),
       name: c("name"),
       username: c("username"),
+      coinBalance: c("coin_balance", "int"),
       email: c("email"),
       shopName: c("shop_name"),
       bio: c("bio"),
@@ -449,7 +450,21 @@ var TABLES = {
       deliveredAt: c("delivered_at", "ts"),
       updatedAt: c("updated_at", "ts"),
       contractId: c("contract_id", "uuid"),
-      trackingUpdatedAt: c("tracking_updated_at", "ts")
+      trackingUpdatedAt: c("tracking_updated_at", "ts"),
+      coinAmount: c("coin_amount", "int")
+    }
+  },
+  coinLedger: {
+    sqlName: "coin_ledger",
+    columns: {
+      userId: c("user_id", "uuid"),
+      delta: c("delta", "int"),
+      balanceAfter: c("balance_after", "int"),
+      kind: c("kind"),
+      listingId: c("listing_id", "uuid"),
+      orderId: c("order_id", "uuid"),
+      actorId: c("actor_id", "uuid"),
+      note: c("note")
     }
   },
   shippingAddresses: {
@@ -1730,8 +1745,8 @@ var byUser = query({
        where a.user_id = ${userId}::uuid
        order by a.created_at, a.id
        limit ${ALBUMS_MAX}::int`);
-    const mine6 = me?._id === userId;
-    return rows.filter((r) => mine6 || Number(r.photos) > 0).map((r) => ({ _id: String(r.id), name: String(r.name), photos: Number(r.photos) }));
+    const mine7 = me?._id === userId;
+    return rows.filter((r) => mine7 || Number(r.photos) > 0).map((r) => ({ _id: String(r.id), name: String(r.name), photos: Number(r.photos) }));
   }
 });
 var remove = mutation({
@@ -2772,6 +2787,33 @@ function shippingError(e, fallback) {
   return new AppError({ code: "INTERNAL", message: fallback });
 }
 
+// supabase/functions/_shared/lib/coins.ts
+async function moveCoins(ctx, userId, delta, kind, link = {}) {
+  if (!Number.isInteger(delta) || delta === 0) throw new AppError({ code: "BAD_REQUEST", message: "Invalid coin amount" });
+  const rows = await ctx.db.rows(sql`
+    update public.users set coin_balance = coin_balance + ${delta}::int
+     where id = ${userId}::uuid and coin_balance + ${delta}::int >= 0
+     returning coin_balance`);
+  if (rows.length === 0)
+    throw new AppError({ code: "BAD_REQUEST", message: delta < 0 ? "Not enough Taboo Coins" : "Account not found" });
+  const balanceAfter = Number(rows[0].coin_balance);
+  await ctx.db.insert("coinLedger", {
+    userId,
+    delta,
+    balanceAfter,
+    kind,
+    ...link.listingId ? { listingId: link.listingId } : {},
+    ...link.orderId ? { orderId: link.orderId } : {},
+    ...link.actorId ? { actorId: link.actorId } : {},
+    ...link.note ? { note: link.note.slice(0, 200) } : {}
+  });
+  return balanceAfter;
+}
+async function payCoins(ctx, buyerId, sellerId, amount, kinds, link) {
+  await moveCoins(ctx, buyerId, -amount, kinds.buyer, link);
+  await moveCoins(ctx, sellerId, amount, kinds.seller, link);
+}
+
 // supabase/functions/_shared/modules/orders.ts
 var addressValidator = v.object({
   name: v.string(),
@@ -2810,8 +2852,8 @@ var OPEN = /* @__PURE__ */ new Set(["awaiting_address", "ready_to_ship"]);
 async function getOrderAs(ctx, orderId, role, opts = {}) {
   const me = role === "seller" && opts.pro ? await requireCapability(ctx, "list") : await requireUser(ctx);
   const order = await ctx.db.get("orders", orderId);
-  const mine6 = order && (role === "seller" ? order.sellerId : order.buyerId) === me._id;
-  if (!order || !mine6)
+  const mine7 = order && (role === "seller" ? order.sellerId : order.buyerId) === me._id;
+  if (!order || !mine7)
     throw new AppError({ code: "NOT_FOUND", message: "Order not found" });
   return { order, me };
 }
@@ -2916,6 +2958,7 @@ async function toView(ctx, o, role) {
     shippedAt: o.shippedAt ?? null,
     deliveredAt: o.deliveredAt ?? null,
     trackingUpdatedAt: o.trackingUpdatedAt ?? null,
+    coinAmount: o.coinAmount ?? null,
     /** The agreed contract, when the order came from one */
     contract: contract ? { ...view(contract, listing), conversationId: contract.conversationId } : null
   };
@@ -3050,6 +3093,17 @@ var cancel = mutation({
         message: order.status === "label_created" ? "Void the shipping label first" : "This order can't be cancelled anymore"
       });
     await ctx.db.patch("orders", orderId, { status: "cancelled", updatedAt: nowIso(ctx) });
+    if (order.coinAmount) {
+      await payCoins(ctx, order.sellerId, order.buyerId, order.coinAmount, { buyer: "refund_sale", seller: "refund" }, {
+        orderId,
+        listingId: order.listingId,
+        actorId: me._id
+      });
+      if (order.listingId) {
+        const listing = await ctx.db.get("listings", order.listingId);
+        if (listing?.status === "sold") await ctx.db.patch("listings", listing._id, { status: "active" });
+      }
+    }
     return null;
   }
 });
@@ -3405,6 +3459,168 @@ var myListings = query({
   }
 });
 
+// supabase/functions/_shared/modules/coins.ts
+var coins_exports = {};
+__export(coins_exports, {
+  grant: () => grant,
+  mine: () => mine3,
+  payListing: () => payListing,
+  payUnlock: () => payUnlock
+});
+
+// supabase/functions/_shared/domain/coins.ts
+var COIN_PACKS = [
+  { coins: 250, priceCents: 299, bonusPercent: 0 },
+  { coins: 500, priceCents: 549, bonusPercent: 10 },
+  { coins: 1e3, priceCents: 999, bonusPercent: 15 },
+  { coins: 1500, priceCents: 1449, bonusPercent: 20 },
+  { coins: 2e3, priceCents: 1899, bonusPercent: 25 },
+  { coins: 2500, priceCents: 2299, bonusPercent: 30 }
+];
+var coinsFor = (priceCents) => Math.max(1, Math.round(priceCents));
+var GRANT_MAX = 1e5;
+var formatCoins = (n) => `${n.toLocaleString("en-US")} ${n === 1 ? "coin" : "coins"}`;
+
+// supabase/functions/_shared/lib/lockedContent.ts
+async function getUnlock(ctx, listingId, buyerId) {
+  return await ctx.db.first(
+    "unlocks",
+    sql`where listing_id = ${listingId}::uuid and buyer_id = ${buyerId}::uuid`
+  );
+}
+var UNLOCK_HOURS = 24;
+function unlockExpiry(unlock) {
+  if (unlock?.status !== "granted" || !unlock.grantedAt) return null;
+  return new Date(unlock.grantedAt).getTime() + UNLOCK_HOURS * 36e5;
+}
+async function canViewLocked(ctx, listing, user) {
+  if (!listing.paywall || !user) return false;
+  if (listing.sellerId === user._id) return true;
+  const expiry = unlockExpiry(await getUnlock(ctx, listing._id, user._id));
+  return expiry !== null && expiry > ctx.now();
+}
+async function validateLockedMedia(ctx, sellerId, media, coverCount, alreadyAttached = []) {
+  const bad4 = (message) => new AppError({ code: "BAD_REQUEST", message });
+  if (media.length < 1) throw bad4("Add at least one photo or a video");
+  const videos = media.filter((m) => m.kind === "video").length;
+  if (videos > 1) throw bad4("Add only one video");
+  if (videos === 1 && media.length > 1)
+    throw bad4("A video listing holds just the video and its thumbnail");
+  if (media.length > LOCKED_MEDIA_MAX)
+    throw bad4(`Instant Content can hold up to ${LOCKED_MEDIA_MAX} photos`);
+  if (coverCount !== 1) throw bad4("Add a cover photo");
+  await assertOwnFiles(
+    ctx,
+    media.map((m) => m.storageId),
+    sellerId,
+    "private",
+    alreadyAttached
+  );
+  const types = await Promise.all(
+    media.map((m) => ctx.storage.getContentType(m.storageId))
+  );
+  types.forEach((type, i) => {
+    if (type === void 0)
+      throw bad4("A file is missing. Please upload it again");
+    if (type && !type.startsWith(`${media[i].kind}/`))
+      throw bad4("Unsupported file type");
+  });
+}
+
+// supabase/functions/_shared/modules/coins.ts
+var mine3 = query({
+  args: {},
+  handler: async (ctx) => {
+    ctx.db.touch("coinLedger", "users");
+    const me = await getCurrentUserDoc(ctx);
+    if (!me) return null;
+    const rows = await ctx.db.select("coinLedger", sql`where user_id = ${me._id}::uuid order by created_at desc, id desc limit 50`);
+    const listings = new Map(
+      await Promise.all(
+        [...new Set(rows.flatMap((r) => r.listingId ? [r.listingId] : []))].map(
+          async (id) => [id, (await ctx.db.get("listings", id))?.title ?? null]
+        )
+      )
+    );
+    return {
+      balance: me.coinBalance ?? 0,
+      packs: COIN_PACKS,
+      history: rows.map((r) => ({
+        _id: r._id,
+        _creationTime: r._creationTime,
+        delta: r.delta,
+        balanceAfter: r.balanceAfter,
+        kind: r.kind,
+        listingTitle: r.listingId ? listings.get(r.listingId) ?? null : null,
+        note: r.note ?? null
+      }))
+    };
+  }
+});
+var payListing = mutation({
+  args: { listingId: v.id("listings") },
+  handler: async (ctx, { listingId }) => {
+    const me = await requireCapability(ctx, "buy");
+    const listing = await ctx.db.get("listings", listingId);
+    if (!listing || listing.paywall) throw new AppError({ code: "NOT_FOUND", message: "Listing not found" });
+    if (listing.sellerId === me._id) throw new AppError({ code: "BAD_REQUEST", message: "This is your own listing" });
+    if (listing.status !== "active" || listing.saleType !== "fixed")
+      throw new AppError({ code: "CONFLICT", message: "This listing is no longer for sale" });
+    const amount = coinsFor(listing.priceCents);
+    const orderId = await createOrder(ctx, { sellerId: listing.sellerId, buyerId: me._id, listingId, title: listing.title });
+    await ctx.db.patch("orders", orderId, { coinAmount: amount });
+    await payCoins(ctx, me._id, listing.sellerId, amount, { buyer: "purchase", seller: "sale" }, { listingId, orderId, actorId: me._id });
+    await ctx.db.patch("listings", listingId, { status: "sold" });
+    await bumpStats(ctx, listing.sellerId, { salesCount: 1 });
+    return orderId;
+  }
+});
+var payUnlock = mutation({
+  args: { listingId: v.id("listings") },
+  handler: async (ctx, { listingId }) => {
+    const me = await requireCapability(ctx, "buy");
+    const listing = await ctx.db.get("listings", listingId);
+    if (!listing?.paywall) throw new AppError({ code: "NOT_FOUND", message: "Instant Content not found" });
+    if (listing.sellerId === me._id) throw new AppError({ code: "BAD_REQUEST", message: "This is your own listing" });
+    if (listing.status !== "active") throw new AppError({ code: "CONFLICT", message: "This is no longer for sale" });
+    const now = new Date(ctx.now()).toISOString();
+    const existing = await getUnlock(ctx, listingId, me._id);
+    if (existing?.status === "granted" && existing.grantedAt && Date.parse(existing.grantedAt) + 24 * 36e5 > ctx.now())
+      throw new AppError({ code: "CONFLICT", message: "You already have access" });
+    const amount = coinsFor(listing.priceCents);
+    await payCoins(ctx, me._id, listing.sellerId, amount, { buyer: "unlock", seller: "unlock_sale" }, { listingId, actorId: me._id });
+    if (existing) await ctx.db.patch("unlocks", existing._id, { status: "granted", requestedAt: now, grantedAt: now });
+    else
+      await ctx.db.insert("unlocks", { listingId, buyerId: me._id, sellerId: listing.sellerId, status: "granted", requestedAt: now, grantedAt: now });
+    await bumpStats(ctx, listing.sellerId, { salesCount: 1 });
+    const seller = await ctx.db.get("users", listing.sellerId);
+    if (seller)
+      await queueEmail(ctx, {
+        to: seller,
+        kind: "coin_unlock",
+        transactional: true,
+        subject: `${publicSellerName(me)} unlocked "${listing.title}"`,
+        heading: "You made a sale",
+        lines: [`${publicSellerName(me)} unlocked "${listing.title}" for ${formatCoins(amount)}.`],
+        button: { label: "See your coins", path: "/coins" },
+        dedupeKey: `coin_unlock:${listingId}:${me._id}:${now}`
+      });
+    return null;
+  }
+});
+var grant = mutation({
+  args: { username: v.string(), amount: v.number(), note: v.optional(v.string()) },
+  handler: async (ctx, { username, amount, note }) => {
+    const admin2 = await requireAdmin(ctx);
+    const n = Math.trunc(amount);
+    if (!n || Math.abs(n) > GRANT_MAX) throw new AppError({ code: "BAD_REQUEST", message: `Enter 1 to ${GRANT_MAX.toLocaleString("en-US")} coins` });
+    const user = await ctx.db.first("users", sql`where username = ${username.trim().replace(/^@|^\//, "").toLowerCase()}`);
+    if (!user) throw new AppError({ code: "NOT_FOUND", message: "No member has that username" });
+    const balance = await moveCoins(ctx, user._id, n, "grant", { actorId: admin2._id, note: note?.trim() || void 0 });
+    return { name: publicSellerName(user), balance };
+  }
+});
+
 // supabase/functions/_shared/modules/auctions.ts
 var auctions_exports = {};
 __export(auctions_exports, {
@@ -3726,52 +3942,6 @@ var CONDITIONS = [
 var LISTING_STATUSES = ["active", "sold", "ended", "hidden"];
 var SALE_TYPES = ["fixed", "auction"];
 var MEDIA_KINDS = ["image", "video"];
-
-// supabase/functions/_shared/lib/lockedContent.ts
-async function getUnlock(ctx, listingId, buyerId) {
-  return await ctx.db.first(
-    "unlocks",
-    sql`where listing_id = ${listingId}::uuid and buyer_id = ${buyerId}::uuid`
-  );
-}
-var UNLOCK_HOURS = 24;
-function unlockExpiry(unlock) {
-  if (unlock?.status !== "granted" || !unlock.grantedAt) return null;
-  return new Date(unlock.grantedAt).getTime() + UNLOCK_HOURS * 36e5;
-}
-async function canViewLocked(ctx, listing, user) {
-  if (!listing.paywall || !user) return false;
-  if (listing.sellerId === user._id) return true;
-  const expiry = unlockExpiry(await getUnlock(ctx, listing._id, user._id));
-  return expiry !== null && expiry > ctx.now();
-}
-async function validateLockedMedia(ctx, sellerId, media, coverCount, alreadyAttached = []) {
-  const bad4 = (message) => new AppError({ code: "BAD_REQUEST", message });
-  if (media.length < 1) throw bad4("Add at least one photo or a video");
-  const videos = media.filter((m) => m.kind === "video").length;
-  if (videos > 1) throw bad4("Add only one video");
-  if (videos === 1 && media.length > 1)
-    throw bad4("A video listing holds just the video and its thumbnail");
-  if (media.length > LOCKED_MEDIA_MAX)
-    throw bad4(`Instant Content can hold up to ${LOCKED_MEDIA_MAX} photos`);
-  if (coverCount !== 1) throw bad4("Add a cover photo");
-  await assertOwnFiles(
-    ctx,
-    media.map((m) => m.storageId),
-    sellerId,
-    "private",
-    alreadyAttached
-  );
-  const types = await Promise.all(
-    media.map((m) => ctx.storage.getContentType(m.storageId))
-  );
-  types.forEach((type, i) => {
-    if (type === void 0)
-      throw bad4("A file is missing. Please upload it again");
-    if (type && !type.startsWith(`${media[i].kind}/`))
-      throw bad4("Unsupported file type");
-  });
-}
 
 // supabase/functions/_shared/lib/listingDelete.ts
 async function deleteListingCascade(ctx, listing) {
@@ -4717,7 +4887,7 @@ var favorites_exports = {};
 __export(favorites_exports, {
   followedSellers: () => followedSellers,
   isFavorite: () => isFavorite,
-  mine: () => mine3,
+  mine: () => mine4,
   toggle: () => toggle2
 });
 async function findFavorite(ctx, userId, listingId) {
@@ -4755,7 +4925,7 @@ var toggle2 = mutation({
     return true;
   }
 });
-var mine3 = query({
+var mine4 = query({
   args: { paginationOpts: paginationOptsValidator },
   handler: async (ctx, { paginationOpts }) => {
     const me = await requireUser(ctx);
@@ -6150,13 +6320,13 @@ __export(subscriptions_exports, {
   cancelRequest: () => cancelRequest,
   decline: () => decline,
   featured: () => featured,
-  mine: () => mine4,
+  mine: () => mine5,
   requestPro: () => requestPro,
   revoke: () => revoke
 });
 var MAX_NOTE2 = 500;
 var FEATURED_SELLERS = 8;
-var mine4 = query({
+var mine5 = query({
   args: {},
   handler: async (ctx) => {
     const me = await getCurrentUserDoc(ctx);
@@ -6437,7 +6607,7 @@ var pendingForListing = query({
 });
 var respond4 = mutation({
   args: { unlockId: v.id("unlocks"), grant: v.boolean() },
-  handler: async (ctx, { unlockId, grant }) => {
+  handler: async (ctx, { unlockId, grant: grant2 }) => {
     const user = await requireUser(ctx);
     const unlock = await ctx.db.get("unlocks", unlockId);
     if (!unlock)
@@ -6446,10 +6616,10 @@ var respond4 = mutation({
       throw new AppError({ code: "FORBIDDEN", message: "Not your listing" });
     if (unlock.status !== "pending") return null;
     await ctx.db.patch("unlocks", unlockId, {
-      status: grant ? "granted" : "declined",
-      ...grant ? { grantedAt: new Date(ctx.now()).toISOString() } : {}
+      status: grant2 ? "granted" : "declined",
+      ...grant2 ? { grantedAt: new Date(ctx.now()).toISOString() } : {}
     });
-    if (grant) await bumpStats(ctx, unlock.sellerId, { salesCount: 1 });
+    if (grant2) await bumpStats(ctx, unlock.sellerId, { salesCount: 1 });
     return null;
   }
 });
@@ -6623,7 +6793,8 @@ var menu = query({
       isPro: await getPlan(ctx, me._id) === "pro",
       avatarUrl: me.avatarStorageId ? await ctx.storage.getUrl(me.avatarStorageId) : null,
       /** Age, country or gender still to choose: the site sends them to Settings until done */
-      missingBasics: missingBasics(me)
+      missingBasics: missingBasics(me),
+      coinBalance: me.coinBalance ?? 0
     };
   }
 });
@@ -6772,10 +6943,10 @@ async function loadPhotos(ctx, userId, albumId, offset, limit) {
     for (const r of found)
       likerIds.set(String(r.target), [...likerIds.get(String(r.target)) ?? [], String(r.user_id)]);
     if (me) {
-      const mine6 = await ctx.db.rows(sql`
+      const mine7 = await ctx.db.rows(sql`
           select ${raw(col)}::text as target from public.${raw(table)}
            where user_id = ${me._id}::uuid and ${raw(col)} = any(${ids}::uuid[])`);
-      for (const r of mine6) likedByMe.add(String(r.target));
+      for (const r of mine7) likedByMe.add(String(r.target));
     }
   };
   await Promise.all([
@@ -7155,7 +7326,7 @@ var topSellers = query({
 var verification_exports = {};
 __export(verification_exports, {
   adminPending: () => adminPending2,
-  mine: () => mine5,
+  mine: () => mine6,
   review: () => review2,
   revoke: () => revoke2,
   submit: () => submit3
@@ -7167,7 +7338,7 @@ async function getVerification(ctx, userId) {
     sql`where user_id = ${userId}::uuid`
   );
 }
-var mine5 = query({
+var mine6 = query({
   args: {},
   handler: async (ctx) => {
     const me = await getCurrentUserDoc(ctx);
@@ -7306,6 +7477,7 @@ var registry = {
   albums: functionsOf(albums_exports),
   photos: functionsOf(photos_exports),
   contracts: functionsOf(contracts_exports),
+  coins: functionsOf(coins_exports),
   auctions: functionsOf(auctions_exports),
   blocks: functionsOf(blocks_exports),
   customRequests: functionsOf(customRequests_exports),
