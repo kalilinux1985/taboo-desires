@@ -3,6 +3,7 @@
 import ReportButton from "@/components/report-button.tsx";
 import ZoomImage from "@/components/zoom-image.tsx";
 import { CoinPay } from "@/components/coin-pay.tsx";
+import CoinIcon from "@/components/coin-icon.tsx";
 import { useState } from "react";
 import Link from "next/link";
 import { useNavigate } from "@/lib/navigation.ts";
@@ -337,9 +338,9 @@ function InstantContentView({
               )}
               <p className={cn(SERIF, "text-[26px] leading-none text-[#7c3aed]")}>${(listing.priceCents / 100).toFixed(2)} USD</p>
               <h2 className={SUBHEAD}>Payment Methods</h2>
-              {!listing.isOwner && listing.status === "active" && !locked.media && !buyBlocked && (
-                <CoinPay listingId={listing._id} priceCents={listing.priceCents} title={listing.title} instant />
-              )}
+              <p className="flex items-center gap-2 text-[14px] text-white">
+                <CoinIcon className="size-5" /> Taboo Coins · unlocks instantly
+              </p>
             </div>
             <div className="mt-[22px] border-t border-[#7c3aed] pt-[22px]">
               {listing.isOwner ? (

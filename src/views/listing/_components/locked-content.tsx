@@ -11,6 +11,20 @@ import { useAuth } from "@/hooks/use-auth.ts";
 import { formatPrice, getErrorMessage } from "@/lib/listings.ts";
 import { cn } from "@/lib/utils.ts";
 import ZoomImage from "@/components/zoom-image.tsx";
+import Link from "next/link";
+import { useState } from "react";
+import CoinIcon from "@/components/coin-icon.tsx";
+import { coinsFor, formatCoins } from "@/shared/coins.ts";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog.tsx";
 import { NURMA, SERIF } from "@/views/seller/_lib/profile-design.tsx";
 
 type Locked = NonNullable<NonNullable<FunctionReturnType<typeof api.listings.get>>["locked"]>;
@@ -174,28 +188,37 @@ export function UnlockBox({
   listingId,
   locked,
   priceCents,
-  sellerName,
   isActive,
 }: {
   listingId: Id<"listings">;
   locked: Locked;
   priceCents: number;
-  sellerName: string;
+  sellerName?: string;
   isActive: boolean;
 }) {
   const { isAuthenticated } = useBackendAuth();
   const { signin } = useAuth();
-  const request = useMutation(api.unlocks.request);
+  const me = useQuery(api.users.menu, isAuthenticated ? {} : "skip");
+  const payUnlock = useMutation(api.coins.payUnlock);
+  const [confirm, setConfirm] = useState(false);
+  const [busy, setBusy] = useState(false);
   const status = locked.unlockStatus;
   const [dollars, cents] = (priceCents / 100).toFixed(2).split(".");
+  const cost = coinsFor(priceCents);
+  const balance = me?.coinBalance ?? 0;
+  const short = isAuthenticated && me !== undefined && balance < cost;
 
-  const unlock = async () => {
-    if (!isAuthenticated) return void signin();
+  // Paying with Taboo Coins unlocks it straight away: the coins go from the buyer to the seller
+  const pay = async () => {
+    setBusy(true);
     try {
-      await request({ listingId });
-      toast.success("Request sent. Message the seller to arrange payment.");
+      await payUnlock({ listingId });
+      toast.success("Unlocked! Enjoy.");
     } catch (e) {
-      toast.error(getErrorMessage(e, "Could not send request"));
+      toast.error(getErrorMessage(e, "Payment didn't go through"));
+    } finally {
+      setBusy(false);
+      setConfirm(false);
     }
   };
 
@@ -205,24 +228,29 @@ export function UnlockBox({
         ${dollars}.{cents}
         <span className="ml-0.5 text-[20px]">USD</span>
       </p>
-      {status === "pending" ? (
-        <p className="flex items-start justify-center gap-2 text-center text-[14px] text-white">
-          <Clock className="mt-0.5 size-4 shrink-0 text-[#7c3aed]" />
-          Waiting for {sellerName} to confirm your payment. Message them to arrange it.
-        </p>
+      <p className="flex items-center justify-center gap-1.5 text-center text-[14px] text-white">
+        <CoinIcon className="size-5" /> {formatCoins(cost)}
+        {isAuthenticated && me && <span className="text-white/70"> · you have {formatCoins(balance)}</span>}
+      </p>
+      {status === "expired" && <p className="text-center text-[13px] text-white">Your 24-hour access has ended. Unlock again to view it.</p>}
+      {short ? (
+        <Button
+          asChild
+          className="flex h-[50px] w-full cursor-pointer items-center justify-center gap-2 rounded-[5px] bg-[#7c3aed] text-[20px] text-white hover:bg-[#7c3aed]/85"
+        >
+          <Link href="/coins">Get {formatCoins(cost - balance)} more</Link>
+        </Button>
       ) : (
-        <>
-          {status === "declined" && <p className="text-center text-[13px] text-destructive">Your last request was declined. You can try again.</p>}
-          {status === "expired" && <p className="text-center text-[13px] text-white">Your 24-hour access has ended. Unlock again to view it.</p>}
-          <Button variant="plain" size="none"
-            type="button"
-            onClick={unlock}
-            disabled={!isActive}
-            className="flex h-[50px] w-full cursor-pointer items-center justify-center gap-2 rounded-[5px] bg-[#7c3aed] text-[26px] text-white transition-colors hover:bg-[#7c3aed] disabled:cursor-default disabled:opacity-60"
-          >
-            <Unlock className="size-6" /> Unlock Now
-          </Button>
-        </>
+        <Button
+          variant="plain"
+          size="none"
+          type="button"
+          onClick={() => (isAuthenticated ? setConfirm(true) : signin())}
+          disabled={!isActive || busy}
+          className="flex h-[50px] w-full cursor-pointer items-center justify-center gap-2 rounded-[5px] bg-[#7c3aed] text-[26px] text-white transition-colors hover:bg-[#7c3aed]/85 disabled:cursor-default disabled:opacity-60"
+        >
+          <Unlock className="size-6" /> Unlock Now
+        </Button>
       )}
       <p className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-[13px] text-white">
         <span className="flex items-center gap-1.5">
@@ -232,6 +260,23 @@ export function UnlockBox({
           <Clock className="size-[18px] text-[#7c3aed]" strokeWidth={1.5} /> 24-hour access
         </span>
       </p>
+
+      <AlertDialog open={confirm} onOpenChange={setConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unlock for {formatCoins(cost)}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              It unlocks right away for 24 hours. You'll have {formatCoins(balance - cost)} left.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={pay} disabled={busy} className="cursor-pointer bg-[#7c3aed] text-white hover:bg-[#7c3aed]/85">
+              Unlock for {formatCoins(cost)}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
