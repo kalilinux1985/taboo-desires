@@ -514,6 +514,7 @@ const settingsValidator = v.object({
   webPush: opt,
   messagesFrom: opt,
   socialFeature: opt,
+  promoteProfile: opt,
   paymentMethods: v.optional(v.array(v.string(), PAYMENT_METHODS.length)),
   offerings: v.optional(v.array(v.string(), OFFERINGS.length)),
 });
@@ -748,21 +749,37 @@ export const idByUsername = query({
   },
 });
 
-/** Sellers with a picture, best first (sales, then rating and reviews): the home page's avatar grid. */
+/**
+ * The home page's avatar grid: this month's top sellers who chose to have
+ * their profile promoted, have a picture and a public profile. Ranked by
+ * sales this calendar month (UTC), then all-time sales, rating and followers.
+ */
 export const topSellers = query({
   args: {},
   handler: async (ctx) => {
-    ctx.db.touch("users", "sellerStats");
+    ctx.db.touch("users", "sellerStats", "orders", "unlocks");
     const rows = await ctx.db.rows(sql`
+      with month_sales as (
+        select seller_id, count(*) as n from (
+          select seller_id from public.orders
+           where status <> 'cancelled' and created_at >= date_trunc('month', now())
+          union all
+          select seller_id from public.unlocks
+           where status = 'granted' and granted_at >= date_trunc('month', now())
+        ) x group by seller_id
+      )
       select u.id, u.username, u.avatar_storage_id
         from public.users u
         left join public.seller_stats s on s.seller_id = u.id
-       where u.account_type = 'seller'
+        left join month_sales m on m.seller_id = u.id
+       where coalesce(u.account_type, 'seller') = 'seller'
+         and u.username is not null
          and u.avatar_storage_id is not null
+         and u.settings->>'promoteProfile' = 'yes'
          and coalesce(u.settings->>'profilePrivate', 'no') <> 'yes'
-       order by coalesce(s.sales_count, 0) desc,
+       order by coalesce(m.n, 0) desc,
+                coalesce(s.sales_count, 0) desc,
                 coalesce(s.rating_sum::float / nullif(s.review_count, 0), 0) desc,
-                coalesce(s.review_count, 0) desc,
                 coalesce(s.follower_count, 0) desc,
                 u.created_at
        limit 9`);

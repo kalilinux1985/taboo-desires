@@ -94,6 +94,16 @@ export const SETTING_FIELDS = [
     hint: "Choose No to stop new conversations. Buyers you're already talking to can still message you.",
   },
   {
+    key: "promoteProfile",
+    label: "Promote My Profile on the Site",
+    choices: [
+      { value: "no", label: "No - Don't promote my profile" },
+      { value: "yes", label: "Yes - Show me as a top seller" },
+    ],
+    defaultValue: "no",
+    hint: "When you're one of the month's top sellers, your profile picture can appear on the home page and link to your profile.",
+  },
+  {
     key: "socialFeature",
     label: "Be Featured on our Social Media",
     choices: [
