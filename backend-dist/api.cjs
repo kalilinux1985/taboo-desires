@@ -2079,6 +2079,16 @@ var SETTING_FIELDS = [
     hint: "Choose No to stop new conversations. Buyers you're already talking to can still message you."
   },
   {
+    key: "promoteProfile",
+    label: "Promote My Profile on the Site",
+    choices: [
+      { value: "no", label: "No - Don't promote my profile" },
+      { value: "yes", label: "Yes - Show me as a top seller" }
+    ],
+    defaultValue: "no",
+    hint: "When you're one of the month's top sellers, your profile picture can appear on the home page and link to your profile."
+  },
+  {
     key: "socialFeature",
     label: "Be Featured on our Social Media",
     choices: [
@@ -7105,6 +7115,7 @@ var settingsValidator = v.object({
   webPush: opt,
   messagesFrom: opt,
   socialFeature: opt,
+  promoteProfile: opt,
   paymentMethods: v.optional(v.array(v.string(), PAYMENT_METHODS.length)),
   offerings: v.optional(v.array(v.string(), OFFERINGS.length))
 });
@@ -7303,17 +7314,29 @@ var idByUsername = query({
 var topSellers = query({
   args: {},
   handler: async (ctx) => {
-    ctx.db.touch("users", "sellerStats");
+    ctx.db.touch("users", "sellerStats", "orders", "unlocks");
     const rows = await ctx.db.rows(sql`
+      with month_sales as (
+        select seller_id, count(*) as n from (
+          select seller_id from public.orders
+           where status <> 'cancelled' and created_at >= date_trunc('month', now())
+          union all
+          select seller_id from public.unlocks
+           where status = 'granted' and granted_at >= date_trunc('month', now())
+        ) x group by seller_id
+      )
       select u.id, u.username, u.avatar_storage_id
         from public.users u
         left join public.seller_stats s on s.seller_id = u.id
-       where u.account_type = 'seller'
+        left join month_sales m on m.seller_id = u.id
+       where coalesce(u.account_type, 'seller') = 'seller'
+         and u.username is not null
          and u.avatar_storage_id is not null
+         and u.settings->>'promoteProfile' = 'yes'
          and coalesce(u.settings->>'profilePrivate', 'no') <> 'yes'
-       order by coalesce(s.sales_count, 0) desc,
+       order by coalesce(m.n, 0) desc,
+                coalesce(s.sales_count, 0) desc,
                 coalesce(s.rating_sum::float / nullif(s.review_count, 0), 0) desc,
-                coalesce(s.review_count, 0) desc,
                 coalesce(s.follower_count, 0) desc,
                 u.created_at
        limit 9`);
