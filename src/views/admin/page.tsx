@@ -16,6 +16,7 @@ import { Card, CardContent } from "@/components/ui/card.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { Spinner } from "@/components/ui/spinner.tsx";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
+import CoinGrant from "./_components/coin-grant.tsx";
 import {
   Select,
   SelectContent,
@@ -35,7 +36,7 @@ import VerificationQueue from "./_components/verification-queue.tsx";
 import AgeVerificationQueue from "./_components/age-verification-queue.tsx";
 import ReportsQueue from "./_components/reports-queue.tsx";
 
-type Tab = "pending" | "active" | "verify" | "age" | "reports";
+type Tab = "pending" | "active" | "verify" | "age" | "reports" | "coins";
 
 function useRun() {
   const [busy, setBusy] = useState(false);
@@ -223,13 +224,14 @@ function AdminInner() {
     <div className="flex flex-col gap-6">
       <Tabs
         value={tab}
-        onValueChange={(v) => setTab(v === "active" || v === "verify" || v === "age" || v === "reports" ? v : "pending")}
+        onValueChange={(v) => setTab(v === "active" || v === "verify" || v === "age" || v === "reports" || v === "coins" ? v : "pending")}
       >
         <TabsList>
           <TabsTrigger value="pending" className="cursor-pointer">Pro requests</TabsTrigger>
           <TabsTrigger value="active" className="cursor-pointer">Pro sellers</TabsTrigger>
           <TabsTrigger value="verify" className="cursor-pointer">Verification</TabsTrigger>
           <TabsTrigger value="age" className="cursor-pointer">Age checks</TabsTrigger>
+          <TabsTrigger value="coins" className="cursor-pointer">Coins</TabsTrigger>
           <TabsTrigger value="reports" className="cursor-pointer">
             Reports
             {counts && counts.open > 0 && (
@@ -240,7 +242,9 @@ function AdminInner() {
           </TabsTrigger>
         </TabsList>
       </Tabs>
-      {tab === "reports" ? (
+      {tab === "coins" ? (
+        <CoinGrant />
+      ) : tab === "reports" ? (
         <ReportsQueue />
       ) : tab === "age" ? (
         <AgeVerificationQueue />

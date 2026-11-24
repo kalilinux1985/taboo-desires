@@ -24,6 +24,7 @@ import UserMenu from "./user-menu.tsx";
 import MobileNav from "./mobile-nav.tsx";
 import NotificationBell from "./notification-bell.tsx";
 import MessagesMenu from "./messages-menu.tsx";
+import { CoinChip } from "./coin-pay.tsx";
 import { usePresenceHeartbeat } from "@/hooks/use-activity.ts";
 import { SHOP_SECTIONS, shopPageHref } from "@/lib/shop-pages.ts";
 
@@ -69,6 +70,7 @@ function SignedInActions() {
   usePresenceHeartbeat();
   return (
     <div className="flex items-center gap-2">
+      <CoinChip className="hidden sm:flex" />
       <MessagesMenu className={HEADER_ICON_BUTTON} badgeClassName={COUNT_BADGE} />
       <NotificationBell className={HEADER_ICON_BUTTON} />
       <div className="hidden md:block">

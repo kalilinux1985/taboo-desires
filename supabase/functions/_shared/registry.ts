@@ -8,6 +8,7 @@ import * as blocks from "./modules/blocks.ts";
 import * as albums from "./modules/albums.ts";
 import * as photos from "./modules/photos.ts";
 import * as contracts from "./modules/contracts.ts";
+import * as coins from "./modules/coins.ts";
 import * as auctions from "./modules/auctions.ts";
 import * as customRequests from "./modules/customRequests.ts";
 import * as favorites from "./modules/favorites.ts";
@@ -54,6 +55,7 @@ export const registry = {
   albums: functionsOf(albums),
   photos: functionsOf(photos),
   contracts: functionsOf(contracts),
+  coins: functionsOf(coins),
   auctions: functionsOf(auctions),
   blocks: functionsOf(blocks),
   customRequests: functionsOf(customRequests),

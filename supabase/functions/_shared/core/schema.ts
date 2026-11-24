@@ -42,6 +42,8 @@ type Fields = {
     name?: string;
     /** Unique, set by the database from the shop name or name: the profile address /username */
     username?: string;
+    /** Taboo Coins; changed only through lib/coins.ts */
+    coinBalance?: number;
     email?: string;
     shopName?: string;
     bio?: string;
@@ -274,6 +276,18 @@ type Fields = {
     contractId?: Id<"contracts">;
     /** Last time the seller added or changed the tracking number */
     trackingUpdatedAt?: string;
+    /** Paid with this many Taboo Coins */
+    coinAmount?: number;
+  };
+  coinLedger: {
+    userId: Id<"users">;
+    delta: number;
+    balanceAfter: number;
+    kind: "pack" | "grant" | "purchase" | "sale" | "unlock" | "unlock_sale" | "refund" | "refund_sale";
+    listingId?: Id<"listings">;
+    orderId?: Id<"orders">;
+    actorId?: Id<"users">;
+    note?: string;
   };
   shippingAddresses: {
     userId: Id<"users">;
@@ -319,6 +333,7 @@ export const TABLES: { [T in DbTable]: TableDef<T> } = {
       tokenIdentifier: c("token_identifier"),
       name: c("name"),
       username: c("username"),
+      coinBalance: c("coin_balance", "int"),
       email: c("email"),
       shopName: c("shop_name"),
       bio: c("bio"),
@@ -643,6 +658,20 @@ export const TABLES: { [T in DbTable]: TableDef<T> } = {
       updatedAt: c("updated_at", "ts"),
       contractId: c("contract_id", "uuid"),
       trackingUpdatedAt: c("tracking_updated_at", "ts"),
+      coinAmount: c("coin_amount", "int"),
+    },
+  },
+  coinLedger: {
+    sqlName: "coin_ledger",
+    columns: {
+      userId: c("user_id", "uuid"),
+      delta: c("delta", "int"),
+      balanceAfter: c("balance_after", "int"),
+      kind: c("kind"),
+      listingId: c("listing_id", "uuid"),
+      orderId: c("order_id", "uuid"),
+      actorId: c("actor_id", "uuid"),
+      note: c("note"),
     },
   },
   shippingAddresses: {

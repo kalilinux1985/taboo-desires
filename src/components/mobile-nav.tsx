@@ -20,8 +20,7 @@ import {
   Save,
   SquareX,
   UserCog,
-  UserSearch,
-} from "lucide-react";
+  UserSearch, Coins } from "lucide-react";
 import { useBackendAuth, useQuery } from "@/lib/backend/react.tsx";
 import { api } from "@/lib/backend/api.ts";
 import { settingsPathFor } from "@/lib/settings.ts";
@@ -169,6 +168,7 @@ function AccountLinks({ onNavigate }: { onNavigate: () => void }) {
         onNavigate={onNavigate}
       />
       <NavLink href="/orders" icon={Package} label="Orders" onNavigate={onNavigate} />
+      <NavLink href="/coins" icon={Coins} label="Taboo Coins" onNavigate={onNavigate} />
       <NavLink
         href={settingsPathFor(me.accountType)}
         icon={UserCog}

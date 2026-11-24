@@ -2,6 +2,7 @@
 
 import ReportButton from "@/components/report-button.tsx";
 import ZoomImage from "@/components/zoom-image.tsx";
+import { CoinPay } from "@/components/coin-pay.tsx";
 import { useState } from "react";
 import Link from "next/link";
 import { useNavigate } from "@/lib/navigation.ts";
@@ -335,8 +336,10 @@ function InstantContentView({
                 <p className="text-[14px] text-[#ffffff]">No description.</p>
               )}
               <p className={cn(SERIF, "text-[26px] leading-none text-[#7c3aed]")}>${(listing.priceCents / 100).toFixed(2)} USD</p>
-              {/* Placeholder from the design; payment methods aren't wired up yet */}
               <h2 className={SUBHEAD}>Payment Methods</h2>
+              {!listing.isOwner && listing.status === "active" && !locked.media && !buyBlocked && (
+                <CoinPay listingId={listing._id} priceCents={listing.priceCents} title={listing.title} instant />
+              )}
             </div>
             <div className="mt-[22px] border-t border-[#7c3aed] pt-[22px]">
               {listing.isOwner ? (
@@ -444,8 +447,10 @@ export default function ListingPage() {
                 />
               )}
               <p className={cn(SERIF, "text-[26px] leading-none text-[#7c3aed]")}>${(listing.priceCents / 100).toFixed(2)} USD</p>
-              {/* From the design; payment methods aren't wired up yet */}
-              <h2 className={cn(SUBHEAD, "pb-8")}>Payment Methods</h2>
+              <h2 className={SUBHEAD}>Payment Methods</h2>
+              {!listing.isOwner && !buyBlocked && listing.status === "active" && listing.saleType === "fixed" && (
+                <CoinPay listingId={listing._id} priceCents={listing.priceCents} title={listing.title} />
+              )}
             </div>
 
             <div className="mt-[22px] border-t border-[#7c3aed] px-[10px] pt-[18px]">

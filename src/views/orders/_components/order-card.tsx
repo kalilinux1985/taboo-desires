@@ -217,6 +217,11 @@ export default function OrderCard({ order: o }: { order: OrderRow }) {
         )}
       </div>
 
+      {o.coinAmount && (
+        <p className="text-sm text-white">
+          Paid with <span className="font-semibold text-[#7c3aed]">{o.coinAmount.toLocaleString("en-US")} Taboo Coins</span>
+        </p>
+      )}
       {o.contract && (
         <details open={seller} className="rounded-[5px] border border-violet-600/40 bg-[#141519] px-4 py-3">
           <summary className="cursor-pointer text-sm font-bold text-white">

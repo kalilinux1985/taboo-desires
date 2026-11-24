@@ -25,6 +25,7 @@ import { getCurrentUserDoc, publicSellerName, requireUser } from "../lib/auth.ts
 import { shippingError, verifyAddress } from "../lib/easypost.ts";
 import { bumpStats } from "../lib/sellerStats.ts";
 import { queueEmail } from "../lib/email.ts";
+import { payCoins } from "../lib/coins.ts";
 import { view as contractView } from "./contracts.ts";
 
 export const addressValidator = v.object({
@@ -228,6 +229,7 @@ async function toView(ctx: QueryCtx, o: Doc<"orders">, role: "buyer" | "seller")
     shippedAt: o.shippedAt ?? null,
     deliveredAt: o.deliveredAt ?? null,
     trackingUpdatedAt: o.trackingUpdatedAt ?? null,
+    coinAmount: o.coinAmount ?? null,
     /** The agreed contract, when the order came from one */
     contract: contract ? { ...contractView(contract, listing), conversationId: contract.conversationId } : null,
   };
@@ -402,6 +404,18 @@ export const cancel = mutation({
             : "This order can't be cancelled anymore",
       });
     await ctx.db.patch("orders", orderId, { status: "cancelled", updatedAt: nowIso(ctx) });
+    // Paid with Taboo Coins: the coins go back to the buyer and the item is for sale again
+    if (order.coinAmount) {
+      await payCoins(ctx, order.sellerId, order.buyerId, order.coinAmount, { buyer: "refund_sale", seller: "refund" }, {
+        orderId,
+        listingId: order.listingId,
+        actorId: me._id,
+      });
+      if (order.listingId) {
+        const listing = await ctx.db.get("listings", order.listingId);
+        if (listing?.status === "sold") await ctx.db.patch("listings", listing._id, { status: "active" });
+      }
+    }
     return null;
   },
 });

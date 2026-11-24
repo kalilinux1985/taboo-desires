@@ -145,6 +145,7 @@ export const menu = query({
         : null,
       /** Age, country or gender still to choose: the site sends them to Settings until done */
       missingBasics: missingBasics(me),
+      coinBalance: me.coinBalance ?? 0,
     };
   },
 });
