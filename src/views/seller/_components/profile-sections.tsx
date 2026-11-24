@@ -10,11 +10,12 @@ import { api } from "@/lib/backend/api.ts";
 import type { Id } from "@/lib/backend/types.ts";
 import { cn } from "@/lib/utils.ts";
 import { Button } from "@/components/ui/button.tsx";
+import { Card } from "@/components/ui/card.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { Spinner } from "@/components/ui/spinner.tsx";
 import type { ListingCardData } from "@/components/listing-card.tsx";
 import ProfilePostCard from "./profile-post-card.tsx";
-import { CARD, Frame, imagesLabel, SANS, SERIF, SectionTitle } from "../_lib/profile-design.tsx";
+import { CARD, Frame, INNER, OUTER, imagesLabel, SANS, SERIF, SectionTitle } from "../_lib/profile-design.tsx";
 
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 const SECTION = "flex flex-col gap-[30px] px-[22px] py-[28px]";
@@ -31,9 +32,9 @@ export function ProfilePanel({ title, count, children }: { title: string; count?
 }
 
 /** Listing card: picture, the seller's square avatar over its bottom-left, name, title, description, price. */
-export function ProfileShopCard({ listing }: { listing: ListingCardData }) {
+export function ProfileShopCard({ listing, dark = false }: { listing: ListingCardData; dark?: boolean }) {
   return (
-    <Link href={`/listing/${listing._id}`} className={cn(CARD, SANS, "group flex min-w-0 cursor-pointer flex-col")}>
+    <Link href={`/listing/${listing._id}`} className={cn(dark ? INNER : CARD, SANS, "group flex min-w-0 cursor-pointer flex-col")}>
       <div className="relative aspect-[3/2]">
         <div className="absolute inset-0 overflow-hidden bg-[#f4f4f5]">
           {listing.imageUrl && (
@@ -66,7 +67,7 @@ export function ShopSection({ sellerId, count, onViewAll }: { sellerId: Id<"user
     { initialNumItems: 2 },
   );
   return (
-    <Frame innerClassName={SECTION}>
+    <Card data-slot="card" className={cn(OUTER, "block gap-0 text-white", SECTION)}>
       <SectionTitle title="Shop" count={plural(count, "Listing")} onCount={onViewAll} />
       {status === "LoadingFirstPage" ? (
         <div className="grid gap-[22px] sm:grid-cols-2">
@@ -78,11 +79,11 @@ export function ShopSection({ sellerId, count, onViewAll }: { sellerId: Id<"user
       ) : (
         <div className="grid gap-[22px] sm:grid-cols-2">
           {results.slice(0, 2).map((l) => (
-            <ProfileShopCard key={l._id} listing={l} />
+            <ProfileShopCard key={l._id} listing={l} dark />
           ))}
         </div>
       )}
-    </Frame>
+    </Card>
   );
 }
 
