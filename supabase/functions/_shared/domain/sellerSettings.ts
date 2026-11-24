@@ -50,17 +50,6 @@ export const SETTING_FIELDS = [
     hint: "A private profile can only be seen by you. Everyone else sees that it's private. Your listings can still be found and bought.",
   },
   {
-    key: "siteVisibility",
-    label: "Site Visibility",
-    choices: [
-      { value: "all", label: "All our sites - Maximise sales potential" },
-      { value: "this", label: "This site only" },
-    ],
-    defaultValue: "all",
-    hint: "Select whether your profile appears on all our sister sites or only on this one.",
-    comingSoon: true,
-  },
-  {
     key: "emailNotifications",
     label: "Platform Email Notifications",
     choices: YES_NO,
@@ -102,16 +91,6 @@ export const SETTING_FIELDS = [
     ],
     defaultValue: "no",
     hint: "When you're one of the month's top sellers, your profile picture can appear on the home page and link to your profile.",
-  },
-  {
-    key: "socialFeature",
-    label: "Be Featured on our Social Media",
-    choices: [
-      { value: "no", label: "No - I do not want extra exposure" },
-      { value: "yes", label: "Yes - Feature me for extra exposure" },
-    ],
-    defaultValue: "no",
-    hint: "Get more exposure by being featured on our social media platforms.",
   },
 ] as const;
 
