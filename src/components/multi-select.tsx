@@ -36,7 +36,7 @@ export default function MultiSelect({
           <ChevronDown className="size-4 shrink-0 opacity-60" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="max-h-72 w-(--radix-popover-trigger-width) overflow-y-auto p-1">
+      <PopoverContent align="start" className="settings-menu max-h-72 w-(--radix-popover-trigger-width) overflow-y-auto bg-[#111317] p-1 shadow-none">
         {options.map((option) => {
           const on = value.includes(option);
           return (

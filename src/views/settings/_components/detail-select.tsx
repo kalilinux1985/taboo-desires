@@ -37,7 +37,7 @@ export function DetailSelect({
         <SelectTrigger id={id} aria-required={required} className={cn("w-full cursor-pointer", required && !value && "ring-1 ring-red-500/70")}>
           <SelectValue placeholder={required ? "Required: choose one" : "Choose"} />
         </SelectTrigger>
-        <SelectContent className="max-h-72 bg-[#111317] shadow-none">
+        <SelectContent className="settings-menu max-h-72 bg-[#111317] shadow-none">
           {!required && (
             <SelectItem value={NONE} className="cursor-pointer text-muted-foreground">
               Prefer not to say

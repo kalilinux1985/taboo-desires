@@ -41,7 +41,7 @@ export default function ProfileVisibility({ initialPrivate }: { initialPrivate: 
             <SelectTrigger id="setting-profilePrivate" className="w-full cursor-pointer">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-[#111317] shadow-none">
+            <SelectContent className="settings-menu bg-[#111317] shadow-none">
               <SelectItem value="no" className="cursor-pointer">No - Visible to everyone</SelectItem>
               <SelectItem value="yes" className="cursor-pointer">Yes - Make my profile private</SelectItem>
             </SelectContent>

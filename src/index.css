@@ -232,6 +232,20 @@
       [type="submit"],
       [type="button"]
     ),
+  /* Settings headings and field labels use Nurma */
+  .settings-design h1,
+  .settings-design h2,
+  .settings-design h3,
+  .settings-design [data-slot="card-title"],
+  .settings-design [data-slot="label"] {
+    font-family: var(--font-nurma), Arial, sans-serif !important;
+    font-weight: 400 !important;
+  }
+  /* Settings dropdown menus (they open outside the page, so they carry this class) */
+  .settings-menu {
+    background-color: #111317 !important;
+    box-shadow: none !important;
+  }
   .settings-design [data-slot="select-trigger"] {
     background-color: #111317 !important;
     box-shadow:
