@@ -25,7 +25,7 @@ import { Card } from "@/components/ui/card.tsx";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
 
 const SERIF = "[font-family:var(--font-profile-buyer),Cambria,Georgia,serif]";
-const SANS = "[font-family:Arial,Helvetica,sans-serif]";
+const SANS = "font-sans";
 const PAGE = "bg-[#17181c]";
 const CARD = "rounded-[5px] border border-[#59595b40] bg-[#202227] py-0 shadow-[0_4px_14px_rgba(0,0,0,0.3)]";
 

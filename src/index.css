@@ -17,12 +17,11 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-manrope), "Manrope", ui-sans-serif, system-ui, sans-serif;
-  --font-mono:
-    var(--font-jetbrains), "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    monospace;
-  --font-display: var(--font-playfair), "Playfair Display", ui-serif, Georgia, serif;
-  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  /* Two fonts site-wide: Nurma for headings, Plus Jakarta Sans for everything else */
+  --font-sans: var(--font-jakarta), "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jakarta), "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-nurma), Arial, sans-serif;
+  --font-serif: var(--font-jakarta), "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
 
   /* Shadows are the profile's: black at 30% */
   --shadow-2xs: 0 1px 2px rgb(0 0 0 / 30%);
@@ -115,13 +114,26 @@
     border-color: rgb(255 255 255 / 15%); /* white at 15% */
   }
 
+  :root {
+    /* Older per-page font names now point at the two site fonts */
+    --font-profile-heading: var(--font-nurma), Arial, sans-serif;
+    --font-profile-display: var(--font-nurma), Arial, sans-serif;
+    --font-profile-text: var(--font-jakarta), "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+    --font-profile-buyer: var(--font-jakarta), "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+    --font-signin-serif: var(--font-jakarta), "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+    --font-signin-rounded: var(--font-jakarta), "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+    font-synthesis: none; /* Nurma has no bold or italic: never fake them */
+  }
   h1,
   h2,
   h3,
   h4,
   h5,
   h6 {
-    font-family: var(--font-profile-heading), ui-serif, Georgia, serif;
+    font-family: var(--font-nurma), Arial, sans-serif !important;
+  }
+  .font-mono {
+    font-variant-numeric: tabular-nums;
   }
 
   body {

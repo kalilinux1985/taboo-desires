@@ -1,17 +1,12 @@
 import type { ReactNode } from "react";
 import type { Metadata, Viewport } from "next";
-import { JetBrains_Mono, Manrope, Playfair_Display } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import localFont from "next/font/local";
 import { DefaultProviders } from "@/components/providers/default.tsx";
 import "../index.css";
 
-const display = Playfair_Display({
-  subsets: ["latin"],
-  style: ["normal", "italic"],
-  variable: "--font-playfair",
-});
-const sans = Manrope({ subsets: ["latin"], variable: "--font-manrope" });
-const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains" });
+/** Plus Jakarta Sans: body text, buttons, fields, prices — everything that isn't a heading */
+const sans = Plus_Jakarta_Sans({ subsets: ["latin"], style: ["normal", "italic"], variable: "--font-jakarta" });
 /** Nurma (Cometype): the display face for the wordmark, page titles and member names */
 const nurma = localFont({ src: "./fonts/Nurma-Regular.woff", variable: "--font-nurma", display: "swap" });
 
@@ -38,7 +33,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="en"
-      className={`dark ${display.variable} ${sans.variable} ${mono.variable} ${nurma.variable}`}
+      className={`dark ${sans.variable} ${nurma.variable}`}
     >
       <body>
         <DefaultProviders>{children}</DefaultProviders>

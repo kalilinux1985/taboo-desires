@@ -11,7 +11,7 @@ import { Card } from "@/components/ui/card.tsx";
 // #a4a4a4 labels. Inside `.profile-design` the site's violet classes turn #7c3aed.
 
 export const SERIF = "[font-family:var(--font-profile-buyer),Cambria,Georgia,serif]";
-export const SANS = "[font-family:Arial,Helvetica,sans-serif]";
+export const SANS = "font-sans";
 /** Nurma display face: member names and page titles */
 export const NURMA = "[font-family:var(--font-nurma),Arial,sans-serif]";
 export const OUTER = "rounded-[5px] border border-[#59595b40] bg-[#202227] shadow-[0_6px_14px_rgba(0,0,0,0.35)]";
