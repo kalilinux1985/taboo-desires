@@ -1,0 +1,10 @@
+{
+  "desiredContentHash": "4d511ac9557ccbfc80331c5b70582414dd6e44cc6b529aa850f0fc885d5254c9",
+  "docsUrl": "https://taboo-desires.docs.buildwithfern.com",
+  "starter": {
+    "repoOwner": "fern-api",
+    "repoName": "docs-starter-internal",
+    "commitSha": "572bf89d934c52de747c1fad185136827eeb0ce7",
+    "label": "2026-11-19-layout3-centered-tabs"
+  }
+}
