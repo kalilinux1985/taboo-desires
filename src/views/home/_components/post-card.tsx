@@ -116,9 +116,9 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
       </Link>
 
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-        <header className="flex items-center gap-2">
+        <header className="flex items-start gap-2">
           <p className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-0.5">
-            <Link href={profile} className="cursor-pointer truncate text-[15px] font-bold text-white hover:underline">
+            <Link href={profile} className="-mt-[2px] cursor-pointer truncate text-[15px] font-bold leading-[18px] text-white hover:underline">
               {item.author.name}
             </Link>
             {item.author.country && (
