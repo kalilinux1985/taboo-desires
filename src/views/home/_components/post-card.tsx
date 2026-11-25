@@ -101,11 +101,11 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
 
   return (
     <article className="flex gap-3 rounded-[5px] border border-[#59595b40] bg-[#52525214] p-4 shadow-[0_14px_34px_-8px_rgba(0,0,0,0.3)] sm:gap-4">
-      <Link href={profile} className="relative h-fit shrink-0 cursor-pointer">
+      <Link href={profile} className="relative h-fit shrink-0 cursor-pointer rounded-[4px] outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0">
         <ProfileAvatar
           name={item.author.name}
           url={item.author.avatarUrl}
-          className="size-12 border border-white/[3%] bg-[#a8a9ae] text-xl text-[#2a2a2e] sm:size-14 sm:text-2xl"
+          className="size-12 rounded-[4px] border-0 bg-[#a8a9ae] text-xl text-[#2a2a2e] sm:size-14 sm:text-2xl"
         />
         {online && (
           <span
