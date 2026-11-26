@@ -16,7 +16,7 @@ import { bumpStats } from "../lib/sellerStats.ts";
 import { requireAdmin } from "../lib/subscription.ts";
 import { createOrder } from "./orders.ts";
 
-/** My balance and my last 50 coin movements. */
+/** My balance and my last 50 coin movements, with the other member's username. */
 export const mine = query({
   args: {},
   handler: async (ctx) => {
@@ -24,25 +24,54 @@ export const mine = query({
     const me = await getCurrentUserDoc(ctx);
     if (!me) return null;
     const rows = await ctx.db.select("coinLedger", sql`where user_id = ${me._id}::uuid order by created_at desc, id desc limit 50`);
+    const uniq = <T,>(ids: (T | undefined)[]) => [...new Set(ids.filter((x): x is T => !!x))];
     const listings = new Map(
+      await Promise.all(uniq(rows.map((r) => r.listingId)).map(async (id) => [id, await ctx.db.get("listings", id)] as const)),
+    );
+    const orders = new Map(
+      await Promise.all(uniq(rows.map((r) => r.orderId)).map(async (id) => [id, await ctx.db.get("orders", id)] as const)),
+    );
+    // Who the coins came from or went to. Admin grants show as Taboo Desires, never the admin.
+    const otherId = (r: (typeof rows)[number]): Id<"users"> | undefined => {
+      const listing = r.listingId ? listings.get(r.listingId) : null;
+      const order = r.orderId ? orders.get(r.orderId) : null;
+      switch (r.kind) {
+        case "sale":
+        case "unlock_sale":
+          return r.actorId ?? order?.buyerId;
+        case "purchase":
+        case "unlock":
+          return order?.sellerId ?? listing?.sellerId;
+        case "refund":
+          return order?.sellerId ?? listing?.sellerId;
+        case "refund_sale":
+          return order?.buyerId;
+        default:
+          return undefined;
+      }
+    };
+    const others = new Map(
       await Promise.all(
-        [...new Set(rows.flatMap((r) => (r.listingId ? [r.listingId] : [])))].map(
-          async (id) => [id, (await ctx.db.get("listings", id))?.title ?? null] as const,
-        ),
+        uniq(rows.map(otherId)).map(async (id) => [id, (await ctx.db.get("users", id))?.username ?? null] as const),
       ),
     );
     return {
       balance: me.coinBalance ?? 0,
       packs: COIN_PACKS,
-      history: rows.map((r) => ({
-        _id: r._id,
-        _creationTime: r._creationTime,
-        delta: r.delta,
-        balanceAfter: r.balanceAfter,
-        kind: r.kind,
-        listingTitle: r.listingId ? (listings.get(r.listingId) ?? null) : null,
-        note: r.note ?? null,
-      })),
+      history: rows.map((r) => {
+        const other = otherId(r);
+        return {
+          _id: r._id,
+          _creationTime: r._creationTime,
+          delta: r.delta,
+          balanceAfter: r.balanceAfter,
+          kind: r.kind,
+          listingTitle: r.listingId ? (listings.get(r.listingId)?.title ?? null) : null,
+          /** The other member's username (no display name); null for coin packs and grants */
+          otherUsername: other ? (others.get(other) ?? null) : null,
+          note: r.note ?? null,
+        };
+      }),
     };
   },
 });

@@ -39,12 +39,12 @@ export default function UserMenu() {
   if (me === null) return null;
 
   const isSeller = me.accountType === "seller" || me.isAdmin;
+  const balance = me.coinBalance ?? 0;
   const links = [
     { to: "/shop", label: "My profile", icon: User, show: true },
     { to: "/sell", label: "Sell an item", icon: Plus, show: isSeller },
     { to: "/my-listings", label: "My listings", icon: List, show: isSeller },
     { to: "/orders", label: "Orders", icon: Package, show: true, count: ordersToDo },
-    { to: "/coins", label: "Taboo Coins", icon: CoinIcon, show: true },
     { to: "/customs", label: "Custom requests", icon: Sparkles, show: true },
     { to: settingsPathFor(me.accountType), label: "Settings", icon: Settings, show: true },
     { to: "/admin", label: "Admin", icon: ShieldCheck, show: me.isAdmin },
@@ -74,6 +74,18 @@ export default function UserMenu() {
             {me.email && <p className="truncate text-xs font-normal text-muted-foreground">{me.email}</p>}
           </div>
         </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild className="cursor-pointer transition-colors hover:bg-transparent focus:bg-transparent [&:hover_.coin-cta]:text-violet-600 [&:focus_.coin-cta]:text-violet-600">
+          <Link href="/coins" aria-label={`${balance.toLocaleString("en-US")} Taboo Coins. Buy more or view transactions`} className="items-center gap-3 py-2">
+            <CoinIcon className="size-6" />
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-semibold tabular-nums text-white">
+                {balance.toLocaleString("en-US")} {balance === 1 ? "coin" : "coins"}
+              </span>
+              <span className="coin-cta block text-xs text-muted-foreground transition-colors">Buy more · View transactions</span>
+            </span>
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         {links.map((l) => (
           <DropdownMenuItem key={l.to} asChild className="cursor-pointer transition-colors hover:bg-transparent hover:text-violet-600 focus:bg-transparent focus:text-violet-600 [&:hover_svg]:text-violet-600 [&:focus_svg]:text-violet-600">

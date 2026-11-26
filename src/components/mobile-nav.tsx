@@ -52,12 +52,15 @@ function NavLink({
   icon: IconComponent,
   label,
   badge,
+  trailing,
   onNavigate,
 }: {
   href: string;
   icon: Icon;
   label: string;
   badge?: number;
+  /** Small text on the right, like a coin balance */
+  trailing?: string;
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
@@ -73,6 +76,7 @@ function NavLink({
     >
       <IconComponent className="size-5 shrink-0 text-violet-600" />
       <span className="flex-1">{label}</span>
+      {trailing && <span className="text-sm tabular-nums text-white/70">{trailing}</span>}
       {!!badge && (
         <span className="rounded-full bg-destructive px-2 text-xs font-bold text-white">
           {badge > 9 ? "9+" : badge}
@@ -169,7 +173,7 @@ function AccountLinks({ onNavigate }: { onNavigate: () => void }) {
         onNavigate={onNavigate}
       />
       <NavLink href="/orders" icon={Package} label="Orders" onNavigate={onNavigate} />
-      <NavLink href="/coins" icon={CoinIcon} label="Taboo Coins" onNavigate={onNavigate} />
+      <NavLink href="/coins" icon={CoinIcon} label="Taboo Coins" trailing={(me.coinBalance ?? 0).toLocaleString("en-US")} onNavigate={onNavigate} />
       <NavLink
         href={settingsPathFor(me.accountType)}
         icon={UserCog}
