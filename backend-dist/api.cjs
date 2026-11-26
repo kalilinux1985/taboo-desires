@@ -3530,25 +3530,53 @@ var mine3 = query({
     const me = await getCurrentUserDoc(ctx);
     if (!me) return null;
     const rows = await ctx.db.select("coinLedger", sql`where user_id = ${me._id}::uuid order by created_at desc, id desc limit 50`);
+    const uniq = (ids) => [...new Set(ids.filter((x) => !!x))];
     const listings = new Map(
+      await Promise.all(uniq(rows.map((r) => r.listingId)).map(async (id) => [id, await ctx.db.get("listings", id)]))
+    );
+    const orders = new Map(
+      await Promise.all(uniq(rows.map((r) => r.orderId)).map(async (id) => [id, await ctx.db.get("orders", id)]))
+    );
+    const otherId = (r) => {
+      const listing = r.listingId ? listings.get(r.listingId) : null;
+      const order = r.orderId ? orders.get(r.orderId) : null;
+      switch (r.kind) {
+        case "sale":
+        case "unlock_sale":
+          return r.actorId ?? order?.buyerId;
+        case "purchase":
+        case "unlock":
+          return order?.sellerId ?? listing?.sellerId;
+        case "refund":
+          return order?.sellerId ?? listing?.sellerId;
+        case "refund_sale":
+          return order?.buyerId;
+        default:
+          return void 0;
+      }
+    };
+    const others = new Map(
       await Promise.all(
-        [...new Set(rows.flatMap((r) => r.listingId ? [r.listingId] : []))].map(
-          async (id) => [id, (await ctx.db.get("listings", id))?.title ?? null]
-        )
+        uniq(rows.map(otherId)).map(async (id) => [id, (await ctx.db.get("users", id))?.username ?? null])
       )
     );
     return {
       balance: me.coinBalance ?? 0,
       packs: COIN_PACKS,
-      history: rows.map((r) => ({
-        _id: r._id,
-        _creationTime: r._creationTime,
-        delta: r.delta,
-        balanceAfter: r.balanceAfter,
-        kind: r.kind,
-        listingTitle: r.listingId ? listings.get(r.listingId) ?? null : null,
-        note: r.note ?? null
-      }))
+      history: rows.map((r) => {
+        const other = otherId(r);
+        return {
+          _id: r._id,
+          _creationTime: r._creationTime,
+          delta: r.delta,
+          balanceAfter: r.balanceAfter,
+          kind: r.kind,
+          listingTitle: r.listingId ? listings.get(r.listingId)?.title ?? null : null,
+          /** The other member's username (no display name); null for coin packs and grants */
+          otherUsername: other ? others.get(other) ?? null : null,
+          note: r.note ?? null
+        };
+      })
     };
   }
 });
