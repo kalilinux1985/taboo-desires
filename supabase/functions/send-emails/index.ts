@@ -35,7 +35,9 @@ Deno.serve(async (req) => {
     const t = v?.trim();
     return t ? (t.includes("<") ? t : `Taboo Desires <${t}>`) : undefined;
   };
-  const reportsFrom = named(Deno.env.get("EMAIL_FROM_REPORTS")) ?? named(Deno.env.get("EMAIL_FROM"));
+  // Report alerts and "your content is hidden" notices come from the reports address
+  const reportsFrom = named(Deno.env.get("EMAIL_FROM_REPORTS")) ?? "Taboo Desires <report.content@taboodesiers.com>";
+  const REPORT_KINDS = new Set(["content_report", "content_hidden"]);
   const generalFrom = named(Deno.env.get("EMAIL_FROM_GENERAL")) ?? "Taboo Desires <onboarding@resend.dev>";
   const replyTo = Deno.env.get("EMAIL_REPLY_TO")?.trim();
 
@@ -65,7 +67,7 @@ Deno.serve(async (req) => {
           "Idempotency-Key": r.id,
         },
         body: JSON.stringify({
-          from: r.kind === "content_report" ? (reportsFrom ?? generalFrom) : generalFrom,
+          from: REPORT_KINDS.has(r.kind) ? reportsFrom : generalFrom,
           to: [r.to_email],
           subject: r.subject,
           html: r.html,

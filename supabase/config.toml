@@ -28,3 +28,8 @@ verify_jwt = true
 # Called by the browser after upload (with the member's token) and by a storage trigger
 # (with the publishable key). Only cleans files; safe to repeat.
 verify_jwt = true
+
+[functions.auth-email]
+# Supabase Auth's Send Email hook. Auth sends no JWT; each call is signed with
+# SEND_EMAIL_HOOK_SECRET and the function checks that signature itself.
+verify_jwt = false

@@ -15,10 +15,10 @@ import { cn } from "@/lib/utils.ts";
 import { callbackUrl, resolveReturnTo } from "./return-to.ts";
 
 // The sign-in design: logo and wordmark over a framed card on the left, the
-// tiled portrait filling the right half. Sign-up and the email link use the
+// tiled portrait filling the right half. Sign-up uses the
 // same card. Page #0c0f15, frame #1f2126, card #141519, violet #7c3aed.
 
-type Mode = "signin" | "signup" | "link";
+type Mode = "signin" | "signup";
 
 const MIN_PASSWORD = 8;
 const MIN_AGE = 18;
@@ -72,7 +72,7 @@ function Heading({ title, sub }: { title: string; sub: string }) {
   );
 }
 
-/** Email + password sign-in, account creation, and passwordless email links (Supabase Auth). */
+/** Email + password sign-in and account creation (Supabase Auth). */
 export default function SignInPage() {
   const [params] = useSearchParams();
   const returnTo = resolveReturnTo(params.get("returnTo"));
@@ -152,18 +152,6 @@ export default function SignInPage() {
     });
   };
 
-  const sendLink = (e: FormEvent) => {
-    e.preventDefault();
-    void run(async () => {
-      const { error } = await supabase.auth.signInWithOtp({
-        email: email.trim(),
-        options: { emailRedirectTo: callbackUrl(returnTo) },
-      });
-      if (error) throw error;
-      setSentTo(email.trim());
-    });
-  };
-
   const resetPassword = () => {
     if (!email.trim()) {
       toast.error("Enter your email first");
@@ -188,7 +176,7 @@ export default function SignInPage() {
           <div className="flex size-12 items-center justify-center rounded-full bg-[#7c3aed]/20 text-[#7c3aed]">
             <Mail className="size-6" />
           </div>
-          <Heading title="Check your email" sub="Open the link on this device to finish signing in" />
+          <Heading title="Check your email" sub="Open the link in it to confirm your email and finish signing up" />
           <p className={cn(SERIF, "text-[14px]")}>
             We sent it to <span className="text-white">{sentTo}</span>.
           </p>
@@ -245,9 +233,6 @@ export default function SignInPage() {
           <p className={cn(FOOTNOTE, "-mt-4 flex flex-wrap justify-center gap-x-3")}>
             <Button variant="plain" size="none" type="button" onClick={resetPassword} disabled={busy} className={FOOT_LINK}>
               Forgot your password?
-            </Button>
-            <Button variant="plain" size="none" type="button" onClick={() => setMode("link")} className={FOOT_LINK}>
-              Email me a sign-in link
             </Button>
           </p>
         </form>
@@ -345,30 +330,6 @@ export default function SignInPage() {
         </form>
       )}
 
-      {mode === "link" && (
-        <form onSubmit={sendLink} className="flex flex-col gap-[26px]">
-          <Heading title="Email Link" sub="We'll email you a one-time sign-in link" />
-          <Input
-            id="link-email"
-            name="email"
-            aria-label="Email"
-            type="email"
-            autoComplete="email"
-            required
-            placeholder="EMAIL"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className={FIELD}
-          />
-          <p className={cn(FOOTNOTE, "-mt-3 text-[11px]")}>
-            New here? The link creates your account too. You must be 18 or older.
-          </p>
-          <Button variant="plain" size="none" type="submit" className={SUBMIT} disabled={busy}>
-            {busy && <Spinner />} Email me a link
-          </Button>
-          <p className={FOOTNOTE}>Use a password instead? Sign-in {switchTo("signin")}</p>
-        </form>
-      )}
     </Shell>
   );
 }
