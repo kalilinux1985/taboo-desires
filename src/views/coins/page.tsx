@@ -12,16 +12,21 @@ import { Button } from "@/components/ui/button.tsx";
 import { Card } from "@/components/ui/card.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 
-const KIND: Record<string, string> = {
-  pack: "Bought coins",
-  grant: "Added by Taboo Desires",
-  purchase: "Bought",
-  sale: "Sold",
-  unlock: "Unlocked",
-  unlock_sale: "Unlocked by a buyer",
-  refund: "Refund",
-  refund_sale: "Refunded to buyer",
+// What each coin movement was for, worded from the signed-in member's side
+const REASON: Record<string, string> = {
+  pack: "Bought a coin pack",
+  purchase: "You bought an item",
+  sale: "Bought your item",
+  unlock: "You unlocked Instant Content",
+  unlock_sale: "Unlocked your Instant Content",
+  refund: "Refund for a cancelled order",
+  refund_sale: "Refunded a cancelled order",
 };
+
+function reasonFor(kind: string, delta: number) {
+  if (kind === "grant") return delta > 0 ? "Added by Taboo Desires" : "Removed by Taboo Desires";
+  return REASON[kind] ?? kind;
+}
 
 /** Taboo Coins: balance, coin packs and history. */
 export default function CoinsPage() {
@@ -57,7 +62,7 @@ export default function CoinsPage() {
         )}
 
         <section className="flex flex-col gap-4">
-          <h2 className="font-display text-2xl">Coin packs</h2>
+          <h2 id="buy" className="scroll-mt-20 font-display text-2xl">Coin packs</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {(data?.packs ?? COIN_PACKS).map((p) => (
               <Card
@@ -84,7 +89,7 @@ export default function CoinsPage() {
 
         {isAuthenticated && (
           <section className="flex flex-col gap-3">
-            <h2 className="font-display text-2xl">History</h2>
+            <h2 id="history" className="scroll-mt-20 font-display text-2xl">Transactions</h2>
             {data === undefined ? (
               <Skeleton className="h-24 w-full" />
             ) : !data || data.history.length === 0 ? (
@@ -94,8 +99,13 @@ export default function CoinsPage() {
                 {data.history.map((h) => (
                   <div key={h._id} className="flex items-center justify-between gap-4 border-b border-[#59595b40] px-4 py-3 last:border-0">
                     <div className="min-w-0">
+                      {h.otherUsername && (
+                        <p className="truncate text-sm font-semibold">
+                          <span className="font-normal text-white/70">{h.delta > 0 ? "From" : "To"} </span>@{h.otherUsername}
+                        </p>
+                      )}
                       <p className="truncate text-sm">
-                        {KIND[h.kind] ?? h.kind}
+                        {reasonFor(h.kind, h.delta)}
                         {h.listingTitle && <span className="text-white/70"> · {h.listingTitle}</span>}
                         {h.note && <span className="text-white/70"> · {h.note}</span>}
                       </p>

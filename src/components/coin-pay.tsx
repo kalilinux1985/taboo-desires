@@ -119,15 +119,3 @@ export function CoinPay({
     </div>
   );
 }
-
-/** Small coin balance chip for the header. */
-export function CoinChip({ className }: { className?: string }) {
-  const me = useQuery(api.users.menu, {});
-  if (!me) return null;
-  return (
-    <Link href="/coins" title="Taboo Coins" className={cn("flex h-8 items-center gap-1.5 rounded-[5px] border border-[#7c3aed]/60 px-2 text-[13px] text-white hover:bg-[#7c3aed]/20", className)}>
-      <CoinIcon className="size-4" />
-      <span className="tabular-nums">{(me.coinBalance ?? 0).toLocaleString("en-US")}</span>
-    </Link>
-  );
-}
