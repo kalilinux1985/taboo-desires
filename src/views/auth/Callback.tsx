@@ -18,7 +18,7 @@ interface AuthCallbackProps {
 }
 
 /**
- * Landing page for email links (account confirmation and magic links).
+ * Landing page for email links (account and email-change confirmations).
  * Supabase finishes the sign-in from the link's code; this page waits for the
  * session and then goes back to where the user started.
  */

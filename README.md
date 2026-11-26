@@ -21,7 +21,7 @@ Screens are client components (`"use client"`): data loads in the browser throug
 
 # Backend: Supabase
 
-The app runs entirely on Supabase: database, file storage, backend function and sign-in (Supabase Auth with email + password and email magic links).
+The app runs entirely on Supabase: database, file storage, backend function and sign-in (Supabase Auth with email + password; there is no email-link sign-in).
 
 ## How it fits together
 
@@ -44,7 +44,7 @@ The app runs entirely on Supabase: database, file storage, backend function and 
 
 ## Sign-in (Supabase Auth)
 
-Pages: `/signin` (sign in, create account, email link), `/auth/callback` (where email links land) and `/auth/reset` (choose a new password). In the Supabase dashboard:
+Pages: `/signin` (sign in, create account, forgot password), `/auth/callback` (where email links land) and `/auth/reset` (choose a new password). In the Supabase dashboard:
 
 - **Authentication → URL Configuration**: set **Site URL** to your site (e.g. `https://your-domain`) and add `https://your-domain/**` (and `http://localhost:5173/**` for development) to **Redirect URLs**. Email links only work for listed addresses.
 - **Authentication → Sign In / Providers → Email**: keep it enabled with **Confirm email** on.

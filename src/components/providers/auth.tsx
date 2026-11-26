@@ -24,7 +24,7 @@ export type AuthState = {
 
 const AuthContext = createContext<AuthState | null>(null);
 
-/** Supabase Auth session for the whole app (email + password and magic links). */
+/** Supabase Auth session for the whole app (email + password). */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
