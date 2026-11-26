@@ -4,8 +4,8 @@
 //   POST /functions/v1/send-emails
 //
 // Secrets: RESEND_API_KEY (required).
-//   EMAIL_FROM           sender for content-report emails (the report inbox alerts)
-//   EMAIL_FROM_REPORTS   same, takes priority over EMAIL_FROM when both are set
+//   EMAIL_FROM_REPORTS   sender for report alerts and "your content is hidden"
+//                        notices (default report.content@taboodesiers.com)
 //   EMAIL_FROM_GENERAL   sender for every other email (messages, follows, orders);
 //                        until it is set they use Resend's test sender, which only
 //                        delivers to the Resend account owner
