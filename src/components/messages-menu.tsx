@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { formatDistanceToNowStrict } from "date-fns";
-import { MessageSquareText } from "lucide-react";
+import { CheckCheck, MessageSquareText } from "lucide-react";
 import { useQuery } from "@/lib/backend/react.tsx";
 import { api } from "@/lib/backend/api.ts";
 import { cn } from "@/lib/utils.ts";
@@ -53,6 +53,7 @@ function DropdownList({ onPick }: { onPick: () => void }) {
               </span>
               <span className="truncate text-xs text-muted-foreground">{c.listing?.title ?? "Direct message"}</span>
               <span className={cn("truncate text-xs", c.unread ? "font-semibold text-foreground" : "text-muted-foreground")}>
+                {c.seen && <CheckCheck aria-label="Seen" className="mr-1 inline size-3.5 align-[-2px] text-violet-600" />}
                 {c.lastFromMe && "You: "}
                 {c.lastMessagePreview}
               </span>

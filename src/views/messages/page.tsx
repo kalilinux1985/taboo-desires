@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useQuery } from "@/lib/backend/react.tsx";
 import { formatDistanceToNowStrict } from "date-fns";
-import { MailSearch, MessageSquarePlus, MessagesSquare } from "lucide-react";
+import { CheckCheck, MailSearch, MessageSquarePlus, MessagesSquare } from "lucide-react";
 import { api } from "@/lib/backend/api.ts";
 import type { Id } from "@/lib/backend/types.ts";
 import RequireAuth from "@/components/require-auth.tsx";
@@ -73,6 +73,7 @@ function InboxList({ activeId, search }: { activeId?: string; search: string }) 
             <div className="min-w-0 flex-1">
               <p className={cn("truncate text-base", c.unread ? "font-bold" : "font-semibold")}>{c.other.name}</p>
               <p className={cn("truncate text-sm", c.unread ? "text-foreground" : "text-muted-foreground")}>
+                {c.seen && <CheckCheck aria-label="Seen" className="mr-1 inline size-3.5 align-[-2px] text-violet-600" />}
                 {c.lastFromMe && "You: "}
                 {c.lastMessagePreview}
               </p>

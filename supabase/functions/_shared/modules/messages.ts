@@ -57,12 +57,15 @@ export async function appendMessage(
     ...(contractId ? { contractId } : {}),
   });
   const senderIsBuyer = senderId === convo.buyerId;
+  const now = new Date(ctx.now()).toISOString();
   await ctx.db.patch("conversations", convo._id, {
-    lastMessageAt: new Date(ctx.now()).toISOString(),
+    lastMessageAt: now,
     lastMessagePreview: body.slice(0, 120),
     lastSenderId: senderId,
     buyerUnread: !senderIsBuyer,
     sellerUnread: senderIsBuyer,
+    // Replying means the sender has read everything before it
+    ...(senderIsBuyer ? { buyerReadAt: now } : { sellerReadAt: now }),
   });
   // Email the other person (at most once every 6 hours per conversation)
   const [sender, recipient] = await Promise.all([
@@ -87,6 +90,8 @@ async function summarize(
   me: Id<"users">,
 ) {
   const isBuyer = convo.buyerId === me;
+  const otherReadAt = (isBuyer ? convo.sellerReadAt : convo.buyerReadAt) ?? null;
+  const lastFromMe = convo.lastSenderId === me;
   const [listing, other] = await Promise.all([
     convo.listingId ? ctx.db.get("listings", convo.listingId) : null,
     ctx.db.get("users", isBuyer ? convo.sellerId : convo.buyerId),
@@ -100,7 +105,13 @@ async function summarize(
     role: isBuyer ? ("buyer" as const) : ("seller" as const),
     lastMessageAt: convo.lastMessageAt,
     lastMessagePreview: convo.lastMessagePreview,
-    lastFromMe: convo.lastSenderId === me,
+    lastFromMe,
+    /** The other person has read my latest message */
+    seen:
+      lastFromMe &&
+      !!otherReadAt &&
+      Date.parse(otherReadAt) >= Date.parse(convo.lastMessageAt),
+    otherReadAt,
     unread: isBuyer ? convo.buyerUnread : convo.sellerUnread,
     other: {
       _id: other?._id ?? null,
@@ -240,13 +251,16 @@ export const markRead = mutation({
   handler: async (ctx, { conversationId }) => {
     const { convo, isBuyer } = await requireParticipant(ctx, conversationId);
     // Skip the write when already read to avoid needless refreshes
+    const readAt = new Date(ctx.now()).toISOString();
     if (isBuyer && convo.buyerUnread)
       await ctx.db.patch("conversations", conversationId, {
         buyerUnread: false,
+        buyerReadAt: readAt,
       });
     if (!isBuyer && convo.sellerUnread)
       await ctx.db.patch("conversations", conversationId, {
         sellerUnread: false,
+        sellerReadAt: readAt,
       });
     return null;
   },

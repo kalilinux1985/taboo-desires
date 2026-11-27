@@ -149,6 +149,9 @@ type Fields = {
     lastSenderId: Id<"users">;
     buyerUnread: boolean;
     sellerUnread: boolean;
+    /** When each side last read the conversation (read receipts) */
+    buyerReadAt?: string;
+    sellerReadAt?: string;
   };
   auctions: {
     listingId: Id<"listings">;
@@ -481,6 +484,8 @@ export const TABLES: { [T in DbTable]: TableDef<T> } = {
       lastSenderId: c("last_sender_id", "uuid"),
       buyerUnread: c("buyer_unread", "bool"),
       sellerUnread: c("seller_unread", "bool"),
+      buyerReadAt: c("buyer_read_at", "ts"),
+      sellerReadAt: c("seller_read_at", "ts"),
     },
   },
   auctions: {
