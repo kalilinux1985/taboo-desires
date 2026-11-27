@@ -9,6 +9,7 @@ import {
 } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/backend/client.ts";
+import { disablePush } from "@/lib/push.ts";
 
 export type AuthState = {
   session: Session | null;
@@ -63,6 +64,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signout = useCallback(async () => {
+    // Stop this device's push alerts first, so the next person to use it doesn't get them
+    await disablePush().catch(() => undefined);
     const { error: e } = await supabase.auth.signOut();
     if (e) {
       setError(e);

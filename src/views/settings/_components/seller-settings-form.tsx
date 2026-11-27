@@ -17,6 +17,7 @@ import {
 import { getErrorMessage } from "@/lib/listings.ts";
 import { cn } from "@/lib/utils.ts";
 import { Button } from "@/components/ui/button.tsx";
+import PushToggle from "@/components/push-toggle.tsx";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Label } from "@/components/ui/label.tsx";
@@ -183,7 +184,10 @@ function Form({
       </Section>
 
       <Section title="Notifications & Visibility">
-        {SETTING_FIELDS.map((f) => (
+        {SETTING_FIELDS.map((f) =>
+          "perDevice" in f && f.perDevice ? (
+            <PushToggle key={f.key} />
+          ) : (
           <div key={f.key} className="grid gap-2">
             <Label htmlFor={`setting-${f.key}`}>{f.label}</Label>
             <Select value={settings[f.key]} onValueChange={(v) => setSetting(f.key, v)}>
@@ -198,14 +202,10 @@ function Form({
                 ))}
               </SelectContent>
             </Select>
-            <Hint>
-              {f.hint}
-              {"comingSoon" in f && f.comingSoon && (
-                <span className="ml-1 font-semibold text-violet-600">Coming soon.</span>
-              )}
-            </Hint>
+            <Hint>{f.hint}</Hint>
           </div>
-        ))}
+          ),
+        )}
         <Button onClick={save} disabled={saving} className="w-fit cursor-pointer">
           {saving && <Spinner />} Update Settings
         </Button>

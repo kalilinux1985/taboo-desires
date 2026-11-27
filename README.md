@@ -41,6 +41,11 @@ The app runs entirely on Supabase: database, file storage, backend function and 
 - **Live updates.** Any write broadcasts the changed table's name (never row data) on the public Realtime topic `db-changes`. Browsers refetch the queries that read that table. After a mutation returns, the caller's own affected queries have already been refreshed.
 - **Files.** Files live in two buckets. `public-media` holds listing photos, blurred previews, avatars, profile photos and feed photos. `private-media` holds locked originals and verification photos, which are only shown through 6-hour signed URLs to people allowed to see them. Uploads use one-time signed upload URLs, and the server only accepts files the user uploaded themselves.
 - **Auctions.** `pg_cron` runs `app.close_due_auctions()` every minute. Deletes cascade through foreign keys instead of background purge jobs.
+- **Push notifications.** Members turn push on per device (Settings, or the Notifications page); iPhones need the site added to the Home Screen first. `public/sw.js` shows the alerts. `pg_cron` calls the `send-push` function every minute, which finds new notifications and messages (the same SQL as the bell, `_shared/lib/notificationEvents.ts`) and sends one short alert per device. Alerts never include names, titles, amounts or message text. The VAPID key pair is made by the backend on first use and kept in Supabase Vault (`vapid_keys`). `send-push` imports shared files, so deploy it as one bundled file:
+  ```sh
+  npx esbuild@0.28.2 supabase/functions/send-push/index.ts --bundle --format=esm --platform=neutral \
+    --target=es2022 --external:'npm:*' --external:'jsr:*' --outfile=/tmp/send-push/index.ts
+  ```
 
 ## Sign-in (Supabase Auth)
 

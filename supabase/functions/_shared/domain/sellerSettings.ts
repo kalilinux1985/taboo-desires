@@ -37,7 +37,7 @@ const YES_NO: Choice[] = [
   { value: "no", label: "No" },
 ];
 
-/** Notifications & Visibility. `comingSoon` choices are saved but not acted on yet. */
+/** Notifications & Visibility. `perDevice` rows are a switch for this device, not a saved choice. */
 export const SETTING_FIELDS = [
   {
     key: "profilePrivate",
@@ -55,7 +55,6 @@ export const SETTING_FIELDS = [
     choices: YES_NO,
     defaultValue: "yes",
     hint: "Get some platform notifications by email, for example when you receive a message. To reduce spam, we only send you a new email notification once every 6 hours.",
-    comingSoon: true,
   },
   {
     key: "marketingEmails",
@@ -70,7 +69,8 @@ export const SETTING_FIELDS = [
     choices: YES_NO,
     defaultValue: "no",
     hint: "Get instant notifications in your browser.",
-    comingSoon: true,
+    /** Shown as an on/off switch for this device, not saved with the other settings */
+    perDevice: true,
   },
   {
     key: "messagesFrom",

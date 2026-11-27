@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/empty.tsx";
 import RequireAuth from "@/components/require-auth.tsx";
 import HideOnError from "@/components/hide-on-error.tsx";
+import PushToggle from "@/components/push-toggle.tsx";
 
 function NotificationList() {
   const items = useQuery(api.notifications.list, {});
@@ -103,7 +104,10 @@ export default function NotificationsPage() {
             </p>
           }
         >
-          <NotificationList />
+          <div className="flex flex-col gap-4">
+            <PushToggle compact className="rounded-[5px] border bg-card p-4" />
+            <NotificationList />
+          </div>
         </HideOnError>
       </RequireAuth>
     </div>
