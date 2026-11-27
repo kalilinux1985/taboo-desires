@@ -127,6 +127,7 @@ var TABLES = {
       name: c("name"),
       username: c("username"),
       coinBalance: c("coin_balance", "int"),
+      readReceipts: c("read_receipts", "bool"),
       email: c("email"),
       shopName: c("shop_name"),
       bio: c("bio"),
@@ -273,7 +274,9 @@ var TABLES = {
       lastMessagePreview: c("last_message_preview"),
       lastSenderId: c("last_sender_id", "uuid"),
       buyerUnread: c("buyer_unread", "bool"),
-      sellerUnread: c("seller_unread", "bool")
+      sellerUnread: c("seller_unread", "bool"),
+      buyerReadAt: c("buyer_read_at", "ts"),
+      sellerReadAt: c("seller_read_at", "ts")
     }
   },
   auctions: {
@@ -2413,13 +2416,16 @@ var markRead = mutation({
   args: { conversationId: v.id("conversations") },
   handler: async (ctx, { conversationId }) => {
     const { convo, isBuyer } = await requireParticipant(ctx, conversationId);
+    const readAt = new Date(ctx.now()).toISOString();
     if (isBuyer && convo.buyerUnread)
       await ctx.db.patch("conversations", conversationId, {
-        buyerUnread: false
+        buyerUnread: false,
+        buyerReadAt: readAt
       });
     if (!isBuyer && convo.sellerUnread)
       await ctx.db.patch("conversations", conversationId, {
-        sellerUnread: false
+        sellerUnread: false,
+        sellerReadAt: readAt
       });
     return null;
   }
@@ -2456,10 +2462,25 @@ var unreadCount = query({
 var getConversation = query({
   args: { conversationId: v.id("conversations") },
   handler: async (ctx, { conversationId }) => {
-    const { user, convo } = await requireParticipant(ctx, conversationId);
+    const { user, convo, isBuyer } = await requireParticipant(ctx, conversationId);
     const summary = await summarize2(ctx, convo, user._id);
-    const presence = summary.other._id ? await ctx.db.first("presence", sql`where user_id = ${summary.other._id}::uuid`) : null;
-    return { ...summary, meId: user._id, otherLastSeenAt: presence?.lastSeenAt ?? null };
+    const [presence, otherUser] = summary.other._id ? await Promise.all([
+      ctx.db.first("presence", sql`where user_id = ${summary.other._id}::uuid`),
+      ctx.db.get("users", summary.other._id)
+    ]) : [null, null];
+    const mine7 = user.readReceipts !== false;
+    const shared = mine7 && !!otherUser && otherUser.readReceipts !== false;
+    return {
+      ...summary,
+      meId: user._id,
+      otherLastSeenAt: presence?.lastSeenAt ?? null,
+      /** My read receipts / typing switch */
+      receiptsOn: mine7,
+      /** When the other person last read this conversation; null unless both have receipts on */
+      otherReadAt: shared ? (isBuyer ? convo.sellerReadAt : convo.buyerReadAt) ?? null : null,
+      /** Whether typing indicators can work here (both on) */
+      typing: shared
+    };
   }
 });
 var listMessages = query({
@@ -6742,11 +6763,13 @@ __export(users_exports, {
   photosByUser: () => photosByUser,
   photosPage: () => photosPage,
   profileAccess: () => profileAccess,
+  readReceipts: () => readReceipts,
   removeProfilePhoto: () => removeProfilePhoto,
   search: () => search,
   sellerDetailsValidator: () => sellerDetailsValidator,
   setAccountType: () => setAccountType,
   setProfilePrivate: () => setProfilePrivate,
+  setReadReceipts: () => setReadReceipts,
   topSellers: () => topSellers,
   updateBuyerDetails: () => updateBuyerDetails,
   updateCurrentUser: () => updateCurrentUser,
@@ -7434,6 +7457,21 @@ var topSellers = query({
       }))
     );
     return out.filter((r) => r.avatarUrl);
+  }
+});
+var readReceipts = query({
+  args: {},
+  handler: async (ctx) => {
+    const me = await getCurrentUserDoc(ctx);
+    return me ? me.readReceipts !== false : null;
+  }
+});
+var setReadReceipts = mutation({
+  args: { on: v.boolean() },
+  handler: async (ctx, { on }) => {
+    const me = await requireUser(ctx);
+    if (me.readReceipts !== false !== on) await ctx.db.patch("users", me._id, { readReceipts: on });
+    return null;
   }
 });
 
