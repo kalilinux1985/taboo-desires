@@ -240,13 +240,16 @@ export const markRead = mutation({
   handler: async (ctx, { conversationId }) => {
     const { convo, isBuyer } = await requireParticipant(ctx, conversationId);
     // Skip the write when already read to avoid needless refreshes
+    const readAt = new Date(ctx.now()).toISOString();
     if (isBuyer && convo.buyerUnread)
       await ctx.db.patch("conversations", conversationId, {
         buyerUnread: false,
+        buyerReadAt: readAt,
       });
     if (!isBuyer && convo.sellerUnread)
       await ctx.db.patch("conversations", conversationId, {
         sellerUnread: false,
+        sellerReadAt: readAt,
       });
     return null;
   },
@@ -288,13 +291,29 @@ export const unreadCount = query({
 export const getConversation = query({
   args: { conversationId: v.id("conversations") },
   handler: async (ctx, { conversationId }) => {
-    const { user, convo } = await requireParticipant(ctx, conversationId);
+    const { user, convo, isBuyer } = await requireParticipant(ctx, conversationId);
     const summary = await summarize(ctx, convo, user._id);
     // When the other person was last online, for the thread header
-    const presence = summary.other._id
-      ? await ctx.db.first("presence", sql`where user_id = ${summary.other._id}::uuid`)
-      : null;
-    return { ...summary, meId: user._id, otherLastSeenAt: presence?.lastSeenAt ?? null };
+    const [presence, otherUser] = summary.other._id
+      ? await Promise.all([
+          ctx.db.first("presence", sql`where user_id = ${summary.other._id}::uuid`),
+          ctx.db.get("users", summary.other._id),
+        ])
+      : [null, null];
+    // Read receipts and typing only show when both people have them on
+    const mine = user.readReceipts !== false;
+    const shared = mine && !!otherUser && otherUser.readReceipts !== false;
+    return {
+      ...summary,
+      meId: user._id,
+      otherLastSeenAt: presence?.lastSeenAt ?? null,
+      /** My read receipts / typing switch */
+      receiptsOn: mine,
+      /** When the other person last read this conversation; null unless both have receipts on */
+      otherReadAt: shared ? ((isBuyer ? convo.sellerReadAt : convo.buyerReadAt) ?? null) : null,
+      /** Whether typing indicators can work here (both on) */
+      typing: shared,
+    };
   },
 });
 

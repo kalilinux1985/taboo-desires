@@ -44,6 +44,8 @@ type Fields = {
     username?: string;
     /** Taboo Coins; changed only through lib/coins.ts */
     coinBalance?: number;
+    /** Privacy switch for read receipts and typing indicators (default on) */
+    readReceipts?: boolean;
     email?: string;
     shopName?: string;
     bio?: string;
@@ -149,6 +151,9 @@ type Fields = {
     lastSenderId: Id<"users">;
     buyerUnread: boolean;
     sellerUnread: boolean;
+    /** When each side last read the conversation (for read receipts) */
+    buyerReadAt?: string;
+    sellerReadAt?: string;
   };
   auctions: {
     listingId: Id<"listings">;
@@ -334,6 +339,7 @@ export const TABLES: { [T in DbTable]: TableDef<T> } = {
       name: c("name"),
       username: c("username"),
       coinBalance: c("coin_balance", "int"),
+      readReceipts: c("read_receipts", "bool"),
       email: c("email"),
       shopName: c("shop_name"),
       bio: c("bio"),
@@ -481,6 +487,8 @@ export const TABLES: { [T in DbTable]: TableDef<T> } = {
       lastSenderId: c("last_sender_id", "uuid"),
       buyerUnread: c("buyer_unread", "bool"),
       sellerUnread: c("seller_unread", "bool"),
+      buyerReadAt: c("buyer_read_at", "ts"),
+      sellerReadAt: c("seller_read_at", "ts"),
     },
   },
   auctions: {

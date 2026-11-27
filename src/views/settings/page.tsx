@@ -14,6 +14,7 @@ import BuyerDetailsForm from "./_components/buyer-details-form.tsx";
 import ProfileVisibility from "./_components/profile-visibility.tsx";
 import DeleteAccount from "./_components/delete-account.tsx";
 import PushToggle from "@/components/push-toggle.tsx";
+import ReadReceiptsToggle from "@/components/read-receipts-toggle.tsx";
 
 function Redirect({ to }: { to: string }) {
   const navigate = useNavigate();
@@ -104,10 +105,11 @@ function SettingsInner({ kind }: { kind?: SettingsKind }) {
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle className="font-display text-2xl">Notifications</CardTitle>
+          <CardTitle className="font-display text-2xl">Notifications &amp; Messages</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-col gap-6">
           <PushToggle />
+          <ReadReceiptsToggle />
         </CardContent>
       </Card>
       <ProfileVisibility initialPrivate={profile.isPrivate} />
