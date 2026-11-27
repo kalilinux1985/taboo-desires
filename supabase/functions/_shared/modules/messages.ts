@@ -9,7 +9,7 @@ import {
   publicSellerName,
   requireUser,
 } from "../lib/auth.ts";
-import { assertNotBlocked } from "./blocks.ts";
+import { assertNotBlocked, isBlockedEither } from "./blocks.ts";
 import { queueEmail, throttleKey } from "../lib/email.ts";
 import { requireCapability } from "../lib/access.ts";
 
@@ -308,7 +308,9 @@ export const getConversation = query({
     const presence = summary.other._id
       ? await ctx.db.first("presence", sql`where user_id = ${summary.other._id}::uuid`)
       : null;
-    return { ...summary, meId: user._id, otherLastSeenAt: presence?.lastSeenAt ?? null };
+    // Reading blocks here refetches this query when either side blocks, which turns typing off
+    const blocked = await isBlockedEither(ctx, convo.buyerId, convo.sellerId);
+    return { ...summary, meId: user._id, otherLastSeenAt: presence?.lastSeenAt ?? null, blocked };
   },
 });
 

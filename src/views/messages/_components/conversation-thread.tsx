@@ -247,7 +247,11 @@ export default function ConversationThread({
 }) {
   const convo = useQuery(api.messages.getConversation, { conversationId });
   const markRead = useMutation(api.messages.markRead);
-  const { otherTyping, notifyTyping, notifyStopped } = useTyping(conversationId, convo?.meId);
+  const { otherTyping, notifyTyping, notifyStopped } = useTyping(
+    conversationId,
+    convo?.meId,
+    !!convo && !convo.blocked,
+  );
 
   // Mark read whenever this thread is open and has unread messages (syncs server state)
   const unread = convo?.unread ?? false;

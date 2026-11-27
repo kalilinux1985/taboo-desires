@@ -12,9 +12,11 @@ type TypingPayload = { userId?: string; typing?: boolean };
 /**
  * Typing indicator for one conversation. Events go over the private Realtime
  * topic "typing:<conversation id>", which only the buyer and seller can join.
- * Nothing is stored.
+ * Nothing is stored. Pass `enabled = false` when either side has blocked the
+ * other: Realtime keeps a joined channel's permissions, so the blocker's
+ * client must leave the channel itself to stop sending typing events.
  */
-export function useTyping(conversationId: string, meId: string | undefined) {
+export function useTyping(conversationId: string, meId: string | undefined, enabled = true) {
   const [otherTyping, setOtherTyping] = useState(false);
   const channelRef = useRef<RealtimeChannel | null>(null);
   const lastSentRef = useRef(0);
@@ -29,7 +31,7 @@ export function useTyping(conversationId: string, meId: string | undefined) {
   );
 
   useEffect(() => {
-    if (!meId) return;
+    if (!meId || !enabled) return;
     let cancelled = false;
     let hideTimer: number | undefined;
     let channel: RealtimeChannel | null = null;
@@ -61,7 +63,7 @@ export function useTyping(conversationId: string, meId: string | undefined) {
       lastSentRef.current = 0;
       setOtherTyping(false);
     };
-  }, [conversationId, meId]);
+  }, [conversationId, meId, enabled]);
 
   /** Call on every keystroke while the message box has text. */
   const notifyTyping = useCallback(() => {

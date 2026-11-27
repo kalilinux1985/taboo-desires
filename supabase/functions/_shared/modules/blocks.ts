@@ -8,14 +8,18 @@ import { v } from "../core/values.ts";
 import { getCurrentUserDoc, requireUser } from "../lib/auth.ts";
 import { bumpStats } from "../lib/sellerStats.ts";
 
-/** Throws if either member has blocked the other. */
-export async function assertNotBlocked(ctx: QueryCtx, a: Id<"users">, b: Id<"users">) {
-  const hit = await ctx.db.first(
+/** Whether either member has blocked the other. */
+export async function isBlockedEither(ctx: QueryCtx, a: Id<"users">, b: Id<"users">) {
+  return !!(await ctx.db.first(
     "blocks",
     sql`where (blocker_id = ${a}::uuid and blocked_id = ${b}::uuid)
            or (blocker_id = ${b}::uuid and blocked_id = ${a}::uuid)`,
-  );
-  if (hit)
+  ));
+}
+
+/** Throws if either member has blocked the other. */
+export async function assertNotBlocked(ctx: QueryCtx, a: Id<"users">, b: Id<"users">) {
+  if (await isBlockedEither(ctx, a, b))
     throw new AppError({
       code: "FORBIDDEN",
       message: "You can't do this with a member who is blocked",
