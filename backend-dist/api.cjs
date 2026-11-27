@@ -2039,8 +2039,7 @@ var SETTING_FIELDS = [
     label: "Platform Email Notifications",
     choices: YES_NO,
     defaultValue: "yes",
-    hint: "Get some platform notifications by email, for example when you receive a message. To reduce spam, we only send you a new email notification once every 6 hours.",
-    comingSoon: true
+    hint: "Get some platform notifications by email, for example when you receive a message. To reduce spam, we only send you a new email notification once every 6 hours."
   },
   {
     key: "marketingEmails",
@@ -2055,7 +2054,8 @@ var SETTING_FIELDS = [
     choices: YES_NO,
     defaultValue: "no",
     hint: "Get instant notifications in your browser.",
-    comingSoon: true
+    /** Shown as an on/off switch for this device, not saved with the other settings */
+    perDevice: true
   },
   {
     key: "messagesFrom",
@@ -5129,6 +5129,119 @@ __export(notifications_exports, {
   markSeen: () => markSeen,
   unreadCount: () => unreadCount2
 });
+
+// supabase/functions/_shared/lib/notificationEvents.ts
+function notificationEventsSql(recipients, since, withMessages = false) {
+  const r = sql`${recipients}::uuid[]`;
+  const messages = withMessages ? sql`
+      union all
+      -- a new direct message; target is the conversation
+      select 'message', m.created_at, a.id,
+             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'Someone'), null, cv.id, null, rr.id
+        from public.messages m
+        join public.conversations cv on cv.id = m.conversation_id
+        join public.users a on a.id = m.sender_id
+        cross join lateral (values (cv.buyer_id), (cv.seller_id)) rr (id)
+       where rr.id = any(${r}) and rr.id <> m.sender_id and m.created_at > ${since}` : empty;
+  return sql`
+      select 'follow' as kind, f.created_at as at, a.id as actor_id,
+             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'Someone') as actor,
+             f.status as title, null::uuid as target_id, null::int as amount, f.seller_id as recipient_id
+        from public.follows f join public.users a on a.id = f.follower_id
+       where f.seller_id = any(${r}) and f.created_at > ${since}
+      union all
+      select 'bid', b.created_at, a.id, coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'A bidder'),
+             l.title, l.id, b.amount_cents, au.seller_id
+        from public.bids b
+        join public.auctions au on au.id = b.auction_id
+        join public.listings l on l.id = au.listing_id
+        left join public.users a on a.id = b.bidder_id
+       where au.seller_id = any(${r}) and b.bidder_id is distinct from au.seller_id and b.created_at > ${since}
+      union all
+      select 'auction_won', au.ends_at, null, null, l.title, l.id, au.current_bid_cents, au.high_bidder_id
+        from public.auctions au join public.listings l on l.id = au.listing_id
+       where au.high_bidder_id = any(${r}) and au.status = 'ended' and au.ends_at > ${since}
+      union all
+      select 'custom_request', c.created_at, a.id,
+             coalesce(nullif(a.name, ''), 'Anonymous buyer'), null, c.id, c.offer_cents, c.seller_id
+        from public.custom_requests c join public.users a on a.id = c.buyer_id
+       where c.seller_id = any(${r}) and c.created_at > ${since}
+      union all
+      select 'custom_answered', c.updated_at, a.id,
+             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'The seller'), c.status, c.id, c.offer_cents, c.buyer_id
+        from public.custom_requests c join public.users a on a.id = c.seller_id
+       where c.buyer_id = any(${r}) and c.status in ('accepted', 'declined') and c.updated_at > ${since}
+      union all
+      select 'unlock_request', u.requested_at, a.id,
+             coalesce(nullif(a.name, ''), 'Anonymous buyer'), l.title, l.id, null, u.seller_id
+        from public.unlocks u
+        join public.users a on a.id = u.buyer_id
+        join public.listings l on l.id = u.listing_id
+       where u.seller_id = any(${r}) and u.status = 'pending' and u.requested_at > ${since}
+      union all
+      select 'unlock_granted', u.requested_at, a.id,
+             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'The seller'), l.title, l.id, null, u.buyer_id
+        from public.unlocks u
+        join public.users a on a.id = u.seller_id
+        join public.listings l on l.id = u.listing_id
+       where u.buyer_id = any(${r}) and u.status = 'granted' and u.requested_at > ${since}
+      union all
+      select 'review', r.updated_at, a.id,
+             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'A buyer'), null, null, r.rating, r.seller_id
+        from public.reviews r join public.users a on a.id = r.reviewer_id
+       where r.seller_id = any(${r}) and r.updated_at > ${since}
+      union all
+      select 'post_like', pl.created_at, a.id,
+             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'Someone'), null, p.id, null, p.author_id
+        from public.post_likes pl
+        join public.posts p on p.id = pl.post_id
+        join public.users a on a.id = pl.user_id
+       where p.author_id = any(${r}) and pl.user_id <> p.author_id and pl.created_at > ${since}
+      union all
+      select 'post_comment', pc.created_at, a.id,
+             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'Someone'), null, p.id, null, p.author_id
+        from public.post_comments pc
+        join public.posts p on p.id = pc.post_id
+        join public.users a on a.id = pc.author_id
+       where p.author_id = any(${r}) and pc.author_id <> p.author_id and pc.created_at > ${since}
+      union all
+      -- someone liked a comment of mine; title carries the post author's id so the link can open that profile
+      select 'comment_like', cl.created_at, a.id,
+             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'Someone'), p.author_id::text, p.id, null, pc.author_id
+        from public.post_comment_likes cl
+        join public.post_comments pc on pc.id = cl.comment_id
+        join public.posts p on p.id = pc.post_id
+        join public.users a on a.id = cl.user_id
+       where pc.author_id = any(${r}) and cl.user_id <> pc.author_id and cl.created_at > ${since}
+      union all
+      -- a seller sent me a contract; target is the conversation
+      select 'contract_sent', k.created_at, a.id,
+             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'The seller'), k.item_title, k.conversation_id, k.total_cents, k.buyer_id
+        from public.contracts k join public.users a on a.id = k.seller_id
+       where k.buyer_id = any(${r}) and k.created_at > ${since}
+      union all
+      -- the buyer accepted or rejected my contract; title is the answer
+      select 'contract_answered', k.responded_at, a.id,
+             coalesce(nullif(a.name, ''), 'The buyer'), k.status, k.conversation_id, k.total_cents, k.seller_id
+        from public.contracts k join public.users a on a.id = k.buyer_id
+       where k.seller_id = any(${r}) and k.status in ('accepted', 'rejected') and k.responded_at > ${since}
+      union all
+      select 'contract_comment', cc.created_at, a.id,
+             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'Someone'), k.item_title, k.conversation_id, null, rr.id
+        from public.contract_comments cc
+        join public.contracts k on k.id = cc.contract_id
+        join public.users a on a.id = cc.author_id
+        cross join lateral (values (k.buyer_id), (k.seller_id)) rr (id)
+       where rr.id = any(${r}) and cc.author_id <> rr.id and cc.created_at > ${since}
+      union all
+      -- the seller added or changed the tracking number on my order
+      select 'tracking', o.tracking_updated_at, a.id,
+             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'The seller'), o.title, o.id, null, o.buyer_id
+        from public.orders o join public.users a on a.id = o.seller_id
+       where o.buyer_id = any(${r}) and o.tracking_updated_at > ${since}${messages}`;
+}
+
+// supabase/functions/_shared/modules/notifications.ts
 var WINDOW_DAYS = 30;
 var LIMIT = 50;
 async function recentFor(ctx, userId) {
@@ -5147,105 +5260,9 @@ async function recentFor(ctx, userId) {
     "orders",
     "users"
   );
-  const me = sql`${userId}::uuid`;
   const since = sql`now() - make_interval(days => ${WINDOW_DAYS}::int)`;
   const rows = await ctx.db.rows(sql`
-    select * from (
-      select 'follow' as kind, f.created_at as at, a.id as actor_id,
-             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'Someone') as actor,
-             f.status as title, null::uuid as target_id, null::int as amount
-        from public.follows f join public.users a on a.id = f.follower_id
-       where f.seller_id = ${me} and f.created_at > ${since}
-      union all
-      select 'bid', b.created_at, a.id, coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'A bidder'),
-             l.title, l.id, b.amount_cents
-        from public.bids b
-        join public.auctions au on au.id = b.auction_id
-        join public.listings l on l.id = au.listing_id
-        left join public.users a on a.id = b.bidder_id
-       where au.seller_id = ${me} and b.bidder_id is distinct from ${me} and b.created_at > ${since}
-      union all
-      select 'auction_won', au.ends_at, null, null, l.title, l.id, au.current_bid_cents
-        from public.auctions au join public.listings l on l.id = au.listing_id
-       where au.high_bidder_id = ${me} and au.status = 'ended' and au.ends_at > ${since}
-      union all
-      select 'custom_request', c.created_at, a.id,
-             coalesce(nullif(a.name, ''), 'Anonymous buyer'), null, c.id, c.offer_cents
-        from public.custom_requests c join public.users a on a.id = c.buyer_id
-       where c.seller_id = ${me} and c.created_at > ${since}
-      union all
-      select 'custom_answered', c.updated_at, a.id,
-             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'The seller'), c.status, c.id, c.offer_cents
-        from public.custom_requests c join public.users a on a.id = c.seller_id
-       where c.buyer_id = ${me} and c.status in ('accepted', 'declined') and c.updated_at > ${since}
-      union all
-      select 'unlock_request', u.requested_at, a.id,
-             coalesce(nullif(a.name, ''), 'Anonymous buyer'), l.title, l.id, null
-        from public.unlocks u
-        join public.users a on a.id = u.buyer_id
-        join public.listings l on l.id = u.listing_id
-       where u.seller_id = ${me} and u.status = 'pending' and u.requested_at > ${since}
-      union all
-      select 'unlock_granted', u.requested_at, a.id,
-             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'The seller'), l.title, l.id, null
-        from public.unlocks u
-        join public.users a on a.id = u.seller_id
-        join public.listings l on l.id = u.listing_id
-       where u.buyer_id = ${me} and u.status = 'granted' and u.requested_at > ${since}
-      union all
-      select 'review', r.updated_at, a.id,
-             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'A buyer'), null, null, r.rating
-        from public.reviews r join public.users a on a.id = r.reviewer_id
-       where r.seller_id = ${me} and r.updated_at > ${since}
-      union all
-      select 'post_like', pl.created_at, a.id,
-             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'Someone'), null, p.id, null
-        from public.post_likes pl
-        join public.posts p on p.id = pl.post_id
-        join public.users a on a.id = pl.user_id
-       where p.author_id = ${me} and pl.user_id <> ${me} and pl.created_at > ${since}
-      union all
-      select 'post_comment', pc.created_at, a.id,
-             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'Someone'), null, p.id, null
-        from public.post_comments pc
-        join public.posts p on p.id = pc.post_id
-        join public.users a on a.id = pc.author_id
-       where p.author_id = ${me} and pc.author_id <> ${me} and pc.created_at > ${since}
-      union all
-      -- someone liked a comment of mine; title carries the post author's id so the link can open that profile
-      select 'comment_like', cl.created_at, a.id,
-             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'Someone'), p.author_id::text, p.id, null
-        from public.post_comment_likes cl
-        join public.post_comments pc on pc.id = cl.comment_id
-        join public.posts p on p.id = pc.post_id
-        join public.users a on a.id = cl.user_id
-       where pc.author_id = ${me} and cl.user_id <> ${me} and cl.created_at > ${since}
-      union all
-      -- a seller sent me a contract; target is the conversation
-      select 'contract_sent', k.created_at, a.id,
-             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'The seller'), k.item_title, k.conversation_id, k.total_cents
-        from public.contracts k join public.users a on a.id = k.seller_id
-       where k.buyer_id = ${me} and k.created_at > ${since}
-      union all
-      -- the buyer accepted or rejected my contract; title is the answer
-      select 'contract_answered', k.responded_at, a.id,
-             coalesce(nullif(a.name, ''), 'The buyer'), k.status, k.conversation_id, k.total_cents
-        from public.contracts k join public.users a on a.id = k.buyer_id
-       where k.seller_id = ${me} and k.status in ('accepted', 'rejected') and k.responded_at > ${since}
-      union all
-      select 'contract_comment', cc.created_at, a.id,
-             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'Someone'), k.item_title, k.conversation_id, null
-        from public.contract_comments cc
-        join public.contracts k on k.id = cc.contract_id
-        join public.users a on a.id = cc.author_id
-       where (k.buyer_id = ${me} or k.seller_id = ${me}) and cc.author_id <> ${me} and cc.created_at > ${since}
-      union all
-      -- the seller added or changed the tracking number on my order
-      select 'tracking', o.tracking_updated_at, a.id,
-             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'The seller'), o.title, o.id, null
-        from public.orders o join public.users a on a.id = o.seller_id
-       where o.buyer_id = ${me} and o.tracking_updated_at > ${since}
-    ) n
+    select * from (${notificationEventsSql([userId], since)}) n
     order by at desc
     limit ${LIMIT}::int`);
   const actorIds = [...new Set(rows.map((r) => r.actor_id).filter((id) => !!id))];
@@ -5606,6 +5623,68 @@ var toggleCommentLike = mutation({
       likeCount: (comment2.likeCount ?? 0) + 1
     });
     return true;
+  }
+});
+
+// supabase/functions/_shared/modules/push.ts
+var push_exports = {};
+__export(push_exports, {
+  publicKey: () => publicKey,
+  subscribe: () => subscribe,
+  unsubscribe: () => unsubscribe
+});
+var VAULT_NAME = "vapid_keys";
+var MAX_DEVICES = 10;
+var b64urlToBytes = (s) => Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/")), (c2) => c2.charCodeAt(0));
+var bytesToB64url = (b) => btoa(String.fromCharCode(...b)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+async function vapidKeys(ctx) {
+  const [row] = await ctx.db.rows(sql`select decrypted_secret from vault.decrypted_secrets where name = ${VAULT_NAME} limit 1`);
+  if (row?.decrypted_secret) return JSON.parse(String(row.decrypted_secret));
+  const pair = await crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, true, ["sign", "verify"]);
+  const keys = {
+    publicKey: await crypto.subtle.exportKey("jwk", pair.publicKey),
+    privateKey: await crypto.subtle.exportKey("jwk", pair.privateKey)
+  };
+  await ctx.db.rows(sql`select vault.create_secret(${JSON.stringify(keys)}, ${VAULT_NAME}, 'Web push (VAPID) key pair')`);
+  return keys;
+}
+var publicKey = mutation({
+  args: {},
+  handler: async (ctx) => {
+    await requireUser(ctx);
+    const { publicKey: jwk } = await vapidKeys(ctx);
+    const x = b64urlToBytes(jwk.x);
+    const y = b64urlToBytes(jwk.y);
+    return bytesToB64url(new Uint8Array([4, ...x, ...y]));
+  }
+});
+var subscribe = mutation({
+  args: { endpoint: v.string(), p256dh: v.string(), auth: v.string() },
+  handler: async (ctx, { endpoint, p256dh, auth }) => {
+    const me = await requireUser(ctx);
+    if (!/^https:\/\//.test(endpoint) || endpoint.length > 1e3 || !p256dh || p256dh.length > 200 || !auth || auth.length > 100)
+      throw new AppError({ code: "BAD_REQUEST", message: "This browser sent an invalid push address" });
+    const [{ n }] = await ctx.db.rows(sql`select count(*)::int as n from public.push_subscriptions where user_id = ${me._id}::uuid`);
+    if (Number(n) === 0) await ctx.db.rows(sql`update public.users set push_checked_at = now() where id = ${me._id}::uuid`);
+    await ctx.db.rows(sql`
+      insert into public.push_subscriptions (user_id, endpoint, p256dh, auth)
+      values (${me._id}::uuid, ${endpoint}, ${p256dh}, ${auth})
+      on conflict (endpoint) do update
+        set user_id = excluded.user_id, p256dh = excluded.p256dh, auth = excluded.auth, failures = 0`);
+    await ctx.db.rows(sql`
+      delete from public.push_subscriptions
+       where user_id = ${me._id}::uuid
+         and id not in (select id from public.push_subscriptions where user_id = ${me._id}::uuid
+                         order by created_at desc limit ${MAX_DEVICES}::int)`);
+    return null;
+  }
+});
+var unsubscribe = mutation({
+  args: { endpoint: v.string() },
+  handler: async (ctx, { endpoint }) => {
+    const me = await requireUser(ctx);
+    await ctx.db.rows(sql`delete from public.push_subscriptions where endpoint = ${endpoint} and user_id = ${me._id}::uuid`);
+    return null;
   }
 });
 
@@ -7524,6 +7603,7 @@ var registry = {
   notifications: functionsOf(notifications_exports),
   orders: functionsOf(orders_exports),
   posts: functionsOf(posts_exports),
+  push: functionsOf(push_exports),
   reports: functionsOf(reports_exports),
   reviews: functionsOf(reviews_exports),
   shipping: functionsOf(shipping_exports),
