@@ -1,12 +1,14 @@
 // Notifications are built from activity the app already records (follows,
 // bids, auction results, custom requests, unlock requests, reviews, likes
-// and comments), so nothing extra is written when they happen.
+// and comments), so nothing extra is written when they happen. The SQL lives
+// in lib/notificationEvents.ts, shared with push notifications.
 // The only stored state is when the user last opened them.
 
 import { mutation, query, type QueryCtx } from "../core/functions.ts";
 import type { Id } from "../core/schema.ts";
 import { sql } from "../core/sql.ts";
 import { getCurrentUserDoc, requireUser } from "../lib/auth.ts";
+import { notificationEventsSql } from "../lib/notificationEvents.ts";
 
 export type NotificationKind =
   | "follow"
@@ -44,105 +46,9 @@ async function recentFor(ctx: QueryCtx, userId: Id<"users">) {
     "orders",
     "users",
   );
-  const me = sql`${userId}::uuid`;
   const since = sql`now() - make_interval(days => ${WINDOW_DAYS}::int)`;
   const rows = await ctx.db.rows(sql`
-    select * from (
-      select 'follow' as kind, f.created_at as at, a.id as actor_id,
-             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'Someone') as actor,
-             f.status as title, null::uuid as target_id, null::int as amount
-        from public.follows f join public.users a on a.id = f.follower_id
-       where f.seller_id = ${me} and f.created_at > ${since}
-      union all
-      select 'bid', b.created_at, a.id, coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'A bidder'),
-             l.title, l.id, b.amount_cents
-        from public.bids b
-        join public.auctions au on au.id = b.auction_id
-        join public.listings l on l.id = au.listing_id
-        left join public.users a on a.id = b.bidder_id
-       where au.seller_id = ${me} and b.bidder_id is distinct from ${me} and b.created_at > ${since}
-      union all
-      select 'auction_won', au.ends_at, null, null, l.title, l.id, au.current_bid_cents
-        from public.auctions au join public.listings l on l.id = au.listing_id
-       where au.high_bidder_id = ${me} and au.status = 'ended' and au.ends_at > ${since}
-      union all
-      select 'custom_request', c.created_at, a.id,
-             coalesce(nullif(a.name, ''), 'Anonymous buyer'), null, c.id, c.offer_cents
-        from public.custom_requests c join public.users a on a.id = c.buyer_id
-       where c.seller_id = ${me} and c.created_at > ${since}
-      union all
-      select 'custom_answered', c.updated_at, a.id,
-             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'The seller'), c.status, c.id, c.offer_cents
-        from public.custom_requests c join public.users a on a.id = c.seller_id
-       where c.buyer_id = ${me} and c.status in ('accepted', 'declined') and c.updated_at > ${since}
-      union all
-      select 'unlock_request', u.requested_at, a.id,
-             coalesce(nullif(a.name, ''), 'Anonymous buyer'), l.title, l.id, null
-        from public.unlocks u
-        join public.users a on a.id = u.buyer_id
-        join public.listings l on l.id = u.listing_id
-       where u.seller_id = ${me} and u.status = 'pending' and u.requested_at > ${since}
-      union all
-      select 'unlock_granted', u.requested_at, a.id,
-             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'The seller'), l.title, l.id, null
-        from public.unlocks u
-        join public.users a on a.id = u.seller_id
-        join public.listings l on l.id = u.listing_id
-       where u.buyer_id = ${me} and u.status = 'granted' and u.requested_at > ${since}
-      union all
-      select 'review', r.updated_at, a.id,
-             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'A buyer'), null, null, r.rating
-        from public.reviews r join public.users a on a.id = r.reviewer_id
-       where r.seller_id = ${me} and r.updated_at > ${since}
-      union all
-      select 'post_like', pl.created_at, a.id,
-             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'Someone'), null, p.id, null
-        from public.post_likes pl
-        join public.posts p on p.id = pl.post_id
-        join public.users a on a.id = pl.user_id
-       where p.author_id = ${me} and pl.user_id <> ${me} and pl.created_at > ${since}
-      union all
-      select 'post_comment', pc.created_at, a.id,
-             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'Someone'), null, p.id, null
-        from public.post_comments pc
-        join public.posts p on p.id = pc.post_id
-        join public.users a on a.id = pc.author_id
-       where p.author_id = ${me} and pc.author_id <> ${me} and pc.created_at > ${since}
-      union all
-      -- someone liked a comment of mine; title carries the post author's id so the link can open that profile
-      select 'comment_like', cl.created_at, a.id,
-             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'Someone'), p.author_id::text, p.id, null
-        from public.post_comment_likes cl
-        join public.post_comments pc on pc.id = cl.comment_id
-        join public.posts p on p.id = pc.post_id
-        join public.users a on a.id = cl.user_id
-       where pc.author_id = ${me} and cl.user_id <> ${me} and cl.created_at > ${since}
-      union all
-      -- a seller sent me a contract; target is the conversation
-      select 'contract_sent', k.created_at, a.id,
-             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'The seller'), k.item_title, k.conversation_id, k.total_cents
-        from public.contracts k join public.users a on a.id = k.seller_id
-       where k.buyer_id = ${me} and k.created_at > ${since}
-      union all
-      -- the buyer accepted or rejected my contract; title is the answer
-      select 'contract_answered', k.responded_at, a.id,
-             coalesce(nullif(a.name, ''), 'The buyer'), k.status, k.conversation_id, k.total_cents
-        from public.contracts k join public.users a on a.id = k.buyer_id
-       where k.seller_id = ${me} and k.status in ('accepted', 'rejected') and k.responded_at > ${since}
-      union all
-      select 'contract_comment', cc.created_at, a.id,
-             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'Someone'), k.item_title, k.conversation_id, null
-        from public.contract_comments cc
-        join public.contracts k on k.id = cc.contract_id
-        join public.users a on a.id = cc.author_id
-       where (k.buyer_id = ${me} or k.seller_id = ${me}) and cc.author_id <> ${me} and cc.created_at > ${since}
-      union all
-      -- the seller added or changed the tracking number on my order
-      select 'tracking', o.tracking_updated_at, a.id,
-             coalesce(nullif(a.shop_name, ''), nullif(a.name, ''), 'The seller'), o.title, o.id, null
-        from public.orders o join public.users a on a.id = o.seller_id
-       where o.buyer_id = ${me} and o.tracking_updated_at > ${since}
-    ) n
+    select * from (${notificationEventsSql([userId], since)}) n
     order by at desc
     limit ${LIMIT}::int`);
   // Profile pictures of the people behind the notifications

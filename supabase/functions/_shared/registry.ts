@@ -18,6 +18,7 @@ import * as messages from "./modules/messages.ts";
 import * as notifications from "./modules/notifications.ts";
 import * as orders from "./modules/orders.ts";
 import * as posts from "./modules/posts.ts";
+import * as push from "./modules/push.ts";
 import * as reports from "./modules/reports.ts";
 import * as reviews from "./modules/reviews.ts";
 import * as shipping from "./modules/shipping.ts";
@@ -66,6 +67,7 @@ export const registry = {
   notifications: functionsOf(notifications),
   orders: functionsOf(orders),
   posts: functionsOf(posts),
+  push: functionsOf(push),
   reports: functionsOf(reports),
   reviews: functionsOf(reviews),
   shipping: functionsOf(shipping),

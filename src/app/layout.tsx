@@ -17,7 +17,9 @@ export const metadata: Metadata = {
   },
   description:
     "An 18+ marketplace to buy and sell worn lingerie, panties, socks and custom requests. Zero commission for sellers.",
-  icons: { icon: "/favicon.ico" },
+  icons: { icon: "/favicon.ico", apple: "/logo.png" },
+  // Opens full screen from the iPhone home screen, which push notifications need
+  appleWebApp: { capable: true, title: "Taboo Desires", statusBarStyle: "black" },
   // The site is already dark: ask dark-mode extensions (Dark Reader and
   // similar) not to recolor it, which darkens the violet backgrounds.
   other: { "darkreader-lock": "" },
