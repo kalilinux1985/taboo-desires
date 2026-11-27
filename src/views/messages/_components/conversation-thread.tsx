@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import Link from "next/link";
 import { useMutation, usePaginatedQuery, useQuery } from "@/lib/backend/react.tsx";
 import { format, formatDistanceToNow, isSameDay, isToday } from "date-fns";
@@ -19,18 +19,40 @@ import { useUpgradeGate } from "@/hooks/use-upgrade-gate.ts";
 import { deniedMessage } from "@/shared/accounts.ts";
 import UpgradeNotice from "@/components/upgrade-notice.tsx";
 import ProfileAvatar from "@/components/profile-avatar.tsx";
+import { useTyping } from "@/hooks/use-typing.ts";
 
 function formatTime(ms: number) {
   return isToday(ms) ? format(ms, "h:mm a") : format(ms, "MMM d, h:mm a");
 }
 
-function Composer({ conversationId, isSeller }: { conversationId: Id<"conversations">; isSeller: boolean }) {
+/** After this long without a keystroke, tell the other person I stopped typing */
+const IDLE_MS = 4000;
+
+function Composer({
+  conversationId,
+  isSeller,
+  onTyping,
+}: {
+  conversationId: Id<"conversations">;
+  isSeller: boolean;
+  onTyping: (typing: boolean) => void;
+}) {
   const [contractOpen, setContractOpen] = useState(false);
   const access = useAccess();
   const { blockAndRedirect } = useUpgradeGate();
   const send = useMutation(api.messages.send);
   const [body, setBody] = useState("");
   const [sending, setSending] = useState(false);
+  const idle = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => clearTimeout(idle.current), []);
+
+  const changeBody = (text: string) => {
+    setBody(text);
+    clearTimeout(idle.current);
+    if (!text.trim()) return onTyping(false);
+    onTyping(true);
+    idle.current = setTimeout(() => onTyping(false), IDLE_MS);
+  };
 
   const submit = async (e?: FormEvent) => {
     e?.preventDefault();
@@ -38,6 +60,8 @@ function Composer({ conversationId, isSeller }: { conversationId: Id<"conversati
     if (!text || sending) return;
     if (blockAndRedirect("message")) return;
     setSending(true);
+    clearTimeout(idle.current);
+    onTyping(false);
     try {
       await send({ conversationId, body: text });
       setBody("");
@@ -83,7 +107,8 @@ function Composer({ conversationId, isSeller }: { conversationId: Id<"conversati
       )}
       <Textarea
         value={body}
-        onChange={(e) => setBody(e.target.value)}
+        onChange={(e) => changeBody(e.target.value)}
+        onBlur={() => onTyping(false)}
         onKeyDown={onKeyDown}
         maxLength={2000}
         rows={1}
@@ -104,15 +129,37 @@ function Composer({ conversationId, isSeller }: { conversationId: Id<"conversati
   );
 }
 
+function TypingBubble({ other }: { other: { name: string; avatarUrl: string | null } }) {
+  return (
+    <div className="flex max-w-[80%] items-start gap-2 self-start" aria-live="polite">
+      <ProfileAvatar name={other.name} url={other.avatarUrl} className="mt-0.5 size-9 rounded-[5px] text-sm" />
+      <div className="flex items-center gap-1 rounded-[5px] bg-[#202227] px-4 py-3" aria-label={`${other.name} is typing`}>
+        {[0, 1, 2].map((i) => (
+          <span
+            key={i}
+            className="size-2 animate-bounce rounded-full bg-violet-600"
+            style={{ animationDelay: `${i * 150}ms` }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function MessageList({
   conversationId,
   meId,
   other,
+  otherReadAt,
+  otherTyping,
 }: {
   conversationId: Id<"conversations">;
   meId: Id<"users">;
   /** The other person, shown beside their messages */
   other: { name: string; avatarUrl: string | null };
+  /** When the other person last read the conversation; null when receipts are off */
+  otherReadAt: string | null;
+  otherTyping: boolean;
 }) {
   const { results, status, loadMore } = usePaginatedQuery(
     api.messages.listMessages,
@@ -133,8 +180,16 @@ function MessageList({
   return (
     // column-reverse keeps the view pinned to the newest message
     <div className="flex min-h-0 flex-1 flex-col-reverse gap-2 overflow-y-auto p-4">
+      {otherTyping && <TypingBubble other={other} />}
       {results.map((m, i) => {
         const mine = m.senderId === meId;
+        // Receipt under the newest message, when it's mine
+        const receipt =
+          i === 0 && mine && otherReadAt !== null
+            ? Date.parse(otherReadAt) >= m._creationTime
+              ? `Seen ${formatTime(Date.parse(otherReadAt))}`
+              : "Sent"
+            : null;
         // A contract's card shows once, on the message that sent it; later replies about it stay text
         const contractCard = m.contractId && !results.slice(i + 1).some((x) => x.contractId === m.contractId);
         const older = results[i + 1];
@@ -150,7 +205,10 @@ function MessageList({
               {m.body}
             </div>
             {contractCard && m.contractId && <ContractCard contractId={m.contractId} />}
-            <span className="px-1 text-xs text-violet-600">{format(m._creationTime, "h:mm a")}</span>
+            <span className="px-1 text-xs text-violet-600">
+              {format(m._creationTime, "h:mm a")}
+              {receipt && <span className="text-muted-foreground"> · {receipt}</span>}
+            </span>
           </div>
         );
         return (
@@ -192,11 +250,20 @@ export default function ConversationThread({
   const convo = useQuery(api.messages.getConversation, { conversationId });
   const markRead = useMutation(api.messages.markRead);
 
-  // Mark read whenever this thread is open and has unread messages (syncs server state)
+  // Mark read while this thread is open and actually on screen, so a read
+  // receipt never claims a message was seen from a background tab
   const unread = convo?.unread ?? false;
   useEffect(() => {
-    if (unread) void markRead({ conversationId }).catch(() => undefined);
+    if (!unread) return;
+    const mark = () => {
+      if (document.visibilityState === "visible") void markRead({ conversationId }).catch(() => undefined);
+    };
+    mark();
+    document.addEventListener("visibilitychange", mark);
+    return () => document.removeEventListener("visibilitychange", mark);
   }, [unread, conversationId, markRead]);
+
+  const { otherTyping, notify } = useTyping(conversationId, convo?.typing ?? false);
 
   if (convo === undefined) {
     return (
@@ -218,8 +285,10 @@ export default function ConversationThread({
         <ProfileAvatar name={convo.other.name} url={convo.other.avatarUrl} className="size-12 rounded-[5px] text-xl" />
         <div className="flex min-w-0 flex-1 flex-col">
           <p className="truncate text-lg font-bold">{convo.other.name}</p>
-          <p className="truncate text-sm text-muted-foreground">
-            {convo.otherLastSeenAt
+          <p className={cn("truncate text-sm", otherTyping ? "text-violet-600" : "text-muted-foreground")}>
+            {otherTyping
+              ? "Typing…"
+              : convo.otherLastSeenAt
               ? `Last active ${formatDistanceToNow(Date.parse(convo.otherLastSeenAt), { addSuffix: true })}`
               : convo.listing
                 ? convo.listing.title
@@ -249,8 +318,14 @@ export default function ConversationThread({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <MessageList conversationId={conversationId} meId={convo.meId} other={convo.other} />
-      <Composer conversationId={conversationId} isSeller={convo.role === "seller"} />
+      <MessageList
+        conversationId={conversationId}
+        meId={convo.meId}
+        other={convo.other}
+        otherReadAt={convo.otherReadAt}
+        otherTyping={otherTyping}
+      />
+      <Composer conversationId={conversationId} isSeller={convo.role === "seller"} onTyping={notify} />
     </div>
   );
 }

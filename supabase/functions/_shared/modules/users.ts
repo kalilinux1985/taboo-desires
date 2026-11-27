@@ -793,3 +793,22 @@ export const topSellers = query({
     return out.filter((r) => r.avatarUrl);
   },
 });
+
+/** My privacy switch for read receipts and typing indicators in messages (default on). */
+export const readReceipts = query({
+  args: {},
+  handler: async (ctx) => {
+    const me = await getCurrentUserDoc(ctx);
+    return me ? me.readReceipts !== false : null;
+  },
+});
+
+/** Turn read receipts and typing indicators on or off. Works both ways: off means I don't see other people's either. */
+export const setReadReceipts = mutation({
+  args: { on: v.boolean() },
+  handler: async (ctx, { on }) => {
+    const me = await requireUser(ctx);
+    if ((me.readReceipts !== false) !== on) await ctx.db.patch("users", me._id, { readReceipts: on });
+    return null;
+  },
+});

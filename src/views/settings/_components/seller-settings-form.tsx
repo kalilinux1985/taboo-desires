@@ -18,6 +18,7 @@ import { getErrorMessage } from "@/lib/listings.ts";
 import { cn } from "@/lib/utils.ts";
 import { Button } from "@/components/ui/button.tsx";
 import PushToggle from "@/components/push-toggle.tsx";
+import ReadReceiptsToggle from "@/components/read-receipts-toggle.tsx";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Label } from "@/components/ui/label.tsx";
@@ -206,6 +207,7 @@ function Form({
           </div>
           ),
         )}
+        <ReadReceiptsToggle />
         <Button onClick={save} disabled={saving} className="w-fit cursor-pointer">
           {saving && <Spinner />} Update Settings
         </Button>
