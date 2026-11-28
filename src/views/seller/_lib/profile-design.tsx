@@ -6,9 +6,9 @@ import { cn } from "@/lib/utils.ts";
 import { Button } from "@/components/ui/button.tsx";
 import { Card } from "@/components/ui/card.tsx";
 
-// Profile design shared by buyer and seller profiles: #191a1f page, #212227
-// outer cards, #141519 inner cards with a faint edge, violet #7c3aed, grey
-// #a4a4a4 labels. Inside `.profile-design` the site's violet classes turn #7c3aed.
+// Profile design shared by buyer and seller profiles: #191a1f page, #202227
+// outer cards, #141519 inner cards, borders #59595B at 25%, violet #7c3aed,
+// white text. Inside `.profile-design` the site's violet classes turn #7c3aed.
 
 export const SERIF = "[font-family:var(--font-profile-buyer),Cambria,Georgia,serif]";
 export const SANS = "font-sans";
@@ -28,7 +28,7 @@ export const imagesLabel = (n: number) => `${n} ${n === 1 ? "Image" : "Images"}`
 /** Filled violet action (Message Buyer / Message Seller) */
 export const FILLED_ACTION = cn(
   SANS,
-  "inline-flex h-[29px] w-[168px] cursor-pointer items-center justify-center rounded-[5px] bg-[#7c3aed] text-[10px] font-bold uppercase tracking-[0.02em] text-[#020516] transition-colors hover:bg-[#7c3aed]",
+  "inline-flex h-[29px] w-[168px] cursor-pointer items-center justify-center rounded-[5px] bg-[#7c3aed] text-[10px] font-bold uppercase tracking-[0.02em] text-white transition-colors hover:bg-[#7c3aed]",
 );
 /** Outlined violet action (Edit Profile, the ⋮ menu) */
 export const OUTLINED_ACTION =
@@ -54,7 +54,7 @@ export function ProfilePage({ children }: { children: ReactNode }) {
 /** The square profile picture: white with a picture icon when there's none. */
 export function ProfilePicture({ url, name }: { url: string | null; name: string }) {
   return (
-    <div className="relative aspect-square w-full max-w-[445px] self-start overflow-hidden rounded-[5px] bg-white shadow-[0_6px_14px_rgba(0,0,0,0.45)] [grid-area:avatar]">
+    <div className="relative aspect-square w-full max-w-[445px] self-start overflow-hidden rounded-[5px] bg-[#202227] shadow-[0_6px_14px_rgba(0,0,0,0.45)] [grid-area:avatar]">
       {url ? (
         <ZoomImage src={url} alt={name} className="size-full"><img src={url} alt={name} className="size-full object-cover" /></ZoomImage>
       ) : (

@@ -40,7 +40,7 @@ export function ShopCard({ listing }: { listing: ListingCardData }) {
           )}
         </div>
         {listing.condition !== "custom_wear" && (
-          <span className="absolute left-3 top-3 rounded-[5px] bg-background/75 px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-accent-foreground">
+          <span className="absolute left-3 top-3 rounded-[5px] bg-[#141519]/75 px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-accent-foreground">
             {CONDITION_LABEL[listing.condition]}
           </span>
         )}
@@ -275,7 +275,7 @@ export function CategoryGrid({
   };
   return (
     <div className="flex flex-col gap-10">
-      <div className="rounded-[5px] border bg-[#18191d] p-5 shadow-[0_14px_34px_-8px_rgba(0,0,0,0.3)]">
+      <div className="rounded-[5px] border bg-[#141519] p-5 shadow-[0_14px_34px_-8px_rgba(0,0,0,0.3)]">
         {shown.length === 0 ? (
           <div className="flex justify-center py-24">
             <Spinner />

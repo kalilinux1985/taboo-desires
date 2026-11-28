@@ -33,11 +33,11 @@ export function ShopHeader({
 }) {
   return (
     <div className="flex items-center gap-[23px]">
-      <div className="flex size-[115px] shrink-0 items-center justify-center overflow-hidden rounded-[5px] bg-[#a8a9ae]">
+      <div className="flex size-[115px] shrink-0 items-center justify-center overflow-hidden rounded-[5px] bg-[#202227]">
         {avatarUrl ? (
           <img src={avatarUrl} alt={name} className="size-full object-cover" />
         ) : (
-          <UserRound className="size-[92px] text-[#2a2a2e]" strokeWidth={1.25} />
+          <UserRound className="size-[92px] text-white/40" strokeWidth={1.25} />
         )}
       </div>
       <div className="min-w-0">
@@ -63,19 +63,19 @@ function ShopCard({ listing }: { listing: ListingCardData }) {
   return (
     <div className={cn(CARD, "relative flex min-w-0 flex-col overflow-hidden bg-[#141519]")}>
       <Link href={`/listing/${listing._id}`} className="group flex flex-1 cursor-pointer flex-col">
-        <div className="relative aspect-[1.68] overflow-hidden bg-white">
+        <div className="relative aspect-[1.68] overflow-hidden bg-[#202227]">
           {listing.imageUrl ? (
             <img src={listing.imageUrl} alt={listing.title} loading="lazy" className="size-full object-cover" />
           ) : (
             <div className="flex size-full items-center justify-center">
-              <ImageIcon className="size-[55%] text-[#8a9199]" strokeWidth={1.1} />
+              <ImageIcon className="size-[55%] text-white/40" strokeWidth={1.1} />
             </div>
           )}
-          <span className="absolute -bottom-[11px] left-[20px] flex size-[44px] items-center justify-center overflow-hidden rounded-[5px] bg-[#a8a9ae]">
+          <span className="absolute -bottom-[11px] left-[20px] flex size-[44px] items-center justify-center overflow-hidden rounded-[5px] bg-[#202227]">
             {listing.sellerAvatarUrl ? (
               <img src={listing.sellerAvatarUrl} alt="" className="size-full object-cover" />
             ) : (
-              <UserRound className="size-9 text-[#2a2a2e]" strokeWidth={1.5} />
+              <UserRound className="size-9 text-white/40" strokeWidth={1.5} />
             )}
           </span>
         </div>
@@ -157,7 +157,7 @@ export function ShopTab({ sellerId, total: allCount, isMe }: { sellerId: Id<"use
             : `Showing ${from}-${to} of ${total} Listings.`}
       </p>
 
-      <div className="rounded-[5px] bg-[#18191d] p-[17px]">
+      <div className="rounded-[5px] bg-[#141519] p-[17px]">
         {data === undefined ? (
           <div className="grid gap-[17px] sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (

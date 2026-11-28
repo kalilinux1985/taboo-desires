@@ -59,7 +59,7 @@ function NotificationList() {
     );
   }
   return (
-    <ul className="flex flex-col divide-y divide-white/25 rounded-[5px] border bg-card shadow-[0_14px_34px_-8px_rgba(0,0,0,0.3)]">
+    <ul className="flex flex-col divide-y divide-[#59595b40] rounded-[5px] border bg-card shadow-[0_14px_34px_-8px_rgba(0,0,0,0.3)]">
       {items.map((n, i) => {
         const { icon: IconComponent, text, href } = describe(n, me?._id);
         return (
@@ -67,7 +67,7 @@ function NotificationList() {
             <Link
               href={href}
               className={cn(
-                "flex items-start gap-3 px-4 py-3 transition-colors hover:bg-white/5",
+                "flex items-start gap-3 px-4 py-3 transition-colors hover:bg-[#202227]",
                 n.unread && "bg-primary/15",
               )}
             >
@@ -80,7 +80,7 @@ function NotificationList() {
                   {formatDistanceToNow(n.at, { addSuffix: true })}
                 </span>
               </span>
-              {n.unread && <span aria-label="New" className="mt-2 size-2 shrink-0 rounded-full bg-rose-500" />}
+              {n.unread && <span aria-label="New" className="mt-2 size-2 shrink-0 rounded-full bg-violet-600" />}
             </Link>
           </li>
         );

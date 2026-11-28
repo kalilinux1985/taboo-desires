@@ -76,7 +76,7 @@ export default function PhotoUploader({
             type="button"
             aria-label="Remove photo"
             onClick={() => onChange(photos.filter((x) => x.id !== p.id))}
-            className="absolute right-1 top-1 flex size-7 cursor-pointer items-center justify-center rounded-full bg-black/70 text-white"
+            className="absolute right-1 top-1 flex size-7 cursor-pointer items-center justify-center rounded-full bg-[#0c0f15]/70 text-white"
           >
             <X className="size-4" />
           </Button>

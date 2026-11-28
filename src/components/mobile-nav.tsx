@@ -70,8 +70,8 @@ function NavLink({
       href={href}
       onClick={onNavigate}
       className={cn(
-        "flex items-center gap-3 rounded-[5px] px-3 py-1.5 text-lg text-white transition-colors hover:bg-[#151518]",
-        active && "bg-[#1f1336]",
+        "flex items-center gap-3 rounded-[5px] px-3 py-1.5 text-lg text-white transition-colors hover:bg-[#202227]",
+        active && "bg-[#202227]",
       )}
     >
       <IconComponent className="size-5 shrink-0 text-violet-600" />
@@ -95,13 +95,13 @@ function ShopSection({
 }) {
   return (
     <Collapsible className="group/section">
-      <CollapsibleTrigger className="flex w-full cursor-pointer items-center gap-2 rounded-[5px] px-3 py-1.5 text-left text-base text-white transition-colors hover:bg-[#151518]">
+      <CollapsibleTrigger className="flex w-full cursor-pointer items-center gap-2 rounded-[5px] px-3 py-1.5 text-left text-base text-white transition-colors hover:bg-[#202227]">
         <ChevronRight className="size-4 shrink-0 text-violet-600 transition-transform group-data-[state=open]/section:rotate-90" />
         <span>{section.label}</span>
         <ChevronDown className="size-4 shrink-0 text-violet-600 transition-transform group-data-[state=open]/section:rotate-180" />
       </CollapsibleTrigger>
       <CollapsibleContent className="data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down overflow-hidden">
-        <ul className="mx-1 mb-2 mt-1 rounded-[5px] bg-background py-1.5">
+        <ul className="mx-1 mb-2 mt-1 rounded-[5px] bg-[#202227] py-1.5">
           {section.links.map((l) => {
             const href = "page" in l ? shopPageHref(l.page) : l.href;
             return (
@@ -109,7 +109,7 @@ function ShopSection({
               <Link
                 href={href}
                 onClick={onNavigate}
-                className="mx-1.5 block rounded-[5px] px-4 py-2.5 text-base transition-colors hover:bg-[#151518]"
+                className="mx-1.5 block rounded-[5px] px-4 py-2.5 text-base transition-colors hover:bg-[#202227]"
               >
                 {l.label}
               </Link>
@@ -126,7 +126,7 @@ function AccountHeader({ onNavigate }: { onNavigate: () => void }) {
   const { isLoading, isAuthenticated } = useBackendAuth();
   const me = useQuery(api.users.menu, isAuthenticated ? {} : "skip");
   if (isLoading || (isAuthenticated && me === undefined)) {
-    return <div className="mx-auto size-[52px] animate-pulse rounded-[3px] bg-[#1f1f22]" />;
+    return <div className="mx-auto size-[52px] animate-pulse rounded-[3px] bg-[#202227]" />;
   }
   if (!me) {
     return (
@@ -151,7 +151,7 @@ function AccountHeader({ onNavigate }: { onNavigate: () => void }) {
       <ProfileAvatar
         name={me.name}
         url={me.avatarUrl}
-        className="size-[52px] rounded-[3px] bg-white text-2xl text-primary"
+        className="size-[52px] rounded-[3px] bg-[#202227] text-2xl text-primary"
       />
       <span className="max-w-full truncate text-lg font-bold text-white">{me.name}</span>
     </Link>
@@ -220,7 +220,7 @@ function PremiumBanner({ onNavigate }: { onNavigate: () => void }) {
     <Link
       href="/pricing"
       onClick={onNavigate}
-      className="group flex items-center justify-center gap-2 py-2.5 text-base font-extrabold uppercase tracking-[0.04em] text-white transition-colors hover:bg-[#1f1336]"
+      className="group flex items-center justify-center gap-2 py-2.5 text-base font-extrabold uppercase tracking-[0.04em] text-white transition-colors hover:bg-[#202227]"
     >
       <BadgeCheck className="size-5 text-violet-600" />
       Go Premium
@@ -259,7 +259,7 @@ export default function MobileNav() {
       <SheetContent
         side="left"
         showCloseButton={false}
-        className="flex w-[88vw] max-w-sm flex-col gap-0 overflow-y-auto border-[#141417] bg-[#09090b] p-0 pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]"
+        className="flex w-[88vw] max-w-sm flex-col gap-0 overflow-y-auto border-[#59595b40] bg-[#141519] p-0 pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]"
       >
         <SheetTitle className="sr-only">Site menu</SheetTitle>
         <SheetDescription className="sr-only">
@@ -289,26 +289,26 @@ export default function MobileNav() {
           <AccountHeader onNavigate={close} />
         </div>
 
-        <Separator className="bg-[#474749]" />
+        <Separator className="bg-[#59595b40]" />
         <PremiumBanner onNavigate={close} />
-        <Separator className="bg-[#474749]" />
+        <Separator className="bg-[#59595b40]" />
 
         {isAuthenticated && (
           <>
             <AccountLinks onNavigate={close} />
-            <Separator className="bg-[#474749]" />
+            <Separator className="bg-[#59595b40]" />
           </>
         )}
         <FindLinks onNavigate={close} />
-        <Separator className="bg-[#474749]" />
+        <Separator className="bg-[#59595b40]" />
         <nav aria-label="Shop" className="flex flex-col gap-0.5 px-3 py-3">
           {SHOP_SECTIONS.map((s) => (
             <ShopSection key={s.label} section={s} onNavigate={close} />
           ))}
         </nav>
-        <Separator className="bg-[#474749]" />
+        <Separator className="bg-[#59595b40]" />
         <SupportLinks onNavigate={close} />
-        <Separator className="bg-[#474749]" />
+        <Separator className="bg-[#59595b40]" />
 
         <div className="px-4 py-4">
           {isAuthenticated ? (

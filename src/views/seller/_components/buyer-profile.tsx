@@ -79,7 +79,7 @@ function About({ profile }: { profile: Profile }) {
       <p className="text-center text-[15px] text-white">
         {profile.stats.followerCount} Followers - {profile.counts.following} Following
       </p>
-      <span className="mb-3 mt-[21px] block h-px bg-[#0a0c18]" />
+      <span className="mb-3 mt-[21px] block h-px bg-[#59595b40]" />
       <dl className="flex flex-col">
         <Detail label="Gender" value={value("gender")} />
         <Detail label="Age" value={value("ageRange")} />

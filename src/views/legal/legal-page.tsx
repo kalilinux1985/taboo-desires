@@ -22,7 +22,7 @@ export default function LegalPage({
           <p className="mt-1 text-sm text-muted-foreground">Last updated {LEGAL_UPDATED}</p>
           {intro && <p className={cn(SANS, "mt-5 text-[15px] leading-7 text-white")}>{intro}</p>}
           <div className={cn(SANS, "mt-6 flex flex-col gap-6 text-[15px] leading-7 text-white")}>{children}</div>
-          <nav className="mt-10 flex flex-wrap gap-x-5 gap-y-2 border-t border-white/10 pt-5 text-sm">
+          <nav className="mt-10 flex flex-wrap gap-x-5 gap-y-2 border-t border-[#59595b40] pt-5 text-sm">
             <Link href="/terms" className="text-[#7c3aed] hover:underline">Terms</Link>
             <Link href="/privacy" className="text-[#7c3aed] hover:underline">Privacy</Link>
             <Link href="/content-policy" className="text-[#7c3aed] hover:underline">Content policy</Link>

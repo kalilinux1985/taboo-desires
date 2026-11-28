@@ -56,7 +56,7 @@ export function UnlockedMedia({ media }: { media: NonNullable<Locked["media"]> }
       <div className="grid gap-3 sm:grid-cols-2">
         {media.map((m) =>
           m.kind === "video" ? (
-            <video key={m.storageId} src={m.url} controls playsInline className="w-full rounded-[5px] bg-black" />
+            <video key={m.storageId} src={m.url} controls playsInline className="w-full rounded-[5px] bg-[#0c0f15]" />
           ) : (
             <a key={m.storageId} href={m.url} target="_blank" rel="noreferrer" className="cursor-pointer">
               <img src={m.url} alt="" className="w-full rounded-[5px] object-cover" />
@@ -281,7 +281,7 @@ export function UnlockBox({
   );
 }
 
-const TILE = "flex aspect-square items-center justify-center overflow-hidden rounded-[5px] bg-[#30333e]";
+const TILE = "flex aspect-square items-center justify-center overflow-hidden rounded-[5px] bg-[#202227]";
 
 /** Instant Content: shown to a buyer while their 24 hours are running. */
 export function AccessNotice({ expiresAt }: { expiresAt: number | null }) {

@@ -83,7 +83,7 @@ function Gallery({
   const current = images[active] ?? images[0];
   return (
     <div className="flex flex-col gap-3">
-      <div className="relative aspect-[8/5] overflow-hidden rounded-[5px] bg-white shadow-[0_6px_14px_rgba(0,0,0,0.35)]">
+      <div className="relative aspect-[8/5] overflow-hidden rounded-[5px] bg-[#202227] shadow-[0_6px_14px_rgba(0,0,0,0.35)]">
         {/* Click to see the whole picture in a popup */}
         {current && (
           <ZoomImage src={current.url} alt={title} className="size-full">
@@ -91,7 +91,7 @@ function Gallery({
           </ZoomImage>
         )}
         {locked && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/30 text-white">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[#0c0f15]/30 text-white">
             <span className="flex size-14 items-center justify-center rounded-full text-[#7c3aed] drop-shadow-md">
               <Lock className="size-6" />
             </span>
@@ -208,7 +208,7 @@ function SellerCard({ seller }: { seller: Seller }) {
       <ProfileAvatar
         name={seller.name}
         url={seller.avatarUrl}
-        className="size-[90px] shrink-0 rounded-[5px] bg-[#a8a9ae] text-3xl text-[#2a2a2e]"
+        className="size-[90px] shrink-0 rounded-[5px] bg-[#202227] text-3xl text-white/40"
       />
       <div className="flex min-w-0 flex-1 flex-col">
         <span className={cn(SANS, "flex items-center gap-1 text-[13px] text-[#7c3aed]")}>

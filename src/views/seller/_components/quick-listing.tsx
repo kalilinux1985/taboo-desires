@@ -35,7 +35,7 @@ import { profileFontVars } from "../_lib/fonts.ts";
 
 const MAX_BYTES = 10 * 1024 * 1024;
 const MAX_PHOTOS = 1;
-const FIELD = "h-9 rounded-[5px] border-white/[3%] text-sm placeholder:text-white/70";
+const FIELD = "h-9 rounded-[5px] border-[#59595b40] text-sm placeholder:text-white/70";
 
 type Photo = { id: Id<"_storage">; url: string };
 
@@ -148,7 +148,7 @@ function QuickListingForm({ onPosted }: { onPosted: () => void }) {
                 type="button"
                 aria-label="Remove photo"
                 onClick={() => setPhotos((all) => all.filter((x) => x.id !== p.id))}
-                className="absolute right-0.5 top-0.5 flex size-5 cursor-pointer items-center justify-center rounded-full bg-black/70 text-white"
+                className="absolute right-0.5 top-0.5 flex size-5 cursor-pointer items-center justify-center rounded-full bg-[#0c0f15]/70 text-white"
               >
                 <X className="size-3" />
               </Button>
@@ -211,7 +211,7 @@ export default function CreateListingButton({ className }: { className?: string 
         </Button>
       </DialogTrigger>
       <DialogContent
-        className={cn(profileFontVars, TEXT_FONT, "max-h-[90vh] overflow-y-auto border-white/[3%] bg-[#52525214] sm:max-w-lg")}
+        className={cn(profileFontVars, TEXT_FONT, "max-h-[90vh] overflow-y-auto border-[#59595b40] bg-[#202227] sm:max-w-lg")}
       >
         <DialogHeader>
           <DialogTitle className={cn(HEADING_FONT, "w-fit border-b-2 border-violet-bright pb-0.5 text-2xl font-normal")}>

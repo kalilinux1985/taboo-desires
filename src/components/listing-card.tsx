@@ -42,14 +42,14 @@ export function ListingCard({ listing }: { listing: ListingCardData }) {
           />
         )}
         {listing.status !== "active" && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/55">
+          <div className="absolute inset-0 flex items-center justify-center bg-[#0c0f15]/55">
             <span className="font-display text-3xl text-white">
               {listing.status === "sold" ? "Sold" : "Unsold"}
             </span>
           </div>
         )}
         {listing.condition !== "custom_wear" && (
-          <Badge className="absolute left-2 top-2 rounded-[5px] bg-background/90 text-foreground uppercase tracking-wide">
+          <Badge className="absolute left-2 top-2 rounded-[5px] bg-[#141519]/90 text-foreground uppercase tracking-wide">
             {CONDITION_LABEL[listing.condition]}
           </Badge>
         )}

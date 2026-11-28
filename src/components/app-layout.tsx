@@ -47,7 +47,7 @@ export const HEADER_ICON_BUTTON =
   "relative flex size-[41px] shrink-0 cursor-pointer items-center justify-center rounded-[5px] text-violet-600 transition-colors hover:text-violet-600";
 
 const COUNT_BADGE =
-  "absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 font-sans text-[10px] font-bold text-white";
+  "absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-violet-600 px-1 font-sans text-[10px] font-bold text-white";
 
 /** Round logo mark (links home). */
 export function LogoMark({ className }: { className?: string }) {
@@ -114,12 +114,12 @@ function ShopMenu({ label, short, section }: (typeof MENUS)[number]) {
       <DropdownMenuContent
         align="start"
         sideOffset={14}
-        className="w-max min-w-0 rounded-[5px] border-white/[3%] bg-[#09090b] px-1.5 py-1 font-serif"
+        className="w-max min-w-0 rounded-[5px] border-[#59595b40] bg-[#141519] px-1.5 py-1 font-serif"
       >
         {links.map((l) => {
           const href = "page" in l ? shopPageHref(l.page) : l.href;
           return (
-            <DropdownMenuItem key={href} asChild className="cursor-pointer rounded-none border-b border-white/10 px-2 py-[5px] text-[13px] xl:text-[15px] leading-tight text-white transition-colors last:border-b-0 hover:bg-transparent hover:text-violet-600 focus:bg-transparent focus:text-violet-600">
+            <DropdownMenuItem key={href} asChild className="cursor-pointer rounded-none border-b border-[#59595b40] px-2 py-[5px] text-[13px] xl:text-[15px] leading-tight text-white transition-colors last:border-b-0 hover:bg-transparent hover:text-violet-600 focus:bg-transparent focus:text-violet-600">
               <Link href={href}>{l.label}</Link>
             </DropdownMenuItem>
           );
@@ -141,7 +141,7 @@ function HeaderSearch() {
     setOpen(false);
   };
   const field = (autoFocus: boolean) => (
-    <form onSubmit={submit} role="search" className="flex h-[41px] w-full items-center gap-2.5 rounded-[5px] bg-[#09090b] px-3 shadow-[inset_0_3px_8px_rgba(0,0,0,0.28),inset_0_0_3px_rgba(0,0,0,0.28)]">
+    <form onSubmit={submit} role="search" className="flex h-[41px] w-full items-center gap-2.5 rounded-[5px] bg-[#141519] px-3 shadow-[inset_0_3px_8px_rgba(0,0,0,0.28),inset_0_0_3px_rgba(0,0,0,0.28)]">
       <Search className="size-5 shrink-0 text-white" strokeWidth={1.5} />
       <Input
         value={text}
@@ -160,7 +160,7 @@ function HeaderSearch() {
         <PopoverTrigger aria-label="Search" className={cn(HEADER_ICON_BUTTON, "xl:hidden")}>
           <Search className="size-5" strokeWidth={1.75} />
         </PopoverTrigger>
-        <PopoverContent align="start" sideOffset={10} className="w-72 rounded-[5px] border-white/[3%] bg-[#09090b]/90 p-2">
+        <PopoverContent align="start" sideOffset={10} className="w-72 rounded-[5px] border-[#59595b40] bg-[#141519]/90 p-2">
           {field(true)}
         </PopoverContent>
       </Popover>
@@ -170,7 +170,7 @@ function HeaderSearch() {
 
 function Header() {
   return (
-    <header className="sticky top-0 z-40 bg-[#09090b]/98">
+    <header className="sticky top-0 z-40 bg-[#141519]/98">
       <div className="mx-auto flex h-[60px] max-w-[1205px] items-center justify-between gap-4 px-4 md:justify-center xl:px-0">
         {/* Phones: menu button and logo on the left, actions on the right.
             Wider screens: logo and search, shop menus and actions centred as one group. */}

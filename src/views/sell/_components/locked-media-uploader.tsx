@@ -213,7 +213,7 @@ export default function LockedMediaUploader({
                 type="button"
                 aria-label="Remove photo"
                 onClick={() => removePhoto(item.storageId)}
-                className="absolute right-1 top-1 flex size-7 cursor-pointer items-center justify-center rounded-full bg-black/70 text-white"
+                className="absolute right-1 top-1 flex size-7 cursor-pointer items-center justify-center rounded-full bg-[#0c0f15]/70 text-white"
               >
                 <X className="size-4" />
               </Button>
@@ -245,14 +245,14 @@ export default function LockedMediaUploader({
           {items[0] ? (
             <div className={TILE}>
               <video src={items[0].url} muted playsInline className="size-full object-cover" />
-              <span className="absolute bottom-1 left-1 flex items-center gap-1 rounded-[5px] bg-black/70 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white">
+              <span className="absolute bottom-1 left-1 flex items-center gap-1 rounded-[5px] bg-[#0c0f15]/70 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white">
                 <Film className="size-3" /> Video
               </span>
               <Button variant="plain" size="none"
                 type="button"
                 aria-label="Remove video"
                 onClick={() => onChange({ items: [], cover })}
-                className="absolute right-1 top-1 flex size-7 cursor-pointer items-center justify-center rounded-full bg-black/70 text-white"
+                className="absolute right-1 top-1 flex size-7 cursor-pointer items-center justify-center rounded-full bg-[#0c0f15]/70 text-white"
               >
                 <X className="size-4" />
               </Button>
@@ -278,7 +278,7 @@ export default function LockedMediaUploader({
                 type="button"
                 aria-label="Remove thumbnail"
                 onClick={() => onChange({ items, cover: null })}
-                className="absolute right-1 top-1 flex size-7 cursor-pointer items-center justify-center rounded-full bg-black/70 text-white"
+                className="absolute right-1 top-1 flex size-7 cursor-pointer items-center justify-center rounded-full bg-[#0c0f15]/70 text-white"
               >
                 <X className="size-4" />
               </Button>

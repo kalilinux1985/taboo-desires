@@ -72,7 +72,7 @@ function PlanActions({ months, mine }: { months: number; mine: Mine | null }) {
     <Button
       variant="outline"
       disabled={pending}
-      className="h-9 w-full cursor-pointer rounded-[5px] border-white/[3%] bg-transparent text-sm font-semibold"
+      className="h-9 w-full cursor-pointer rounded-[5px] border-[#59595b40] bg-transparent text-sm font-semibold"
     >
       Pay another way <ArrowRight className="size-4" />
     </Button>
@@ -81,7 +81,7 @@ function PlanActions({ months, mine }: { months: number; mine: Mine | null }) {
     <>
       {pending ? goPremium : <RequestProDialog months={months} trigger={goPremium} />}
       <p className="text-center text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Subscription</p>
-      <div className="h-px bg-white/25" />
+      <div className="h-px bg-[#59595b40]" />
       {pending ? another : <RequestProDialog months={months} payAnotherWay trigger={another} />}
     </>
   );
@@ -91,7 +91,7 @@ function PlanCard({ months, discount, mine }: { months: number; discount: number
   return (
     <div className="relative flex flex-col gap-4 overflow-hidden rounded-[5px] border bg-card p-6 text-center shadow-[0_14px_34px_-8px_rgba(0,0,0,0.3)]">
       {discount > 0 && (
-        <span className="absolute -right-10 top-6 w-36 rotate-45 bg-rose-500 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-white">
+        <span className="absolute -right-10 top-6 w-36 rotate-45 bg-violet-600 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-white">
           Save {discount}%
         </span>
       )}
@@ -100,7 +100,7 @@ function PlanCard({ months, discount, mine }: { months: number; discount: number
       <p className="font-semibold text-muted-foreground">
         ${(planMonthlyCents(months) / 100).toFixed(2)} / month
       </p>
-      <div className="h-px bg-white/25" />
+      <div className="h-px bg-[#59595b40]" />
       <AuthLoading>
         <Skeleton className="h-11 w-full rounded-[5px]" />
       </AuthLoading>
@@ -200,7 +200,7 @@ export default function PricingPage() {
           className="flex flex-col items-center gap-3 border-b pb-8 text-center"
         >
           <h1 className="flex flex-wrap items-center justify-center gap-x-3 font-display text-4xl text-balance md:text-6xl">
-            <Medal className="size-10 text-red-500 md:size-12" /> Become Premium &amp; start making money!
+            <Medal className="size-10 text-violet-600 md:size-12" /> Become Premium &amp; start making money!
           </h1>
           <p className="text-lg font-semibold text-violet-600">One sale can cover your whole plan.</p>
         </motion.header>

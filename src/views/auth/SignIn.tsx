@@ -16,7 +16,7 @@ import { callbackUrl, resolveReturnTo } from "./return-to.ts";
 
 // The sign-in design: logo and wordmark over a framed card on the left, the
 // tiled portrait filling the right half. Sign-up uses the
-// same card. Page #0c0f15, frame #1f2126, card #141519, violet #7c3aed.
+// same card. Page #0c0f15, frame #202227, card #141519, violet #7c3aed.
 
 type Mode = "signin" | "signup";
 
@@ -33,10 +33,10 @@ const FIELD = cn(
 );
 const SUBMIT = cn(
   ROUNDED,
-  "flex h-[38px] w-full cursor-pointer items-center justify-center gap-2 rounded-[5px] bg-[#7c3aed] text-[16px] font-bold text-white transition-colors hover:bg-[#5b24b3] disabled:cursor-default disabled:opacity-60",
+  "flex h-[38px] w-full cursor-pointer items-center justify-center gap-2 rounded-[5px] bg-[#7c3aed] text-[16px] font-bold text-white transition-colors hover:bg-[#7c3aed]/85 disabled:cursor-default disabled:opacity-60",
 );
 const FOOTNOTE = cn(ROUNDED, "text-center text-[12px] text-white");
-const FOOT_LINK = "cursor-pointer text-[#7c3aed] underline underline-offset-2 hover:text-[#9d5cff]";
+const FOOT_LINK = "cursor-pointer text-[#7c3aed] underline underline-offset-2 hover:text-[#7c3aed]/80";
 
 /** The two-column page: the card on the left, the portrait on the right. */
 function Shell({ children }: { children: React.ReactNode }) {
@@ -45,9 +45,9 @@ function Shell({ children }: { children: React.ReactNode }) {
       <div className="flex flex-col items-center justify-center px-4 py-10 sm:px-8">
         <Link href="/" className="flex flex-col items-center gap-[10px]">
           <img src="/signin/logo.png" alt="" className="size-[122px]" />
-          <span className="[font-family:var(--font-nurma),Arial,sans-serif] text-[40px] leading-none text-[#69269e] sm:text-[44px]">Taboo Desire&apos;s</span>
+          <span className="[font-family:var(--font-nurma),Arial,sans-serif] text-[40px] leading-none text-[#7c3aed] sm:text-[44px]">Taboo Desires</span>
         </Link>
-        <div className="mt-[18px] w-full max-w-[498px] rounded-[5px] border border-[#59595b40] bg-[#1f2126] p-[10px] shadow-[0_10px_22px_rgba(0,0,0,0.6)]">
+        <div className="mt-[18px] w-full max-w-[498px] rounded-[5px] border border-[#59595b40] bg-[#202227] p-[10px] shadow-[0_10px_22px_rgba(0,0,0,0.6)]">
           <div className="rounded-[5px] border border-[#59595b40] bg-[#141519] px-6 py-10 shadow-[0_6px_16px_rgba(0,0,0,0.55)] sm:px-[50px]">{children}</div>
         </div>
       </div>
@@ -295,7 +295,7 @@ export default function SignInPage() {
                     "h-[42px] cursor-pointer rounded-[5px] border text-[15px] font-bold capitalize transition-colors",
                     accountType === t
                       ? "border-[#7c3aed] bg-[#7c3aed]/30 text-white"
-                      : "border-[#33333355] text-white hover:border-[#7c3aed]",
+                      : "border-[#59595b40] text-white hover:border-[#7c3aed]",
                   )}
                 >
                   {t}

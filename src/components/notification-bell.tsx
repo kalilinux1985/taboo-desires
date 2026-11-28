@@ -28,7 +28,7 @@ function CountBadge() {
   const count = useQuery(api.notifications.unreadCount, {});
   if (!count) return null;
   return (
-    <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">
+    <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-violet-600 px-1 text-[10px] font-bold text-white">
       {count > 9 ? "9+" : count}
     </span>
   );
@@ -179,8 +179,8 @@ export default function NotificationBell({
           </Button>
         )}
       </PopoverTrigger>
-      <PopoverContent align="end" sideOffset={8} className="flex w-[min(24rem,calc(100vw-1.5rem))] flex-col rounded-[5px] border-white/10 bg-[#09090b] p-0">
-        <div className="flex items-baseline gap-3 border-b border-white/10 px-4 py-4">
+      <PopoverContent align="end" sideOffset={8} className="flex w-[min(24rem,calc(100vw-1.5rem))] flex-col rounded-[5px] border-[#59595b40] bg-[#141519] p-0">
+        <div className="flex items-baseline gap-3 border-b border-[#59595b40] px-4 py-4">
           <p className="font-display text-xl">Notifications</p>
           <HideOnError>
             <NewCount />
@@ -203,7 +203,7 @@ export default function NotificationBell({
         <Button
           asChild
           variant="ghost"
-          className="h-auto cursor-pointer rounded-none border-t border-white/10 py-4 font-display text-xl text-violet-600 hover:text-violet-600"
+          className="h-auto cursor-pointer rounded-none border-t border-[#59595b40] py-4 font-display text-xl text-violet-600 hover:text-violet-600"
         >
           <Link href="/notifications" onClick={() => onOpenChange(false)}>
             View All Notifications

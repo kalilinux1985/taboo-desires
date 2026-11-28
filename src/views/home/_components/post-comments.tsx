@@ -34,7 +34,7 @@ function SmallAvatar({ name, url }: { name: string; url: string | null }) {
       name={name}
       url={url}
       className={cn(
-        "bg-[#a8a9ae] text-sm text-[#2a2a2e]",
+        "bg-[#202227] text-sm text-white/40",
         profile ? "size-[27px] rounded-[5px]" : "size-[31px] rounded-full",
       )}
     />
@@ -45,7 +45,7 @@ function SmallAvatar({ name, url }: { name: string; url: string | null }) {
 const COMMENT_BOX = "comment-surface rounded-[5px] bg-background shadow-[inset_0_3px_8px_rgba(0,0,0,0.28),inset_0_0_3px_rgba(0,0,0,0.28)]";
 /** Profile comment box: the same, with a thin border. */
 const PROFILE_BOX =
-  "comment-surface rounded-[5px] border border-white/[3%] bg-background shadow-[inset_0_3px_8px_rgba(0,0,0,0.28),inset_0_0_3px_rgba(0,0,0,0.28)]";
+  "comment-surface rounded-[5px] border border-[#59595b40] bg-background shadow-[inset_0_3px_8px_rgba(0,0,0,0.28),inset_0_0_3px_rgba(0,0,0,0.28)]";
 const boxClass = (v: Variant) => (v === "profile" ? PROFILE_BOX : COMMENT_BOX);
 
 const LINK_ACTION = "flex cursor-pointer items-center gap-1.5 transition-colors hover:text-white";

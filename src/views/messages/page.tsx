@@ -65,8 +65,8 @@ function InboxList({ activeId, search }: { activeId?: string; search: string }) 
           <Link
             href={`/messages/${c._id}`}
             className={cn(
-              "flex cursor-pointer items-center gap-3 rounded-[5px] border border-transparent p-2 transition-colors hover:bg-black/30",
-              activeId === c._id && "border-white/10 bg-black/40",
+              "flex cursor-pointer items-center gap-3 rounded-[5px] border border-transparent p-2 transition-colors hover:bg-[#0c0f15]/30",
+              activeId === c._id && "border-[#59595b40] bg-[#0c0f15]/40",
             )}
           >
             <ProfileAvatar name={c.other.name} url={c.other.avatarUrl} className="size-12 rounded-[5px] text-xl" />
@@ -99,7 +99,7 @@ function Inbox() {
             conversationId && "hidden md:flex",
           )}
         >
-          <div className="flex items-center gap-3 border-b border-white/5 px-5 py-5">
+          <div className="flex items-center gap-3 border-b border-[#59595b40] px-5 py-5">
             <h1 className="font-display text-2xl">Active Chats</h1>
             {unreadCount > 0 && (
               <span className="rounded-[5px] bg-violet-600 px-2 py-0.5 text-sm font-semibold text-white">{unreadCount}</span>

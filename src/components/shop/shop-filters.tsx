@@ -334,7 +334,7 @@ export function FilterGroups({
       {groups.map((group) => {
         const chosen = selection[group.key] ?? [];
         return (
-          <AccordionItem key={group.key} value={group.key} className="border-b border-white/10">
+          <AccordionItem key={group.key} value={group.key} className="border-b border-[#59595b40]">
             <AccordionTrigger className="cursor-pointer items-center py-2 text-[15px] font-bold hover:no-underline [&>svg]:translate-y-0 [&>svg]:text-violet-600">
               <span>
                 {group.label}

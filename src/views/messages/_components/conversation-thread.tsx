@@ -89,7 +89,7 @@ function Composer({
   }
 
   return (
-    <form onSubmit={submit} className="flex items-center gap-3 border-t border-white/5 bg-[#141519] p-4">
+    <form onSubmit={submit} className="flex items-center gap-3 border-t border-[#59595b40] bg-[#141519] p-4">
       {isSeller && (
         <>
           <Button
@@ -199,7 +199,7 @@ function MessageList({
             <div
               className={cn(
                 "whitespace-pre-wrap break-words rounded-[5px] border px-4 py-2 text-base",
-                mine ? "border-white/10 bg-[#0C0F15] text-foreground" : "border-transparent bg-[#202227] text-foreground/90",
+                mine ? "border-[#59595b40] bg-[#0C0F15] text-foreground" : "border-transparent bg-[#202227] text-foreground/90",
               )}
             >
               {m.body}
@@ -276,7 +276,7 @@ export default function ConversationThread({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex items-center gap-3 border-b border-white/5 px-5 py-4">
+      <div className="flex items-center gap-3 border-b border-[#59595b40] px-5 py-4">
         <Button asChild variant="ghost" size="icon-sm" className="cursor-pointer md:hidden">
           <Link href="/messages" aria-label="Back to inbox">
             <ArrowLeft />

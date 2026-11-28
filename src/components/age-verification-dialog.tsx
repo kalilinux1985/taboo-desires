@@ -49,7 +49,7 @@ function PhotoPick({
       <Button variant="plain" size="none"
         type="button"
         onClick={() => ref.current?.click()}
-        className="flex w-full cursor-pointer items-center gap-3 rounded-[5px] border border-white/[3%] bg-[#0F172A] px-3 py-2.5 text-left text-sm hover:border-violet-bright"
+        className="flex w-full cursor-pointer items-center gap-3 rounded-[5px] border border-[#59595b40] bg-[#202227] px-3 py-2.5 text-left text-sm hover:border-violet-bright"
       >
         {file ? (
           <CircleCheck className="size-5 shrink-0 text-violet-600" />
@@ -172,7 +172,7 @@ export default function AgeVerificationDialog() {
             </AlertDialogHeader>
 
             {state?.status === "rejected" && (
-              <p className="rounded-[5px] border border-white/[3%] bg-[#0F172A] px-3 py-2 text-sm">
+              <p className="rounded-[5px] border border-[#59595b40] bg-[#202227] px-3 py-2 text-sm">
                 Your last submission wasn&apos;t approved
                 {state.reason ? `: ${state.reason}` : "."} Please try again with clearer photos.
               </p>
@@ -238,7 +238,7 @@ export function AgeVerificationNotice() {
   const state = useQuery(api.ageVerification.mine, access ? {} : "skip");
   if (!AGE_VERIFICATION_ENABLED || !access || access.ageVerified !== false || access.isAdmin || state?.status !== "pending") return null;
   return (
-    <div className="flex items-center justify-center gap-2 border-b border-white/[3%] bg-[#52525214] px-4 py-2 text-center text-sm">
+    <div className="flex items-center justify-center gap-2 border-b border-[#59595b40] bg-[#202227] px-4 py-2 text-center text-sm">
       <Clock className="size-4 shrink-0 text-violet-600" />
       <span>Your age check is in review. You can browse now; posting, messaging and buying unlock once it&apos;s approved.</span>
     </div>

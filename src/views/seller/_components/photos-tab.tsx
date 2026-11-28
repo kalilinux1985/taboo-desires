@@ -83,7 +83,7 @@ function OwnPhotoComments({ photo }: { photo: Photo }) {
     <div className="mt-1.5 flex flex-col gap-5">
       {isAuthenticated ? (
         <div className="flex items-center gap-1.5">
-          <ProfileAvatar name={me?.name ?? "?"} url={me?.avatarUrl ?? null} className="size-[31px] rounded-full bg-[#a8a9ae] text-sm text-[#2a2a2e]" />
+          <ProfileAvatar name={me?.name ?? "?"} url={me?.avatarUrl ?? null} className="size-[31px] rounded-full bg-[#202227] text-sm text-white/40" />
           <form onSubmit={submit} className="relative min-w-0 flex-1">
             <Input
               value={text}
@@ -123,7 +123,7 @@ function OwnPhotoComments({ photo }: { photo: Photo }) {
               return (
                 <li key={c._id} className="flex gap-1.5">
                   <Link href={profile} className="h-fit shrink-0 cursor-pointer">
-                    <ProfileAvatar name={c.author.name} url={c.author.avatarUrl} className="size-[31px] rounded-full bg-[#a8a9ae] text-sm text-[#2a2a2e]" />
+                    <ProfileAvatar name={c.author.name} url={c.author.avatarUrl} className="size-[31px] rounded-full bg-[#202227] text-sm text-white/40" />
                   </Link>
                   <div className={cn(COMMENT_BOX, "flex min-h-[84px] min-w-0 flex-1 flex-col gap-1 px-[15px] py-2.5")}>
                     <div className="flex items-start justify-between gap-3">
@@ -184,9 +184,9 @@ function PhotoCard({ photo, isMe, onRemove }: { photo: Photo; isMe: boolean; onR
 
   return (
     // Outer frame around an inner card, as in the design
-    <div className="rounded-[3px] border border-[#59595b40] bg-[#1d1e23] p-[14px] shadow-[0_4px_12px_rgba(0,0,0,0.35)]">
+    <div className="rounded-[3px] border border-[#59595b40] bg-[#202227] p-[14px] shadow-[0_4px_12px_rgba(0,0,0,0.35)]">
       <div className="group relative flex min-w-0 flex-col overflow-hidden rounded-[3px] border border-[#59595b40] bg-[#141519]">
-        <div className="relative aspect-square overflow-hidden bg-white">
+        <div className="relative aspect-square overflow-hidden bg-[#202227]">
           <ZoomImage src={photo.url} className="size-full">
             <img src={photo.url} alt={photo.caption} loading="lazy" className="size-full object-cover" />
           </ZoomImage>
@@ -197,7 +197,7 @@ function PhotoCard({ photo, isMe, onRemove }: { photo: Photo; isMe: boolean; onR
               size="icon-xs"
               aria-label="Remove photo"
               onClick={() => onRemove(photo.photoId!)}
-              className="absolute right-1.5 top-1.5 size-7 cursor-pointer rounded-full bg-black/70 text-white hover:bg-black/80"
+              className="absolute right-1.5 top-1.5 size-7 cursor-pointer rounded-full bg-[#0c0f15]/70 text-white hover:bg-[#0c0f15]/80"
             >
               <Trash2 className="size-3.5" />
             </Button>
@@ -205,7 +205,7 @@ function PhotoCard({ photo, isMe, onRemove }: { photo: Photo; isMe: boolean; onR
         </div>
         <div className="flex flex-1 flex-col px-[13px] pb-[13px] pt-[14px]">
           <p className={cn(NURMA, "line-clamp-3 min-h-[44px] break-words text-[17px] leading-[22px] text-white")}>{photo.caption}</p>
-          <div className="mt-3 flex min-w-0 items-center gap-2 border-t border-white/15 pt-2.5 text-[13px] text-white">
+          <div className="mt-3 flex min-w-0 items-center gap-2 border-t border-[#59595b40] pt-2.5 text-[13px] text-white">
             <Button
               variant="plain"
               size="none"
@@ -341,7 +341,7 @@ export function PhotosTab({
             className={cn(
               SERIF,
               "h-[32px] shrink-0 cursor-pointer rounded-[3px] border-2 bg-transparent px-[10px] text-[15px]",
-              album === a._id ? "border-[#7c3aed] text-[#7c3aed]" : "border-white text-white hover:border-[#7c3aed]",
+              album === a._id ? "border-[#7c3aed] text-[#7c3aed]" : "border-[#59595b40] text-white hover:border-[#7c3aed]",
             )}
           >
             {a.name} ({a.photos})
