@@ -1,13 +1,13 @@
-// Seller profile design (Sellers_Profile_2): #0f172a page; cards are #030917 at
-// 50% (a card inside a card reads darker); 1px white borders at 25%; violet
-// #7c3aed; drop shadows black at 30%; inner shadows black at 28%.
+// Seller profile design, in the site palette: #191a1f page; panels #202227;
+// borders #59595B at 25%; violet #7c3aed; drop shadows black at 30%; inner
+// shadows black at 28%.
 
 const SHADOW = "shadow-[0_14px_34px_-8px_rgba(0,0,0,0.3)]";
 
 /** Lighter, outer card: a section of the page */
-export const PANEL = `rounded-[5px] border border-white/[3%] bg-[#52525214] ${SHADOW}`;
+export const PANEL = `rounded-[5px] border border-[#59595b40] bg-[#202227] ${SHADOW}`;
 /** Darker card inside a card (listing cards, posts, the header box) */
-export const INSET = `rounded-[5px] border border-white/[3%] bg-[#52525214] ${SHADOW}`;
+export const INSET = `rounded-[5px] border border-[#59595b40] bg-[#202227] ${SHADOW}`;
 /** Body text in the book serif */
 export const TEXT_FONT = "[font-family:var(--font-profile-text),ui-serif,Georgia,serif]";
 /** Old-style serif ("Latest Activity") */

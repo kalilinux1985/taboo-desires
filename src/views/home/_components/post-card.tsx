@@ -26,7 +26,7 @@ import LikerAvatars from "./liker-avatars.tsx";
 export function PostImages({ images }: { images: string[] }) {
   if (images.length === 1) {
     return (
-      <div className="w-full max-w-[210px] overflow-hidden rounded-[5px] bg-[#8b8b90]">
+      <div className="w-full max-w-[210px] overflow-hidden rounded-[5px] bg-[#202227]">
         <ZoomImage src={images[0]} className="w-full"><img src={images[0]} alt="" loading="lazy" className="max-h-[22rem] w-full object-cover" /></ZoomImage>
       </div>
     );
@@ -34,7 +34,7 @@ export function PostImages({ images }: { images: string[] }) {
   return (
     <div className="grid max-w-[426px] grid-cols-2 gap-1.5">
       {images.map((url) => (
-        <div key={url} className="aspect-square overflow-hidden rounded-[5px] bg-[#8b8b90]">
+        <div key={url} className="aspect-square overflow-hidden rounded-[5px] bg-[#202227]">
           <ZoomImage src={url} className="size-full"><img src={url} alt="" loading="lazy" className="size-full object-cover" /></ZoomImage>
         </div>
       ))}
@@ -46,7 +46,7 @@ export function ListingPreview({ listing }: { listing: NonNullable<FeedItem["lis
   return (
     <Link
       href={`/listing/${listing._id}`}
-      className="group relative block w-full max-w-[210px] cursor-pointer overflow-hidden rounded-[5px] bg-[#8b8b90]"
+      className="group relative block w-full max-w-[210px] cursor-pointer overflow-hidden rounded-[5px] bg-[#202227]"
     >
       {listing.imageUrl && (
         <img
@@ -56,7 +56,7 @@ export function ListingPreview({ listing }: { listing: NonNullable<FeedItem["lis
           className="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
       )}
-      <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-gradient-to-t from-black/85 to-transparent px-2.5 pb-2 pt-8 text-white">
+      <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-gradient-to-t from-[#0c0f15]/85 to-transparent px-2.5 pb-2 pt-8 text-white">
         <span className="flex min-w-0 items-center gap-1 truncate text-xs">
           {listing.isLocked && <Lock className="size-3 shrink-0 text-violet-600" />}
           <span className="truncate">{listing.title}</span>
@@ -100,17 +100,17 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
   const text = item.body || (item.kind !== "status" ? `${verb.lead} ${verb.link}${item.listing ? `: ${item.listing.title}` : ""}` : "");
 
   return (
-    <article className="flex gap-3 rounded-[5px] border border-[#59595b40] bg-[#52525214] p-4 shadow-[0_14px_34px_-8px_rgba(0,0,0,0.3)] sm:gap-4">
+    <article className="flex gap-3 rounded-[5px] border border-[#59595b40] bg-[#202227] p-4 shadow-[0_14px_34px_-8px_rgba(0,0,0,0.3)] sm:gap-4">
       <Link href={profile} className="relative h-fit shrink-0 cursor-pointer rounded-[4px] outline-none ring-0 focus:outline-none focus-visible:outline-none focus-visible:ring-0">
         <ProfileAvatar
           name={item.author.name}
           url={item.author.avatarUrl}
-          className="size-12 rounded-[4px] border-0 bg-[#a8a9ae] text-xl text-[#2a2a2e] sm:size-14 sm:text-2xl"
+          className="size-12 rounded-[4px] border-0 bg-[#202227] text-xl text-white/40 sm:size-14 sm:text-2xl"
         />
         {online && (
           <span
             aria-label="Online"
-            className="absolute bottom-0 right-0 size-3.5 rounded-full border-2 border-[#091021] bg-emerald-600"
+            className="absolute bottom-0 right-0 size-3.5 rounded-full border-2 border-[#141519] bg-emerald-600"
           />
         )}
       </Link>
@@ -165,7 +165,7 @@ export default function PostCard({ item, online }: { item: FeedItem; online: boo
             aria-expanded={showComments}
             aria-label={showComments ? "Hide comments" : "Show comments"}
             title="Comments"
-            className={cn(action, "border-r border-white/[3%] pr-3", showComments && "text-white")}
+            className={cn(action, "border-r border-[#59595b40] pr-3", showComments && "text-white")}
           >
             <MessageCircle className="size-4 text-violet-600" />
             <span>{item.commentCount}</span>

@@ -114,17 +114,17 @@ function CtaPanel({
     <div
       className={cn(
         "relative flex min-w-0 flex-col gap-5 overflow-hidden px-6 py-8 sm:px-10 sm:py-10",
-        tone === "sell" ? "bg-primary" : "border bg-[#52525214]",
+        tone === "sell" ? "bg-primary" : "border bg-[#202227]",
       )}
     >
       {tone === "buy" && (
         <div
           aria-hidden
-          className="absolute inset-0 bg-[radial-gradient(60%_80%_at_100%_100%,rgb(244_114_182/0.28),transparent_70%),radial-gradient(50%_60%_at_85%_10%,rgb(124_58_237/0.35),transparent_70%)]"
+          className="absolute inset-0 bg-[radial-gradient(60%_80%_at_100%_100%,rgb(124_58_237/0.2),transparent_70%),radial-gradient(50%_60%_at_85%_10%,rgb(124_58_237/0.35),transparent_70%)]"
         />
       )}
       <div className="relative flex items-start gap-4">
-        <span className="flex size-13 shrink-0 items-center justify-center rounded-[5px] bg-white/12 text-white">
+        <span className="flex size-13 shrink-0 items-center justify-center rounded-[5px] bg-[#202227] text-white">
           <Icon className="size-6" />
         </span>
         <div>
@@ -155,7 +155,7 @@ function CtaPanel({
       </ul>
       <Link
         href={to}
-        className="relative w-fit cursor-pointer rounded-[5px] bg-white px-8 py-3 font-extrabold text-[#0f172a] transition-transform hover:-translate-y-0.5"
+        className="relative w-fit cursor-pointer rounded-[5px] bg-[#7c3aed] px-8 py-3 font-extrabold text-white transition-transform hover:-translate-y-0.5"
       >
         {action}
       </Link>

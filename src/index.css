@@ -5,8 +5,16 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Violet: every violet on the site is #7C3AED (fills, text, outlines, hovers).
-   Don't introduce other violet or purple shades. */
+/* Site palette. Every color comes from this list (plus status colors for
+   errors, success, shipping and warnings):
+     page backgrounds   #191A1F or #0C0F15
+     light cards        #202227
+     dark cards         #141519
+     violet / accent    #7C3AED (fills, accent text, focus, hovers)
+     borders            #59595B at 25%
+     text fields        #111317
+     text               white
+   Don't introduce other violet or purple shades, grays or navies. */
 @theme {
   --color-violet-600: #7c3aed;
   /* Plain hex, without the lab() versions */
@@ -69,49 +77,47 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-/* Navy dark theme of the seller-profile design:
-   #0f172a page, comments and text fields; cards #030917 at 50% (a card in a card reads darker);
-   1px white borders at 25%; drop shadows black at 30%, inner shadows black at 28%;
-   #0a0f22 header, #1f2235 secondary surfaces, #7c3aed violet accents */
+/* Theme in the site palette (see the list at the top): drop shadows black at
+   30%, inner shadows black at 28%. */
 :root {
   --radius: 5px; /* every corner is 5px (circles stay round) */
   --background: #191a1f;
   --foreground: #ffffff;
-  --card: rgb(3 9 23 / 50%); /* #030917 at 50% */
+  --card: #141519;
   --card-foreground: #ffffff;
-  --popover: #091021; /* #030917 at 50% over the page, solid for menus */
+  --popover: #141519;
   --popover-foreground: #ffffff;
   --primary: #7c3aed;
   --primary-foreground: #ffffff;
-  --secondary: #1f2235;
+  --secondary: #202227;
   --secondary-foreground: #ffffff;
-  --muted: #0f172a;
+  --muted: #141519;
   --muted-foreground: #ffffff;
-  --accent: #1f2235;
+  --accent: #202227;
   --accent-foreground: #ffffff;
   --destructive: oklch(0.66 0.22 18);
-  --border: rgb(255 255 255 / 25%); /* white at 25% */
-  --input: rgb(255 255 255 / 25%); /* white at 25% */
+  --border: #59595b40; /* #59595B at 25% */
+  --input: #59595b40;
   --ring: #7c3aed;
   --chart-1: #7c3aed;
   --chart-2: #7c3aed;
   --chart-3: #7c3aed;
   --chart-4: #7c3aed;
   --chart-5: #7c3aed;
-  --sidebar: #0a0f22;
+  --sidebar: #141519;
   --sidebar-foreground: #ffffff;
   --sidebar-primary: #7c3aed;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1f2235;
+  --sidebar-accent: #202227;
   --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgb(255 255 255 / 25%); /* white at 25% */
-  --sidebar-ring: rgb(127 34 254 / 70%);
+  --sidebar-border: #59595b40;
+  --sidebar-ring: #7c3aed;
 }
 
 @layer base {
   * {
     @apply outline-ring;
-    border-color: rgb(255 255 255 / 15%); /* white at 15% */
+    border-color: #59595b40; /* #59595B at 25% */
   }
 
   :root {
@@ -146,10 +152,10 @@
   }
 }
 
-/* Locked surfaces, in the seller profile's navy everywhere: the page and the
-   comment boxes are #0f172a, and every text field and picker is #0f172a with a
-   white (25%) border and an inner shadow, whatever classes a component sets and
-   whatever state the field is in (focus, disabled, invalid, browser autofill). */
+/* Locked surfaces: the page is #0c0f15, and every text field and picker is
+   #111317 with a #59595B (25%) border and an inner shadow, whatever classes a
+   component sets and whatever state the field is in (focus, disabled, invalid,
+   browser autofill). */
 @layer base {
   html,
   body {
@@ -184,7 +190,7 @@
   select,
   [data-slot="select-trigger"],
   [role="combobox"] {
-    border-color: rgb(51 51 51 / 33%) !important;
+    border-color: #59595b40 !important;
     /* Every text field and picker: #111317 (the header search stays as it is, see field-bare) */
     background-color: #111317 !important;
   }
@@ -229,7 +235,7 @@
   /* Settings pages: the profile page's surfaces. Cards are the profile's outer
      card (#202227), fields and pickers the comment box (#111317, inner shadow). */
   .settings-design [data-slot="card-light"] {
-    border-color: rgb(89 89 91 / 25%) !important; /* #59595B at 25%, like every card */
+    border-color: #59595b40 !important; /* #59595B at 25%, like every card */
     background-color: #202227 !important;
     box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35) !important;
   }
@@ -265,11 +271,11 @@
       inset 3px 5px 4px rgb(28 28 28 / 12%) !important;
   }
 
-  /* Cards are the profile's cards: #030917 at 50%, 1px white border at 25%, 5px corners */
+  /* Cards: #141519, 1px #59595B border at 25%, 5px corners */
   [data-slot="card-light"] {
-    border-color: rgb(89 89 91 / 25%) !important; /* every card border: #59595B at 25% */
+    border-color: #59595b40 !important;
     border-radius: 5px !important;
-    background-color: #03091780 !important;
+    background-color: #141519 !important;
     box-shadow: 0 14px 34px -8px rgba(0, 0, 0, 0.3) !important;
   }
 }
@@ -279,13 +285,8 @@
   --color-violet-bright: #7c3aed;
 }
 
-/* Overrides matching the supplied stylesheet */
+/* bg-background is used by text fields and comment boxes: the field color */
 .bg-background,
 .bg-background\/50 {
   background-color: #111317;
-}
-@supports (color: color-mix(in lab, red, red)) {
-  .border-white\/\[3\%\] {
-    border-color: color-mix(in oklab, var(--color-white) 3%, #4948483b);
-  }
 }

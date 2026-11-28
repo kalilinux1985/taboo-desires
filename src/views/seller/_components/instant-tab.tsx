@@ -30,13 +30,13 @@ function InstantCard({ listing }: { listing: Item }) {
   return (
     <div className="rounded-[5px] border border-[#59595b40] bg-[#202227] p-[10px] shadow-[0_6px_14px_rgba(0,0,0,0.35)]">
       <div className="relative flex min-w-0 flex-col overflow-hidden rounded-[5px] border border-[#59595b40] bg-[#141519] shadow-[0_4px_10px_rgba(0,0,0,0.3)]">
-        <div className="relative aspect-[1.57] bg-white">
+        <div className="relative aspect-[1.57] bg-[#202227]">
           <Link href={`/listing/${listing._id}`} className="absolute inset-0 block cursor-pointer overflow-hidden">
             {listing.imageUrl ? (
               <img src={listing.imageUrl} alt={listing.title} loading="lazy" className="size-full object-cover" />
             ) : (
               <span className="flex size-full items-center justify-center">
-                <ImageIcon className="size-[55%] text-[#8a9199]" strokeWidth={1.1} />
+                <ImageIcon className="size-[55%] text-white/40" strokeWidth={1.1} />
               </span>
             )}
           </Link>
@@ -44,12 +44,12 @@ function InstantCard({ listing }: { listing: Item }) {
           <Link
             href={profileHref}
             aria-label={`${listing.sellerName}'s profile`}
-            className="absolute bottom-[-4px] left-[16px] flex size-[66px] cursor-pointer items-center justify-center overflow-hidden rounded-[3px] bg-[#a8a9ae]"
+            className="absolute bottom-[-4px] left-[16px] flex size-[66px] cursor-pointer items-center justify-center overflow-hidden rounded-[3px] bg-[#202227]"
           >
             {listing.sellerAvatarUrl ? (
               <img src={listing.sellerAvatarUrl} alt="" className="size-full object-cover" />
             ) : (
-              <UserRound className="size-12 text-[#2a2a2e]" strokeWidth={1.5} />
+              <UserRound className="size-12 text-white/40" strokeWidth={1.5} />
             )}
           </Link>
         </div>

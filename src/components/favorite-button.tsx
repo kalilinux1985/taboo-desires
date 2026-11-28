@@ -78,7 +78,7 @@ export default function FavoriteButton({
       aria-pressed={!!saved}
       aria-label={saved ? "Remove from favorites" : "Save to favorites"}
       className={cn(
-        "flex cursor-pointer items-center justify-center gap-2 rounded-full bg-background/90 text-foreground shadow-md transition-transform hover:scale-105 disabled:opacity-60",
+        "flex cursor-pointer items-center justify-center gap-2 rounded-full bg-[#141519]/90 text-foreground shadow-md transition-transform hover:scale-105 disabled:opacity-60",
         withLabel ? "h-10 px-4 text-sm font-semibold" : "size-8",
         className,
       )}

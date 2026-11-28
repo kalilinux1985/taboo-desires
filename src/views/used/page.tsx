@@ -55,7 +55,7 @@ export default function ShopCategoryPage({ page }: { page: ShopPage }) {
 
   return (
     <div className="flex flex-col">
-      <section className="bg-black/30 px-4 py-6 text-center md:py-8">
+      <section className="bg-[#0c0f15]/30 px-4 py-6 text-center md:py-8">
         <h1 className="font-display text-4xl font-bold text-balance text-violet-600 sm:text-5xl md:text-6xl">
           {page.title}
         </h1>
@@ -124,16 +124,16 @@ export default function ShopCategoryPage({ page }: { page: ShopPage }) {
       <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
         <SheetContent
           side="left"
-          className="flex w-[88vw] max-w-sm flex-col gap-0 border-white/[3%] bg-popover p-0"
+          className="flex w-[88vw] max-w-sm flex-col gap-0 border-[#59595b40] bg-popover p-0"
         >
-          <SheetHeader className="border-b border-white/[3%]">
+          <SheetHeader className="border-b border-[#59595b40]">
             <SheetTitle className="flex items-center gap-2 text-lg">
               <Funnel className="size-5 text-violet-600" /> Filter
             </SheetTitle>
             <SheetDescription>Narrow {page.shopFor.toLowerCase()} by price, listed date and seller details.</SheetDescription>
           </SheetHeader>
           <div className="flex-1 overflow-y-auto px-4">{filterPanel}</div>
-          <SheetFooter className="flex-row gap-2 border-t border-white/[3%] pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <SheetFooter className="flex-row gap-2 border-t border-[#59595b40] pb-[max(1rem,env(safe-area-inset-bottom))]">
             <Button variant="secondary" onClick={clear} disabled={active === 0} className="flex-1 cursor-pointer">
               Clear all
             </Button>

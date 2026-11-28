@@ -36,16 +36,16 @@ export function ProfileShopCard({ listing, dark = false }: { listing: ListingCar
   return (
     <Link href={`/listing/${listing._id}`} className={cn(dark ? INNER : CARD, SANS, "group flex min-w-0 cursor-pointer flex-col")}>
       <div className="relative aspect-[3/2]">
-        <div className="absolute inset-0 overflow-hidden bg-[#f4f4f5]">
+        <div className="absolute inset-0 overflow-hidden bg-[#202227]">
           {listing.imageUrl && (
             <img src={listing.imageUrl} alt={listing.title} loading="lazy" className="size-full object-cover" />
           )}
         </div>
-        <span className="absolute -bottom-[10px] left-[20px] z-10 flex size-[54px] items-center justify-center overflow-hidden rounded-[5px] bg-[#a8a9ae]">
+        <span className="absolute -bottom-[10px] left-[20px] z-10 flex size-[54px] items-center justify-center overflow-hidden rounded-[5px] bg-[#202227]">
           {listing.sellerAvatarUrl ? (
             <img src={listing.sellerAvatarUrl} alt="" className="size-full object-cover" />
           ) : (
-            <UserRound className="size-10 text-[#2a2a2e]" strokeWidth={1.5} />
+            <UserRound className="size-10 text-white/40" strokeWidth={1.5} />
           )}
         </span>
       </div>
@@ -195,7 +195,7 @@ export function ActivitySection({ authorId }: { authorId: Id<"users"> }) {
       ) : results.length === 0 ? (
         <p className={EMPTY}>No posts yet.</p>
       ) : (
-        <div className="flex flex-col divide-y divide-[#252b37]">
+        <div className="flex flex-col divide-y divide-[#59595b40]">
           {results.map((item) => (
             <ProfilePostCard key={item._id} item={item} focus={item._id === target ? { comments: openComments } : undefined} />
           ))}

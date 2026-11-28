@@ -45,7 +45,7 @@ const STATUS: Record<ContractData["status"], { label: string; className: string 
   pending: { label: "Waiting for buyer", className: "bg-violet-600 text-white" },
   accepted: { label: "Accepted", className: "bg-green-600 text-white" },
   rejected: { label: "Rejected", className: "bg-red-600 text-white" },
-  cancelled: { label: "Withdrawn", className: "bg-white/15 text-white" },
+  cancelled: { label: "Withdrawn", className: "bg-[#202227] text-white" },
 };
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
@@ -78,14 +78,14 @@ export function ContractTerms({ c }: { c: Omit<ContractData, "role" | "comments"
         {c.paymentCount > 1 && ` of about ${usd(Math.floor(c.totalCents / c.paymentCount))}`}
       </Row>
       {c.paymentMethod && <Row label="Paid by">{c.paymentMethod}</Row>}
-      <div className="mt-2 overflow-hidden rounded-[5px] border border-white/10">
-        <div className="grid grid-cols-[2.5rem_1fr_auto] bg-white/5 px-3 py-1.5 text-xs uppercase tracking-wide text-white/70">
+      <div className="mt-2 overflow-hidden rounded-[5px] border border-[#59595b40]">
+        <div className="grid grid-cols-[2.5rem_1fr_auto] bg-[#202227] px-3 py-1.5 text-xs uppercase tracking-wide text-white/70">
           <span>#</span>
           <span>Due date</span>
           <span>Amount</span>
         </div>
         {c.schedule.map((p, i) => (
-          <div key={i} className="grid grid-cols-[2.5rem_1fr_auto] border-t border-white/10 px-3 py-1.5 text-sm text-white">
+          <div key={i} className="grid grid-cols-[2.5rem_1fr_auto] border-t border-[#59595b40] px-3 py-1.5 text-sm text-white">
             <span className="text-violet-600">{i + 1}</span>
             <span>{dateLabel(p.dueDate)}</span>
             <span className="tabular-nums">{usd(p.amountCents)}</span>
@@ -141,7 +141,7 @@ export function ContractCardView({
       </div>
 
       {c.comments.length > 0 && (
-        <div className="flex flex-col gap-2 border-t border-white/10 px-4 py-3">
+        <div className="flex flex-col gap-2 border-t border-[#59595b40] px-4 py-3">
           <p className="text-xs uppercase tracking-wide text-white/70">Comments</p>
           {c.comments.map((m) => (
             <div key={m._id} className="rounded-[5px] bg-[#202227] px-3 py-2">
@@ -157,7 +157,7 @@ export function ContractCardView({
 
       {commenting && (
         <form
-          className="flex flex-col gap-2 border-t border-white/10 px-4 py-3"
+          className="flex flex-col gap-2 border-t border-[#59595b40] px-4 py-3"
           onSubmit={async (e) => {
             e.preventDefault();
             if (!text.trim()) return;
@@ -178,7 +178,7 @@ export function ContractCardView({
         </form>
       )}
 
-      <div className="flex flex-wrap items-center gap-2 border-t border-white/10 bg-[#101115] px-4 py-3">
+      <div className="flex flex-wrap items-center gap-2 border-t border-[#59595b40] bg-[#141519] px-4 py-3">
         {pending && c.role === "buyer" && (
           <>
             <Button size="sm" disabled={busy} onClick={onAccept} className="cursor-pointer bg-green-600 text-white hover:bg-green-500">
@@ -361,8 +361,8 @@ export function ContractFormFields({
 
       <div className="flex flex-col gap-1.5">
         <Label>Payment schedule</Label>
-        <div className="overflow-hidden rounded-[5px] border border-white/10">
-          <div className="grid grid-cols-[2.5rem_1fr_8rem] bg-white/5 px-3 py-1.5 text-xs uppercase tracking-wide text-white/70">
+        <div className="overflow-hidden rounded-[5px] border border-[#59595b40]">
+          <div className="grid grid-cols-[2.5rem_1fr_8rem] bg-[#202227] px-3 py-1.5 text-xs uppercase tracking-wide text-white/70">
             <span>#</span>
             <span>Due date</span>
             <span>Amount</span>
@@ -371,7 +371,7 @@ export function ContractFormFields({
             <p className="px-3 py-3 text-sm text-white/70">Enter the total and first due date to build the schedule.</p>
           ) : (
             values.schedule.map((p, i) => (
-              <div key={i} className="grid grid-cols-[2.5rem_1fr_8rem] items-center gap-2 border-t border-white/10 px-3 py-1.5">
+              <div key={i} className="grid grid-cols-[2.5rem_1fr_8rem] items-center gap-2 border-t border-[#59595b40] px-3 py-1.5">
                 <span className="text-sm text-violet-600">{i + 1}</span>
                 <Input
                   type="date"

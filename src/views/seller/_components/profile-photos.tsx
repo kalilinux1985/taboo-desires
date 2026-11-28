@@ -77,7 +77,7 @@ export default function ProfilePhotos({
                 size="icon-xs"
                 aria-label="Remove photo"
                 onClick={() => remove(p.photoId!)}
-                className="absolute right-1 top-1 size-7 cursor-pointer rounded-full bg-black/70 text-white hover:bg-black/80"
+                className="absolute right-1 top-1 size-7 cursor-pointer rounded-full bg-[#0c0f15]/70 text-white hover:bg-[#0c0f15]/80"
               >
                 <Trash2 className="size-3.5" />
               </Button>

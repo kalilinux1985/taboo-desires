@@ -87,7 +87,7 @@ function SettingsInner({ kind }: { kind?: SettingsKind }) {
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
       {setupBanner}
       <Card>
-        <CardHeader className="border-b border-white/[3%] pb-4">
+        <CardHeader className="border-b border-[#59595b40] pb-4">
           <CardTitle className="font-display text-2xl">Profile Information</CardTitle>
         </CardHeader>
         <CardContent>

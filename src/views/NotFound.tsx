@@ -16,7 +16,7 @@ export default function NotFound() {
   }, [pathname]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="min-h-screen flex items-center justify-center bg-[#191a1f]">
       <div className="text-center space-y-6">
         <div className="space-y-2">
           <h1 className="text-6xl font-bold text-muted-foreground">404</h1>

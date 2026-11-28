@@ -42,7 +42,7 @@ export default function FindMembers({ accountType }: { accountType: "seller" | "
             <Link
               key={m._id}
               href={`/seller/${m._id}`}
-              className="flex flex-col items-center gap-2 rounded-[5px] p-2 text-center transition-colors hover:bg-white/5"
+              className="flex flex-col items-center gap-2 rounded-[5px] p-2 text-center transition-colors hover:bg-[#202227]"
             >
               <ProfileAvatar name={m.name} url={m.avatarUrl} className="size-16 text-2xl" />
               <span className="flex max-w-full items-center gap-1 text-sm font-medium text-white">

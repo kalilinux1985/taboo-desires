@@ -26,7 +26,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.t
 
 const SERIF = "[font-family:var(--font-profile-buyer),Cambria,Georgia,serif]";
 const SANS = "font-sans";
-const PAGE = "bg-[#17181c]";
+const PAGE = "bg-[#191a1f]";
 const CARD = "rounded-[5px] border border-[#59595b40] bg-[#202227] py-0 shadow-[0_4px_14px_rgba(0,0,0,0.3)]";
 
 type Step = { icon: LucideIcon; title: string; text: string };
@@ -112,13 +112,13 @@ export default function Landing() {
                 key={s._id}
                 href={`/${s.username}`}
                 aria-label="View top seller's profile"
-                className="block aspect-square cursor-pointer overflow-hidden rounded-[5px] bg-[#a8a9ae] transition-opacity hover:opacity-85"
+                className="block aspect-square cursor-pointer overflow-hidden rounded-[5px] bg-[#202227] transition-opacity hover:opacity-85"
               >
                 <img src={s.avatarUrl!} alt="" loading="lazy" className="size-full object-cover" />
               </Link>
             ) : (
-              <div key={`empty-${i}`} aria-hidden className="flex aspect-square items-end justify-center overflow-hidden rounded-[5px] bg-[#a8a9ae]">
-                <UserRound className="size-[88%] translate-y-[8%] text-[#222226]" strokeWidth={1.1} fill="currentColor" />
+              <div key={`empty-${i}`} aria-hidden className="flex aspect-square items-end justify-center overflow-hidden rounded-[5px] bg-[#202227]">
+                <UserRound className="size-[88%] translate-y-[8%] text-[#141519]" strokeWidth={1.1} fill="currentColor" />
               </div>
             );
           })}

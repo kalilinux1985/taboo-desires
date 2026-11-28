@@ -32,7 +32,7 @@ function DropdownList({ onPick }: { onPick: () => void }) {
     return <p className="px-4 py-8 text-center text-sm text-muted-foreground">No messages yet.</p>;
   }
   return (
-    <ul className="flex max-h-[min(24rem,60vh)] flex-col divide-y divide-white/25 overflow-y-auto">
+    <ul className="flex max-h-[min(24rem,60vh)] flex-col divide-y divide-[#59595b40] overflow-y-auto">
       {convos.slice(0, DROPDOWN_COUNT).map((c) => (
         <li key={c._id}>
           <Link
@@ -57,7 +57,7 @@ function DropdownList({ onPick }: { onPick: () => void }) {
                 {c.lastMessagePreview}
               </span>
             </span>
-            {c.unread && <span aria-label="Unread" className="size-2 shrink-0 rounded-full bg-rose-500" />}
+            {c.unread && <span aria-label="Unread" className="size-2 shrink-0 rounded-full bg-violet-600" />}
           </Link>
         </li>
       ))}
@@ -83,14 +83,14 @@ export default function MessagesMenu({ className, badgeClassName }: { className:
           {!!unread && <span className={badgeClassName}>{unread > 9 ? "9+" : unread}</span>}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" sideOffset={8} className="flex w-[min(22rem,calc(100vw-1.5rem))] flex-col bg-[#09090b] p-0">
-        <p className="border-b border-white/[3%] px-4 py-3 text-sm font-bold">Messages</p>
+      <PopoverContent align="end" sideOffset={8} className="flex w-[min(22rem,calc(100vw-1.5rem))] flex-col bg-[#141519] p-0">
+        <p className="border-b border-[#59595b40] px-4 py-3 text-sm font-bold">Messages</p>
         <HideOnError
           fallback={<p className="px-4 py-8 text-center text-sm text-muted-foreground">Messages aren&apos;t available right now.</p>}
         >
           <DropdownList onPick={close} />
         </HideOnError>
-        <div className="border-t border-white/[3%] p-2">
+        <div className="border-t border-[#59595b40] p-2">
           <Button asChild className="w-full cursor-pointer">
             <Link href="/messages" onClick={close}>
               Show all messages
